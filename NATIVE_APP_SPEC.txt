@@ -1,0 +1,1168 @@
+================================================================================
+  TRUSTINFACTS MOBILE — ESPECIFICACION PARA APP NATIVA (Flutter / Dart)
+  Documento de referencia para implementar la app en un repo separado
+  Fecha: 2026-03-25
+================================================================================
+
+
+CONTEXTO
+================================================================================
+
+  TrustInFacts es un software de facturacion. Ya existe:
+  - App de escritorio (Electron) en produccion
+  - API REST para movil desplegada en AWS (EC2 + CloudFront)
+  - PWA desplegada en https://app.demo.trustinfacts.com
+
+  La API esta en: https://app.demo.trustinfacts.com/api
+  (CloudFront hace strip del prefijo /api y redirige a la EC2 en puerto 3100)
+
+  La app nativa debe consumir esta API. No hay backend adicional.
+  La BD es PostgreSQL compartida con la app de escritorio.
+
+  IMPORTANTE: La app es SOLO DE LECTURA. No se crean facturas, clientes ni
+  pagos desde la app movil. Solo consulta, visualizacion y descarga de PDFs.
+
+
+STACK
+================================================================================
+
+  - Flutter 3.x (ultima estable)
+  - Dart 3.x
+  - Riverpod (riverpod + flutter_riverpod) para estado y DI
+  - Dio para HTTP con interceptores (auto-refresh de tokens)
+  - flutter_secure_storage para tokens
+  - go_router para navegacion declarativa
+  - freezed + json_serializable para modelos inmutables
+  - url_launcher o open_filex para abrir PDFs
+  - path_provider + dio para descargar PDFs
+  - share_plus para compartir PDFs
+  - pull_to_refresh_flutter3 o RefreshIndicator nativo
+  - flutter_svg (si se usan iconos SVG)
+  - google_fonts (opcional, para Inter o similar)
+
+
+ESTRUCTURA DE DIRECTORIOS
+================================================================================
+
+  trustinfacts_mobile/
+    pubspec.yaml
+    lib/
+      main.dart
+      app.dart                      — MaterialApp + GoRouter + ProviderScope
+      core/
+        api/
+          api_client.dart           — Dio instance con interceptor auth
+          api_error.dart            — Clase ApiError
+          endpoints.dart            — Funciones por endpoint
+        auth/
+          auth_provider.dart        — StateNotifier con tokens, user, companies
+          auth_state.dart           — Freezed state (authenticated/unauthenticated)
+          secure_storage.dart       — Wrapper de flutter_secure_storage
+        models/
+          user.dart                 — UserInfo, CompanyInfo
+          client.dart               — Client model
+          invoice.dart              — InvoiceListItem, InvoiceDetail, InvoiceLine
+          payment.dart              — Payment model
+          dashboard.dart            — DashboardSummary
+          paginated.dart            — PaginatedResponse<T>
+        theme/
+          app_theme.dart            — ThemeData completo
+          app_colors.dart           — Colores de la app
+        router/
+          app_router.dart           — GoRouter config con auth redirect
+        utils/
+          currency.dart             — formatCurrency()
+          date.dart                 — formatDate(), formatDateTime()
+      features/
+        login/
+          login_screen.dart
+        dashboard/
+          dashboard_screen.dart
+        clients/
+          clients_screen.dart
+        invoices/
+          invoices_screen.dart
+          invoice_detail_screen.dart
+        account/
+          account_screen.dart
+      widgets/
+        invoice_card.dart
+        client_card.dart
+        status_badge.dart
+        stat_card.dart
+        empty_state.dart
+        loading_indicator.dart
+        app_bottom_nav.dart
+        app_header.dart
+
+
+================================================================================
+  API — ENDPOINTS DISPONIBLES
+================================================================================
+
+  Base URL: https://app.demo.trustinfacts.com/api
+  Auth: Bearer JWT en header Authorization
+
+  POST   /auth/login               — publico
+  POST   /auth/refresh             — publico
+  POST   /auth/logout              — auth
+  POST   /auth/switch-company      — auth
+  GET    /auth/me                  — auth
+  GET    /dashboard/summary        — permiso: reports.read
+  GET    /clients                  — permiso: clients.read
+  GET    /clients/:id              — permiso: clients.read
+  GET    /invoices                 — permiso: documents.read
+  GET    /invoices/:id             — permiso: documents.read
+  GET    /invoices/:id/pdf         — permiso: documents.read (devuelve application/pdf)
+  GET    /invoices/:id/payments    — permiso: payments.read
+  GET    /products                 — permiso: products.read
+  GET    /services                 — permiso: services.read
+  GET    /company                  — auth
+  GET    /health                   — publico
+
+
+================================================================================
+  API — FLUJO DE AUTENTICACION
+================================================================================
+
+  1. LOGIN
+     POST /auth/login
+     Body: { "email": "user@example.com", "password": "secret" }
+     Response 200:
+     {
+       "accessToken": "eyJ...",
+       "refreshToken": "cuid_random_string_64chars...",
+       "expiresIn": 900,
+       "user": {
+         "id": 1,
+         "name": "Admin",
+         "email": "user@example.com",
+         "role": "admin",
+         "permissions": ["clients.read", "documents.read", ...]
+       },
+       "companies": [
+         { "id": 1, "name": "Mi Empresa SL", "role": "admin" }
+       ],
+       "activeCompanyId": 1
+     }
+
+     Errores:
+     - 401 { "error": "UNAUTHORIZED", "message": "Credenciales invalidas" }
+     - 429 { "error": "TOO_MANY_REQUESTS", "message": "Demasiados intentos...", "retryAfter": 45 }
+
+  2. AUTO-REFRESH
+     El accessToken expira en 15 minutos (expiresIn: 900).
+     Cuando una peticion devuelve 401, hacer refresh automatico:
+
+     POST /auth/refresh
+     Body: { "refreshToken": "el_refresh_token_guardado" }
+     Response 200:
+     {
+       "accessToken": "eyJ_nuevo...",
+       "refreshToken": "nuevo_refresh_token...",
+       "expiresIn": 900
+     }
+
+     IMPORTANTE: El refresh token se rota (el anterior queda invalidado).
+     Si se intenta reusar un refresh token ya rotado, TODA la familia
+     de tokens se revoca (deteccion de robo). El usuario debe re-loguearse.
+
+     El refreshToken dura 30 dias.
+
+  3. LOGOUT
+     POST /auth/logout
+     Headers: Authorization: Bearer {accessToken}
+     Body: { "refreshToken": "el_refresh_token" }
+     Response: 204 No Content
+
+  4. SWITCH COMPANY
+     POST /auth/switch-company
+     Headers: Authorization: Bearer {accessToken}
+     Body: { "companyId": 2 }
+     Response 200:
+     {
+       "accessToken": "eyJ_nuevo...",
+       "refreshToken": "nuevo_refresh_token...",
+       "expiresIn": 900,
+       "activeCompanyId": 2
+     }
+
+  5. ALMACENAMIENTO DE TOKENS
+     - accessToken: en memoria (Riverpod state), NO persistir
+     - refreshToken: en flutter_secure_storage (cifrado nativo)
+     - Al abrir la app: leer refreshToken de secure storage, hacer /auth/refresh
+       para obtener un accessToken fresco
+     - Si el refresh falla: mostrar pantalla de login
+
+
+================================================================================
+  API — MODELOS DART (generar con freezed + json_serializable)
+================================================================================
+
+  // ---- Auth ----
+
+  @freezed
+  class LoginResponse with _$LoginResponse {
+    const factory LoginResponse({
+      required String accessToken,
+      required String refreshToken,
+      required int expiresIn,
+      required UserInfo user,
+      required List<CompanyInfo> companies,
+      required int activeCompanyId,
+    }) = _LoginResponse;
+    factory LoginResponse.fromJson(Map<String, dynamic> json) =>
+        _$LoginResponseFromJson(json);
+  }
+
+  @freezed
+  class RefreshResponse with _$RefreshResponse {
+    const factory RefreshResponse({
+      required String accessToken,
+      required String refreshToken,
+      required int expiresIn,
+    }) = _RefreshResponse;
+    factory RefreshResponse.fromJson(Map<String, dynamic> json) =>
+        _$RefreshResponseFromJson(json);
+  }
+
+  @freezed
+  class UserInfo with _$UserInfo {
+    const factory UserInfo({
+      required int id,
+      required String name,
+      required String email,
+      required String role,
+      required List<String> permissions,
+    }) = _UserInfo;
+    factory UserInfo.fromJson(Map<String, dynamic> json) =>
+        _$UserInfoFromJson(json);
+  }
+
+  @freezed
+  class CompanyInfo with _$CompanyInfo {
+    const factory CompanyInfo({
+      required int id,
+      required String name,
+      required String role,
+    }) = _CompanyInfo;
+    factory CompanyInfo.fromJson(Map<String, dynamic> json) =>
+        _$CompanyInfoFromJson(json);
+  }
+
+  // ---- Paginacion ----
+
+  @freezed
+  class PaginatedResponse<T> with _$PaginatedResponse<T> {
+    const factory PaginatedResponse({
+      required List<T> items,
+      required int total,
+      required int limit,
+      required int offset,
+    }) = _PaginatedResponse;
+    // fromJson requiere factory manual por generico
+  }
+
+  // ---- Clientes ----
+
+  @freezed
+  class Client with _$Client {
+    const factory Client({
+      required int id,
+      required String name,
+      required String taxId,
+      String? email,
+      String? phone,
+      String? address,
+      required String postalCode,
+      required String city,
+      required int companyId,
+    }) = _Client;
+    factory Client.fromJson(Map<String, dynamic> json) =>
+        _$ClientFromJson(json);
+  }
+
+  // ---- Facturas (lista) ----
+
+  @freezed
+  class InvoiceListItem with _$InvoiceListItem {
+    const factory InvoiceListItem({
+      required int id,
+      required String type,
+      required String status,       // "draft" | "confirmed" | "paid" | "cancelled"
+      required String series,
+      required int number,
+      required String issuedAt,     // ISO 8601
+      required double total,
+      required String invoiceType,
+      String? taxKind,
+      InvoiceClient? client,
+    }) = _InvoiceListItem;
+    factory InvoiceListItem.fromJson(Map<String, dynamic> json) =>
+        _$InvoiceListItemFromJson(json);
+  }
+
+  @freezed
+  class InvoiceClient with _$InvoiceClient {
+    const factory InvoiceClient({
+      required int id,
+      required String name,
+      required String taxId,
+    }) = _InvoiceClient;
+    factory InvoiceClient.fromJson(Map<String, dynamic> json) =>
+        _$InvoiceClientFromJson(json);
+  }
+
+  // ---- Factura (detalle) ----
+
+  @freezed
+  class InvoiceDetail with _$InvoiceDetail {
+    const factory InvoiceDetail({
+      required int id,
+      required String type,
+      required String status,
+      required String series,
+      required int number,
+      required String issuedAt,
+      required double total,
+      required String invoiceType,
+      String? taxKind,
+      String? publicNotes,
+      String? invoiceNote,
+      InvoiceDetailClient? client,
+      CreatedBy? createdBy,
+      required List<InvoiceLine> lines,
+      required List<Payment> payments,
+    }) = _InvoiceDetail;
+    factory InvoiceDetail.fromJson(Map<String, dynamic> json) =>
+        _$InvoiceDetailFromJson(json);
+  }
+
+  @freezed
+  class InvoiceDetailClient with _$InvoiceDetailClient {
+    const factory InvoiceDetailClient({
+      required int id,
+      required String name,
+      required String taxId,
+      String? email,
+      String? phone,
+      String? address,
+      String? city,
+    }) = _InvoiceDetailClient;
+    factory InvoiceDetailClient.fromJson(Map<String, dynamic> json) =>
+        _$InvoiceDetailClientFromJson(json);
+  }
+
+  @freezed
+  class CreatedBy with _$CreatedBy {
+    const factory CreatedBy({
+      required int id,
+      required String name,
+    }) = _CreatedBy;
+    factory CreatedBy.fromJson(Map<String, dynamic> json) =>
+        _$CreatedByFromJson(json);
+  }
+
+  @freezed
+  class InvoiceLine with _$InvoiceLine {
+    const factory InvoiceLine({
+      required int id,
+      required String description,
+      required double quantity,
+      required double unitPrice,
+      required double discountRate,
+      required double taxRate,
+      required double taxAmount,
+      required double total,
+    }) = _InvoiceLine;
+    factory InvoiceLine.fromJson(Map<String, dynamic> json) =>
+        _$InvoiceLineFromJson(json);
+  }
+
+  // ---- Pagos ----
+
+  @freezed
+  class Payment with _$Payment {
+    const factory Payment({
+      required int id,
+      required double amount,
+      required String method,       // "CASH" | "BANK" | "CREDIT" | "OTHER"
+      required String paidAt,
+      String? reference,
+    }) = _Payment;
+    factory Payment.fromJson(Map<String, dynamic> json) =>
+        _$PaymentFromJson(json);
+  }
+
+  // ---- Dashboard ----
+
+  @freezed
+  class DashboardSummary with _$DashboardSummary {
+    const factory DashboardSummary({
+      required int invoicesThisMonth,
+      required double totalBilled,
+      required double totalCollected,
+      required double totalPending,
+      required List<DashboardInvoice> recentInvoices,
+    }) = _DashboardSummary;
+    factory DashboardSummary.fromJson(Map<String, dynamic> json) =>
+        _$DashboardSummaryFromJson(json);
+  }
+
+  @freezed
+  class DashboardInvoice with _$DashboardInvoice {
+    const factory DashboardInvoice({
+      required int id,
+      required String series,
+      required int number,
+      required String status,
+      required double total,
+      String? clientName,
+    }) = _DashboardInvoice;
+    factory DashboardInvoice.fromJson(Map<String, dynamic> json) =>
+        _$DashboardInvoiceFromJson(json);
+  }
+
+
+================================================================================
+  API — ENDPOINTS DETALLADOS CON QUERY PARAMS
+================================================================================
+
+  GET /clients
+    Query: ?limit=50&offset=0&search=Martinez
+    Response: PaginatedResponse<Client>
+
+  GET /invoices
+    Query: ?limit=50&offset=0&status=draft&clientId=5&from=2026-01-01&to=2026-01-31
+    Response: PaginatedResponse<InvoiceListItem>
+
+  GET /invoices/:id/pdf
+    Response: application/pdf (bytes binarios)
+    Uso: descargar con Dio, guardar en temp, abrir con open_filex o share_plus
+
+  GET /products
+    Query: ?limit=50&offset=0&search=cable
+    Response: PaginatedResponse<Product>
+
+  GET /services
+    Query: ?limit=50&offset=0&search=instalacion
+    Response: PaginatedResponse<Service>
+
+
+================================================================================
+  API CLIENT — IMPLEMENTACION CON DIO (lib/core/api/api_client.dart)
+================================================================================
+
+  El client debe:
+
+  1. Adjuntar Authorization: Bearer {accessToken} en cada peticion
+  2. Si recibe 401 y tiene refreshToken:
+     a. Llamar POST /auth/refresh
+     b. Si 200: guardar nuevos tokens, reintentar peticion original
+     c. Si falla: limpiar auth state, navegar a Login
+  3. Gestionar peticiones de refresh concurrentes (solo 1 a la vez)
+  4. Parsear JSON automaticamente
+  5. Lanzar errores tipados (ApiError con status, code, message)
+
+  Ejemplo de implementacion:
+
+  ```dart
+  import 'package:dio/dio.dart';
+  import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+  const String baseUrl = 'https://app.demo.trustinfacts.com/api';
+
+  class ApiError implements Exception {
+    final int status;
+    final String code;
+    final String message;
+    ApiError({required this.status, required this.code, required this.message});
+
+    @override
+    String toString() => 'ApiError($status, $code): $message';
+  }
+
+  class ApiClient {
+    final Dio _dio;
+    final FlutterSecureStorage _storage;
+    String? _accessToken;
+    Future<bool>? _refreshFuture;
+
+    // Callback para forzar logout cuando el refresh falla
+    void Function()? onAuthError;
+
+    ApiClient({FlutterSecureStorage? storage})
+        : _storage = storage ?? const FlutterSecureStorage(),
+          _dio = Dio(BaseOptions(
+            baseUrl: baseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 15),
+            headers: {'Content-Type': 'application/json'},
+          )) {
+      _dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (_accessToken != null) {
+            options.headers['Authorization'] = 'Bearer $_accessToken';
+          }
+          handler.next(options);
+        },
+        onError: (error, handler) async {
+          if (error.response?.statusCode == 401 && _accessToken != null) {
+            // Intentar refresh
+            _refreshFuture ??= _attemptRefresh().whenComplete(() {
+              _refreshFuture = null;
+            });
+
+            final success = await _refreshFuture!;
+            if (success) {
+              // Reintentar peticion original con nuevo token
+              error.requestOptions.headers['Authorization'] =
+                  'Bearer $_accessToken';
+              final retry = await _dio.fetch(error.requestOptions);
+              return handler.resolve(retry);
+            } else {
+              onAuthError?.call();
+            }
+          }
+          handler.next(error);
+        },
+      ));
+    }
+
+    void setAccessToken(String token) => _accessToken = token;
+
+    Future<void> saveRefreshToken(String token) async {
+      await _storage.write(key: 'refresh_token', value: token);
+    }
+
+    Future<String?> getRefreshToken() async {
+      return _storage.read(key: 'refresh_token');
+    }
+
+    Future<void> clearTokens() async {
+      _accessToken = null;
+      await _storage.delete(key: 'refresh_token');
+    }
+
+    Future<bool> _attemptRefresh() async {
+      final rt = await getRefreshToken();
+      if (rt == null) return false;
+      try {
+        final res = await Dio(BaseOptions(baseUrl: baseUrl)).post(
+          '/auth/refresh',
+          data: {'refreshToken': rt},
+        );
+        if (res.statusCode == 200) {
+          _accessToken = res.data['accessToken'];
+          await saveRefreshToken(res.data['refreshToken']);
+          return true;
+        }
+        return false;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    // Metodos de conveniencia
+    Future<Response> get(String path, {Map<String, dynamic>? queryParams}) =>
+        _dio.get(path, queryParameters: queryParams);
+
+    Future<Response> post(String path, {dynamic data}) =>
+        _dio.post(path, data: data);
+
+    Future<Response> download(String path, String savePath) =>
+        _dio.download(path, savePath,
+            options: Options(headers: {
+              'Authorization': 'Bearer $_accessToken',
+            }));
+  }
+  ```
+
+
+================================================================================
+  PERMISOS MOBILE-SAFE
+================================================================================
+
+  La API filtra los permisos del usuario y solo expone estos 8:
+
+    clients.read
+    documents.read
+    documents.write
+    payments.read
+    payments.write
+    products.read
+    services.read
+    reports.read
+
+  Los admins y superadmins reciben automaticamente todos los 8.
+  Los usuarios normales solo reciben los que tengan asignados en BD.
+
+  Nota: Aunque documents.write y payments.write existen en los permisos,
+  la app movil NO implementa funcionalidad de escritura. Solo lectura.
+  Estos permisos se pueden usar en el futuro si se decide habilitar escritura.
+
+
+================================================================================
+  PANTALLAS — ESPECIFICACION DETALLADA (SOLO LECTURA)
+================================================================================
+
+  --- LoginScreen ---
+  - Fondo: gradiente linear de primary (#1a56db) a primary-dark (#1e40af)
+  - Logo TrustInFacts (variante light/blanca) centrado arriba
+  - Subtitulo "Inicia sesion para continuar" en blanco semi-transparente
+  - Formulario en card blanca con borderRadius 16 y sombra grande
+  - Campos: email, contrasena (con obscureText)
+  - Boton "Entrar" azul primary, ancho completo, borderRadius 8
+  - Manejo de errores: credenciales invalidas, rate limit (429 con retryAfter)
+  - Loading state: texto del boton cambia a "Entrando..."
+  - Aspecto visual: IDENTICO a la PWA actual
+
+  --- DashboardScreen ---
+  - Titulo "Resumen" (fontSize 20, fontWeight 800)
+  - 4 stat cards en grid 2x2 (gap 10):
+    - "FACTURAS MES" -> valor numerico (gris oscuro)
+    - "FACTURADO" -> valor en euros (gris oscuro)
+    - "COBRADO" -> valor en euros (verde #16a34a)
+    - "PENDIENTE" -> valor en euros (naranja #d97706)
+  - Cada stat card: fondo blanco, borderRadius 12, sombra sutil
+    - Label: fontSize 11, uppercase, letterSpacing 0.05em, gris claro
+    - Valor: fontSize 22, fontWeight 800
+  - Seccion "Ultimas facturas" (section title con fontSize 15, fontWeight 700)
+  - Lista de InvoiceCards (maximo 5)
+  - Pull-to-refresh
+  - Sin boton de crear (solo lectura)
+
+  --- ClientsScreen ---
+  - Titulo "Clientes" (fontSize 20, fontWeight 800)
+  - Barra de busqueda con icono de lupa a la izquierda (paddingLeft 36)
+  - Lista de ClientCards:
+    - Avatar circular con inicial del nombre (fondo primary-bg, color primary)
+    - Nombre en negrita (fontSize 14)
+    - Debajo: NIF + email (fontSize 12, gris)
+  - Paginacion: botones "Anterior" / "Siguiente" con contador central
+    - Botones outline (borde gris, fondo transparente)
+  - Pull-to-refresh
+  - Empty state: "No se encontraron clientes"
+
+  --- InvoicesScreen ---
+  - Titulo "Facturas" (fontSize 20, fontWeight 800)
+  - Dropdown de filtro por estado:
+    - "Todos los estados", "Borrador", "Confirmada", "Pagada", "Anulada"
+  - Lista de InvoiceCards (misma tarjeta que en Dashboard):
+    - Serie-numero (ej: "F-0042") a la izquierda, badge estado a la derecha
+    - Nombre cliente a la izquierda (gris), total a la derecha (negrita)
+    - Fecha debajo (fontSize 11, gris claro)
+    - Card interactiva: al tocar navega a detalle
+  - Paginacion identica a ClientsScreen
+  - Pull-to-refresh
+  - Empty state: "No se encontraron facturas"
+  - Sin boton de crear (solo lectura)
+
+  --- InvoiceDetailScreen ---
+  - Header: boton atras (circulo gris con flecha), serie-numero, badge estado
+  - Card info principal:
+    - Cliente / Fecha (filas key-value)
+    - Separador (divider gris)
+    - Totales en fila horizontal centrada:
+      - "TOTAL" -> valor grande (fontSize 20, fontWeight 800)
+      - "COBRADO" -> valor verde (si hay pagos)
+      - "PENDIENTE" -> valor naranja (si hay pendiente)
+    - Labels de totales: fontSize 11, uppercase, letterSpacing, gris
+  - Seccion "Lineas" (section title):
+    - Cards individuales por linea
+    - Descripcion en negrita, detalle (qty x precio, descuento, IVA), total
+  - Seccion "Pagos":
+    - Cards con metodo, importe, fecha, referencia
+    - O "Sin pagos registrados" como empty state
+  - Boton "Ver PDF" (azul primary, ancho completo, con icono de documento)
+  - Notas al final si existen (card con label "NOTAS" uppercase)
+  - Sin boton de registrar pago (solo lectura)
+
+  --- AccountScreen (CompanySwitchScreen) ---
+  - Titulo "Cuenta" (fontSize 20, fontWeight 800)
+  - Nombre del usuario debajo (gris, texto muted)
+  - Seccion "Empresas":
+    - Cards por empresa con avatar cuadrado redondeado (initial)
+    - Empresa activa: borde primary, avatar fondo primary, badge "Activa"
+    - Empresas inactivas: borde gris claro, avatar fondo gris
+    - Al tocar: POST /auth/switch-company -> nuevos tokens -> navegar a home
+  - Boton "Cerrar sesion" al final
+    - Fondo: rojo suave (danger-bg), texto rojo (danger)
+    - No es un boton agresivo rojo solido
+
+
+================================================================================
+  WIDGETS REUTILIZABLES
+================================================================================
+
+  --- InvoiceCard ---
+  Propiedades: series, number, status, clientName, total, issuedAt, onTap
+  - Card con sombra sutil y borde gris-100
+  - Fila 1: serie-numero (negrita) | StatusBadge
+  - Fila 2: clientName (gris) | total (negrita, fontSize 15)
+  - Fila 3 (opcional): fecha (fontSize 11, gris claro)
+  - InkWell/GestureDetector con efecto ripple sutil
+
+  --- ClientCard ---
+  Propiedades: name, taxId, email
+  - Card con avatar circular (initial) a la izquierda
+  - Nombre en negrita, NIF + email debajo en gris
+
+  --- StatusBadge ---
+  Propiedades: status (String)
+  - Chip/Container con borderRadius 20
+  - Colores por estado:
+    draft:     fondo #f1f5f9, texto #475569 (gris)
+    confirmed: fondo #eff6ff, texto #1a56db (azul)
+    paid:      fondo #dcfce7, texto #16a34a (verde)
+    cancelled: fondo #fee2e2, texto #dc2626 (rojo)
+  - Labels en espanol:
+    draft -> "BORRADOR"
+    confirmed -> "CONFIRMADA"
+    paid -> "PAGADA"
+    cancelled -> "ANULADA"
+  - FontSize 11, fontWeight 600, uppercase, letterSpacing 0.04em
+
+  --- StatCard ---
+  Propiedades: label (String), value (String), valueColor (Color?)
+  - Container blanco, borderRadius 12, sombra + borde gris-100
+  - Label: fontSize 11, uppercase, letterSpacing 0.05em, color gris-400
+  - Value: fontSize 22, fontWeight 800
+
+  --- EmptyState ---
+  Propiedades: message (String)
+  - Container centrado con padding 32
+  - Texto gris-400, fontSize 14
+
+  --- AppBottomNav ---
+  - 4 tabs con icono SVG + label:
+    - Inicio (home icon)
+    - Clientes (people icon)
+    - Facturas (document icon)
+    - Cuenta (settings icon)
+  - Tab activa: color primary, inactiva: gris-400
+  - FontSize label: 10, fontWeight 600
+  - Sombra superior sutil
+  - Safe area bottom padding
+
+  --- AppHeader ---
+  - Fondo: primary (#1a56db) solido
+  - Logo light (blanco) a la izquierda
+  - Nombre empresa en blanco semi-transparente
+  - Nombre usuario a la derecha en blanco
+
+
+================================================================================
+  TEMA Y COLORES (lib/core/theme/)
+================================================================================
+
+  // app_colors.dart
+  class AppColors {
+    static const primary = Color(0xFF1A56DB);
+    static const primaryDark = Color(0xFF1E40AF);
+    static const primaryLight = Color(0xFF3B82F6);
+    static const primaryBg = Color(0xFFEFF6FF);
+
+    static const success = Color(0xFF16A34A);
+    static const successBg = Color(0xFFDCFCE7);
+    static const warning = Color(0xFFD97706);
+    static const warningBg = Color(0xFFFEF3C7);
+    static const danger = Color(0xFFDC2626);
+    static const dangerBg = Color(0xFFFEE2E2);
+
+    static const gray50 = Color(0xFFF8FAFC);
+    static const gray100 = Color(0xFFF1F5F9);
+    static const gray200 = Color(0xFFE2E8F0);
+    static const gray300 = Color(0xFFCBD5E1);
+    static const gray400 = Color(0xFF94A3B8);
+    static const gray500 = Color(0xFF64748B);
+    static const gray600 = Color(0xFF475569);
+    static const gray700 = Color(0xFF334155);
+    static const gray800 = Color(0xFF1E293B);
+    static const gray900 = Color(0xFF0F172A);
+
+    static const background = gray50;
+    static const surface = Colors.white;
+    static const text = gray900;
+    static const textSecondary = gray500;
+    static const border = gray200;
+  }
+
+  // app_theme.dart
+  ThemeData buildAppTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      colorSchemeSeed: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.background,
+      fontFamily: 'Inter', // o sistema por defecto
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      cardTheme: CardTheme(
+        color: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.gray100),
+        ),
+        margin: const EdgeInsets.only(bottom: 12),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.gray300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+
+================================================================================
+  NAVEGACION CON GO_ROUTER (lib/core/router/app_router.dart)
+================================================================================
+
+  ```dart
+  final appRouter = GoRouter(
+    initialLocation: '/',
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
+      final isLoggedIn = authState is AuthAuthenticated;
+      final isLoginRoute = state.matchedLocation == '/login';
+
+      if (!isLoggedIn && !isLoginRoute) return '/login';
+      if (isLoggedIn && isLoginRoute) return '/';
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      ShellRoute(
+        builder: (_, __, child) => AppShell(child: child),
+        routes: [
+          GoRoute(path: '/', builder: (_, __) => const DashboardScreen()),
+          GoRoute(path: '/clients', builder: (_, __) => const ClientsScreen()),
+          GoRoute(path: '/invoices', builder: (_, __) => const InvoicesScreen()),
+          GoRoute(
+            path: '/invoices/:id',
+            builder: (_, state) => InvoiceDetailScreen(
+              id: int.parse(state.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(path: '/account', builder: (_, __) => const AccountScreen()),
+        ],
+      ),
+    ],
+  );
+  ```
+
+  AppShell contiene:
+  - El AppHeader (barra superior azul con logo)
+  - El contenido (child)
+  - El AppBottomNav (bottom navigation)
+
+
+================================================================================
+  FORMATO DE MONEDA Y FECHAS (lib/core/utils/)
+================================================================================
+
+  // currency.dart
+  import 'package:intl/intl.dart';
+
+  final _currencyFormat = NumberFormat.currency(
+    locale: 'es_ES',
+    symbol: '\u20AC',  // EUR symbol
+    decimalDigits: 2,
+  );
+
+  String formatCurrency(double value) => _currencyFormat.format(value);
+
+  // Formato corto sin simbolo (para stat cards)
+  String formatAmount(double value) =>
+      NumberFormat('#,##0.00', 'es_ES').format(value);
+
+
+  // date.dart
+  import 'package:intl/intl.dart';
+
+  String formatDate(String iso) {
+    final date = DateTime.parse(iso);
+    return DateFormat('dd/MM/yyyy', 'es_ES').format(date);
+  }
+
+  String formatDateTime(String iso) {
+    final date = DateTime.parse(iso);
+    return DateFormat('dd/MM/yyyy HH:mm', 'es_ES').format(date);
+  }
+
+
+================================================================================
+  PDF — DESCARGA Y VISUALIZACION
+================================================================================
+
+  El endpoint GET /invoices/:id/pdf devuelve un Buffer PDF con auth header.
+
+  ```dart
+  import 'package:dio/dio.dart';
+  import 'package:path_provider/path_provider.dart';
+  import 'package:share_plus/share_plus.dart';
+  import 'package:open_filex/open_filex.dart';
+
+  Future<void> downloadAndOpenPdf(int invoiceId, String accessToken) async {
+    final dir = await getTemporaryDirectory();
+    final filePath = '${dir.path}/factura_$invoiceId.pdf';
+
+    await Dio().download(
+      '$baseUrl/invoices/$invoiceId/pdf',
+      filePath,
+      options: Options(
+        headers: {'Authorization': 'Bearer $accessToken'},
+      ),
+    );
+
+    // Opcion 1: Abrir con visor nativo
+    await OpenFilex.open(filePath);
+
+    // Opcion 2: Compartir
+    // await Share.shareXFiles([XFile(filePath)], text: 'Factura PDF');
+  }
+  ```
+
+
+================================================================================
+  PERMISOS Y READ-ONLY
+================================================================================
+
+  La app es SOLO DE LECTURA. No implementar:
+  - Creacion de facturas
+  - Creacion de pagos
+  - Edicion de clientes
+  - Ningun POST excepto auth (login, refresh, logout, switch-company)
+
+  Si en el futuro se desea habilitar escritura, los endpoints ya existen:
+  - POST /invoices (crear factura)
+  - POST /invoices/:id/payments (registrar pago)
+
+  Los permisos documents.write y payments.write ya estan en la API.
+
+
+================================================================================
+  ERRORES DE LA API
+================================================================================
+
+  Formato estandar:
+  {
+    "error": "CODIGO",
+    "message": "Mensaje legible en espanol"
+  }
+
+  Codigos comunes:
+    UNAUTHORIZED (401)        — Token requerido / Credenciales invalidas
+    FORBIDDEN (403)           — Sin permiso / No perteneces a esta empresa
+    NOT_FOUND (404)           — Recurso no encontrado
+    VALIDATION_ERROR (400)    — Error de validacion
+    TOO_MANY_REQUESTS (429)   — Rate limit (incluye retryAfter en segundos)
+    INTERNAL_ERROR (500)      — Error interno
+
+  La app debe:
+  - Mostrar el campo "message" directamente al usuario (ya esta en espanol)
+  - En caso de 401 no recuperable: forzar logout
+  - En caso de 429: mostrar mensaje con tiempo de espera
+
+
+================================================================================
+  ASSETS NECESARIOS
+================================================================================
+
+  Copiar del repo PWA (apps/mobile-web/public/icons/):
+  - trustinfacts-logo.png         — logo oscuro (para fondos claros)
+  - trustinfacts-logo-light.png   — logo claro (para fondos oscuros/primary)
+
+  Colocar en:
+  - assets/images/trustinfacts-logo.png
+  - assets/images/trustinfacts-logo-light.png
+
+  Registrar en pubspec.yaml:
+  flutter:
+    assets:
+      - assets/images/
+
+
+================================================================================
+  pubspec.yaml — DEPENDENCIAS
+================================================================================
+
+  dependencies:
+    flutter:
+      sdk: flutter
+    flutter_riverpod: ^2.5.0
+    riverpod_annotation: ^2.3.0
+    dio: ^5.4.0
+    flutter_secure_storage: ^9.0.0
+    go_router: ^14.0.0
+    freezed_annotation: ^2.4.0
+    json_annotation: ^4.8.0
+    intl: ^0.19.0
+    path_provider: ^2.1.0
+    share_plus: ^9.0.0
+    open_filex: ^4.3.0
+    pull_to_refresh_flutter3: ^2.0.2
+    cached_network_image: ^3.3.0     # por si se usa logo desde URL
+
+  dev_dependencies:
+    flutter_test:
+      sdk: flutter
+    build_runner: ^2.4.0
+    freezed: ^2.5.0
+    json_serializable: ^6.8.0
+    riverpod_generator: ^2.4.0
+    flutter_lints: ^4.0.0
+
+
+================================================================================
+  PROMPT PARA INICIAR EL PROYECTO
+================================================================================
+
+  ---
+
+  Crea una app Flutter para TrustInFacts.
+  Es una app de facturacion SOLO DE LECTURA que consume una API REST existente.
+
+  API Base URL: https://app.demo.trustinfacts.com/api
+  Auth: JWT Bearer token con auto-refresh via Dio interceptor.
+
+  La app debe tener:
+  1. Login con email/password (fondo gradiente azul, form en card blanca)
+  2. Dashboard con 4 stat cards (facturas mes, facturado, cobrado, pendiente)
+     y lista de ultimas facturas
+  3. Lista de clientes con busqueda (icono lupa) y paginacion
+  4. Lista de facturas con filtro por estado y paginacion
+  5. Detalle de factura con lineas, pagos y boton "Ver PDF"
+  6. Descarga y apertura de PDF con auth header
+  7. Cambio de empresa activa (multi-empresa)
+  8. Bottom tabs con iconos: Inicio, Clientes, Facturas, Cuenta
+
+  Stack: Flutter 3.x, Riverpod, Dio, GoRouter, Freezed, flutter_secure_storage
+
+  Los tokens se guardan: accessToken en memoria (Riverpod), refreshToken en
+  SecureStorage. Al abrir la app se hace refresh automatico. Si falla, login.
+
+  El diseno debe ser IDENTICO a la PWA existente:
+  - Header azul primary con logo blanco
+  - Cards con borderRadius 12, sombra sutil, borde gris-100
+  - Bottom nav con iconos SVG y labels
+  - Status badges con colores (borrador=gris, confirmada=azul, pagada=verde,
+    anulada=rojo) y texto en espanol uppercase
+  - Stat cards con labels uppercase grises y valores grandes en negrita
+  - Avatares circulares con inicial en clientes
+  - Paginacion con botones outline
+  - Formato moneda espanol: 1.234,56 EUR
+  - Formato fecha espanol: 25/03/2026
+
+  Adjunto la especificacion completa de la API con todos los modelos Dart
+  (freezed), endpoints, flujo de auth y diseno en NATIVE_APP_SPEC.txt.
+
+  IMPORTANTE: La app es solo de lectura. No hay creacion de facturas,
+  pagos ni clientes. Solo consultar datos y descargar PDFs.
+
+  ---
+
+
+================================================================================
+  PROMPT PARA CONFIGURAR CI/CD
+================================================================================
+
+  ---
+
+  Configura GitHub Actions para la app Flutter.
+
+  Necesito:
+  1. Build de APK y AAB en cada push a main
+  2. Build de IPA para iOS en cada push a main
+  3. Upload de artifacts al release de GitHub
+  4. Opcionalmente: deploy a Firebase App Distribution para testing
+
+  Jobs:
+  - build-android:
+    - runs-on: ubuntu-latest
+    - flutter build apk --release
+    - flutter build appbundle --release
+    - Upload APK y AAB como artifacts
+
+  - build-ios:
+    - runs-on: macos-latest
+    - flutter build ios --release --no-codesign (para CI sin cert)
+    - O con certificados: exportar IPA
+
+  Secrets necesarios:
+  - Para Play Store: PLAY_STORE_JSON_KEY (service account)
+  - Para App Store: APPLE_CERTIFICATE, APPLE_PROVISIONING_PROFILE, etc.
+  - Para Firebase: FIREBASE_TOKEN, FIREBASE_APP_ID_ANDROID, FIREBASE_APP_ID_IOS
+
+  ---
+
+
+================================================================================
+  NOTAS IMPORTANTES PARA EL DESARROLLADOR
+================================================================================
+
+  1. Los valores Decimal de Prisma (total, unitPrice, taxAmount, etc.)
+     ya vienen convertidos a number/double por el serializador de la API.
+     Usar double en los modelos Dart.
+
+  2. El campo issuedAt viene como string ISO 8601 ("2026-03-25T00:00:00.000Z").
+
+  3. La API devuelve errores en espanol. Los mensajes se pueden mostrar
+     directamente al usuario.
+
+  4. El rate limit de login es 5 intentos/minuto por IP.
+     Ademas hay bloqueo temporal de cuenta: 5 fallos -> 15min, 10 fallos -> 1h.
+
+  5. Todos los endpoints de datos filtran automaticamente por companyId
+     del JWT. No hay que enviar companyId en las peticiones.
+
+  6. La paginacion tiene un maximo de 100 items por pagina (el servidor
+     recorta a 100 aunque pidas 200).
+
+  7. El endpoint /invoices/:id/pdf requiere Authorization header.
+     No se puede abrir como URL directa. Hay que descargar con Dio.
+
+  8. La app de escritorio y la app movil comparten la misma BD.
+     Los datos creados en una se ven en la otra en tiempo real.
+
+  9. El logo de la app es "TrustInFacts" (no "TrustBill").
+     Usar la variante light para fondo oscuro (header, login) y
+     la normal para fondo claro.
+
+  10. El diseno de la app movil debe ser IDENTICO a la PWA desplegada en
+      https://app.demo.trustinfacts.com/. Mismos colores, misma estructura,
+      mismos componentes. La PWA sirve como referencia visual definitiva.
+
+  11. Para generar los archivos freezed, ejecutar:
+      dart run build_runner build --delete-conflicting-outputs
+
+  12. Asegurar que package intl esta inicializado en main.dart:
+      import 'package:intl/date_symbol_data_local.dart';
+      await initializeDateFormatting('es_ES', null);
