@@ -18,6 +18,7 @@ class AccountScreen extends ConsumerWidget {
     final user = authState.user;
     final companies = authState.companies;
     final activeCompanyId = authState.activeCompanyId;
+    final clientId = authState.clientId;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -36,6 +37,29 @@ class AccountScreen extends ConsumerWidget {
           style: const TextStyle(
             fontSize: 14,
             color: AppColors.gray500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.gray50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.dns_outlined,
+                  size: 16, color: AppColors.gray400),
+              const SizedBox(width: 8),
+              Text(
+                'app.$clientId.trustinfacts.com',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.gray500,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),

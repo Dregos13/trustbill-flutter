@@ -2,44 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/auth/auth_provider.dart';
-import '../../core/auth/auth_state.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class SetupScreen extends ConsumerStatefulWidget {
+  const SetupScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<SetupScreen> createState() => _SetupScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _SetupScreenState extends ConsumerState<SetupScreen> {
+  final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _loading = false;
+  String? _error;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleContinue() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authProvider.notifier).login(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    final clientId = _controller.text.trim().toLowerCase();
+
+    try {
+      await ref.read(authProvider.notifier).setClientId(clientId);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'No se pudo conectar con el servidor';
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    final isLoading = authState is AuthLoading;
-    final error =
-        authState is AuthUnauthenticated ? authState.error : null;
-    final clientId =
-        authState is AuthUnauthenticated ? authState.clientId : '';
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -70,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Inicia sesion para continuar',
+                    'Configura tu servidor',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14,
@@ -95,49 +101,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Server indicator
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.gray50,
-                              borderRadius: BorderRadius.circular(8),
+                          const Text(
+                            'Introduce el identificador de tu empresa',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.gray700,
                             ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.dns_outlined,
-                                    size: 16, color: AppColors.gray400),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'app.$clientId.trustinfacts.com',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.gray500,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    ref
-                                        .read(authProvider.notifier)
-                                        .resetSetup();
-                                  },
-                                  child: Text(
-                                    'Cambiar',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tu administrador te proporcionara este dato.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.gray400,
                             ),
                           ),
                           const SizedBox(height: 16),
-                          if (error != null) ...[
+                          if (_error != null) ...[
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -145,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                error,
+                                _error!,
                                 style: const TextStyle(
                                   color: AppColors.danger,
                                   fontSize: 13,
@@ -155,42 +136,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: 16),
                           ],
                           TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
+                            controller: _controller,
                             autocorrect: false,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              hintText: 'tu@email.com',
+                            textInputAction: TextInputAction.done,
+                            decoration: InputDecoration(
+                              labelText: 'ID de empresa',
+                              hintText: 'ej: demo',
+                              suffixText: '.trustinfacts.com',
+                              suffixStyle: TextStyle(
+                                color: AppColors.gray400,
+                                fontSize: 13,
+                              ),
                             ),
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) {
-                                return 'Introduce tu email';
+                                return 'Introduce el identificador';
+                              }
+                              if (!RegExp(r'^[a-zA-Z0-9\-]+$')
+                                  .hasMatch(v.trim())) {
+                                return 'Solo letras, numeros y guiones';
                               }
                               return null;
                             },
+                            onFieldSubmitted: (_) => _handleContinue(),
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Contrasena',
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.gray50,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) {
-                                return 'Introduce tu contrasena';
-                              }
-                              return null;
-                            },
-                            onFieldSubmitted: (_) => _handleLogin(),
+                            child: Row(
+                              children: [
+                                Icon(Icons.link,
+                                    size: 16, color: AppColors.gray400),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _controller.text.trim().isEmpty
+                                        ? 'app.{id}.trustinfacts.com'
+                                        : 'app.${_controller.text.trim().toLowerCase()}.trustinfacts.com',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.gray500,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                           SizedBox(
                             height: 46,
                             child: ElevatedButton(
-                              onPressed: isLoading ? null : _handleLogin,
+                              onPressed: _loading ? null : _handleContinue,
                               child: Text(
-                                isLoading ? 'Entrando...' : 'Entrar',
+                                _loading ? 'Conectando...' : 'Continuar',
                                 style: const TextStyle(fontSize: 15),
                               ),
                             ),

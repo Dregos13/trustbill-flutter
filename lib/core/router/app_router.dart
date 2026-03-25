@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 import '../auth/auth_state.dart';
+import '../../features/setup/setup_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/clients/clients_screen.dart';
@@ -16,16 +17,23 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
+      final isSetup = authState is AuthNeedsSetup;
       final isLoggedIn = authState is AuthAuthenticated;
       final isLoading = authState is AuthLoading || authState is AuthInitial;
-      final isLoginRoute = state.matchedLocation == '/login';
+      final loc = state.matchedLocation;
 
       if (isLoading) return null;
-      if (!isLoggedIn && !isLoginRoute) return '/login';
-      if (isLoggedIn && isLoginRoute) return '/';
+      if (isSetup && loc != '/setup') return '/setup';
+      if (!isSetup && loc == '/setup') return isLoggedIn ? '/' : '/login';
+      if (!isLoggedIn && !isSetup && loc != '/login') return '/login';
+      if (isLoggedIn && loc == '/login') return '/';
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/setup',
+        builder: (_, __) => const SetupScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (_, __) => const LoginScreen(),

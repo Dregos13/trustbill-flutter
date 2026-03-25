@@ -2,12 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_error.dart';
 
-const String baseUrl = 'https://app.demo.trustinfacts.com/api';
+String buildBaseUrl(String clientId) =>
+    'https://app.$clientId.trustinfacts.com/api';
 
 class ApiClient {
   final Dio _dio;
   final FlutterSecureStorage _storage;
   String? _accessToken;
+  String _baseUrl = '';
   Future<bool>? _refreshFuture;
 
   void Function()? onAuthError;
@@ -15,7 +17,6 @@ class ApiClient {
   ApiClient({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage(),
         _dio = Dio(BaseOptions(
-          baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 15),
           headers: {'Content-Type': 'application/json'},
@@ -65,6 +66,13 @@ class ApiClient {
     ));
   }
 
+  String get baseUrl => _baseUrl;
+
+  void configure(String clientId) {
+    _baseUrl = buildBaseUrl(clientId);
+    _dio.options.baseUrl = _baseUrl;
+  }
+
   String? get accessToken => _accessToken;
 
   void setAccessToken(String token) => _accessToken = token;
@@ -77,6 +85,22 @@ class ApiClient {
     return _storage.read(key: 'refresh_token');
   }
 
+  Future<void> saveClientId(String clientId) async {
+    await _storage.write(key: 'client_id', value: clientId);
+  }
+
+  Future<String?> getClientId() async {
+    return _storage.read(key: 'client_id');
+  }
+
+  Future<void> clearAll() async {
+    _accessToken = null;
+    await _storage.delete(key: 'refresh_token');
+    await _storage.delete(key: 'client_id');
+    _baseUrl = '';
+    _dio.options.baseUrl = '';
+  }
+
   Future<void> clearTokens() async {
     _accessToken = null;
     await _storage.delete(key: 'refresh_token');
@@ -86,7 +110,7 @@ class ApiClient {
     final rt = await getRefreshToken();
     if (rt == null) return false;
     try {
-      final res = await Dio(BaseOptions(baseUrl: baseUrl)).post(
+      final res = await Dio(BaseOptions(baseUrl: _baseUrl)).post(
         '/auth/refresh',
         data: {'refreshToken': rt},
       );

@@ -17,7 +17,7 @@ class _TrustInFactsAppState extends ConsumerState<TrustInFactsApp> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(authProvider.notifier).tryAutoLogin();
+      ref.read(authProvider.notifier).initialize();
     });
   }
 

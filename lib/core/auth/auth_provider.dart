@@ -30,11 +30,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._apiClient, this._endpoints)
       : super(const AuthState.initial());
 
-  Future<void> tryAutoLogin() async {
+  /// Check if there's a saved clientId, configure API, and try auto-login
+  Future<void> initialize() async {
     state = const AuthState.loading();
+
+    final clientId = await _apiClient.getClientId();
+    if (clientId == null || clientId.isEmpty) {
+      state = const AuthState.needsSetup();
+      return;
+    }
+
+    _apiClient.configure(clientId);
+
     final refreshToken = await _apiClient.getRefreshToken();
     if (refreshToken == null) {
-      state = const AuthState.unauthenticated();
+      state = AuthState.unauthenticated(clientId: clientId);
       return;
     }
 
@@ -43,7 +53,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
 
-      // Fetch user info after refresh
       final meRes = await _apiClient.get('/auth/me');
       final data = meRes.data as Map<String, dynamic>;
       final user = UserInfo.fromJson(data['user']);
@@ -56,14 +65,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: user,
         companies: companies,
         activeCompanyId: activeCompanyId,
+        clientId: clientId,
       );
     } catch (_) {
       await _apiClient.clearTokens();
-      state = const AuthState.unauthenticated();
+      state = AuthState.unauthenticated(clientId: clientId);
     }
   }
 
+  /// Save clientId and configure API, then go to login
+  Future<void> setClientId(String clientId) async {
+    _apiClient.configure(clientId);
+    await _apiClient.saveClientId(clientId);
+    state = AuthState.unauthenticated(clientId: clientId);
+  }
+
   Future<void> login(String email, String password) async {
+    final clientId = _currentClientId;
     state = const AuthState.loading();
     try {
       final res = await _endpoints.login(email, password);
@@ -73,12 +91,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: res.user,
         companies: res.companies,
         activeCompanyId: res.activeCompanyId,
+        clientId: clientId,
       );
     } on ApiError catch (e) {
-      state = AuthState.unauthenticated(error: e.message);
+      state = AuthState.unauthenticated(clientId: clientId, error: e.message);
     } catch (e) {
-      state = const AuthState.unauthenticated(
-          error: 'Error de conexion. Comprueba tu red.');
+      state = AuthState.unauthenticated(
+        clientId: clientId,
+        error: 'Error de conexion. Comprueba tu red.',
+      );
     }
   }
 
@@ -94,10 +115,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           user: currentState.user,
           companies: currentState.companies,
           activeCompanyId: res.activeCompanyId,
+          clientId: currentState.clientId,
         );
       }
     } on ApiError catch (e) {
-      // If forbidden, just ignore
       if (e.isUnauthorized) {
         forceLogout();
       }
@@ -105,20 +126,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    final clientId = _currentClientId;
     try {
       final refreshToken = await _apiClient.getRefreshToken();
       if (refreshToken != null) {
         await _endpoints.logout(refreshToken);
       }
     } catch (_) {
-      // Logout best-effort
+      // best-effort
     }
     await _apiClient.clearTokens();
-    state = const AuthState.unauthenticated();
+    state = AuthState.unauthenticated(clientId: clientId);
   }
 
   void forceLogout() {
+    final clientId = _currentClientId;
     _apiClient.clearTokens();
-    state = const AuthState.unauthenticated();
+    state = AuthState.unauthenticated(clientId: clientId);
+  }
+
+  /// Reset to setup screen (change server)
+  Future<void> resetSetup() async {
+    await _apiClient.clearAll();
+    state = const AuthState.needsSetup();
+  }
+
+  String get _currentClientId {
+    final s = state;
+    if (s is AuthAuthenticated) return s.clientId;
+    if (s is AuthUnauthenticated) return s.clientId;
+    return '';
   }
 }

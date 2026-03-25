@@ -21,43 +21,50 @@ mixin _$AuthState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function() needsSetup,
     required TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )
     authenticated,
-    required TResult Function(String? error) unauthenticated,
+    required TResult Function(String clientId, String? error) unauthenticated,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function()? needsSetup,
     TResult? Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult? Function(String? error)? unauthenticated,
+    TResult? Function(String clientId, String? error)? unauthenticated,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function()? needsSetup,
     TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult Function(String? error)? unauthenticated,
+    TResult Function(String clientId, String? error)? unauthenticated,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(AuthInitial value) initial,
     required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthNeedsSetup value) needsSetup,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
   }) => throw _privateConstructorUsedError;
@@ -65,6 +72,7 @@ mixin _$AuthState {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AuthInitial value)? initial,
     TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthNeedsSetup value)? needsSetup,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
   }) => throw _privateConstructorUsedError;
@@ -72,6 +80,7 @@ mixin _$AuthState {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AuthInitial value)? initial,
     TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthNeedsSetup value)? needsSetup,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
     required TResult orElse(),
@@ -143,13 +152,15 @@ class _$AuthInitialImpl implements AuthInitial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function() needsSetup,
     required TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )
     authenticated,
-    required TResult Function(String? error) unauthenticated,
+    required TResult Function(String clientId, String? error) unauthenticated,
   }) {
     return initial();
   }
@@ -159,13 +170,15 @@ class _$AuthInitialImpl implements AuthInitial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function()? needsSetup,
     TResult? Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult? Function(String? error)? unauthenticated,
+    TResult? Function(String clientId, String? error)? unauthenticated,
   }) {
     return initial?.call();
   }
@@ -175,13 +188,15 @@ class _$AuthInitialImpl implements AuthInitial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function()? needsSetup,
     TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult Function(String? error)? unauthenticated,
+    TResult Function(String clientId, String? error)? unauthenticated,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -195,6 +210,7 @@ class _$AuthInitialImpl implements AuthInitial {
   TResult map<TResult extends Object?>({
     required TResult Function(AuthInitial value) initial,
     required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthNeedsSetup value) needsSetup,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
   }) {
@@ -206,6 +222,7 @@ class _$AuthInitialImpl implements AuthInitial {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AuthInitial value)? initial,
     TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthNeedsSetup value)? needsSetup,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
   }) {
@@ -217,6 +234,7 @@ class _$AuthInitialImpl implements AuthInitial {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AuthInitial value)? initial,
     TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthNeedsSetup value)? needsSetup,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
     required TResult orElse(),
@@ -277,13 +295,15 @@ class _$AuthLoadingImpl implements AuthLoading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function() needsSetup,
     required TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )
     authenticated,
-    required TResult Function(String? error) unauthenticated,
+    required TResult Function(String clientId, String? error) unauthenticated,
   }) {
     return loading();
   }
@@ -293,13 +313,15 @@ class _$AuthLoadingImpl implements AuthLoading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function()? needsSetup,
     TResult? Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult? Function(String? error)? unauthenticated,
+    TResult? Function(String clientId, String? error)? unauthenticated,
   }) {
     return loading?.call();
   }
@@ -309,13 +331,15 @@ class _$AuthLoadingImpl implements AuthLoading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function()? needsSetup,
     TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult Function(String? error)? unauthenticated,
+    TResult Function(String clientId, String? error)? unauthenticated,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -329,6 +353,7 @@ class _$AuthLoadingImpl implements AuthLoading {
   TResult map<TResult extends Object?>({
     required TResult Function(AuthInitial value) initial,
     required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthNeedsSetup value) needsSetup,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
   }) {
@@ -340,6 +365,7 @@ class _$AuthLoadingImpl implements AuthLoading {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AuthInitial value)? initial,
     TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthNeedsSetup value)? needsSetup,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
   }) {
@@ -351,6 +377,7 @@ class _$AuthLoadingImpl implements AuthLoading {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AuthInitial value)? initial,
     TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthNeedsSetup value)? needsSetup,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
     required TResult orElse(),
@@ -367,13 +394,161 @@ abstract class AuthLoading implements AuthState {
 }
 
 /// @nodoc
+abstract class _$$AuthNeedsSetupImplCopyWith<$Res> {
+  factory _$$AuthNeedsSetupImplCopyWith(
+    _$AuthNeedsSetupImpl value,
+    $Res Function(_$AuthNeedsSetupImpl) then,
+  ) = __$$AuthNeedsSetupImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$AuthNeedsSetupImplCopyWithImpl<$Res>
+    extends _$AuthStateCopyWithImpl<$Res, _$AuthNeedsSetupImpl>
+    implements _$$AuthNeedsSetupImplCopyWith<$Res> {
+  __$$AuthNeedsSetupImplCopyWithImpl(
+    _$AuthNeedsSetupImpl _value,
+    $Res Function(_$AuthNeedsSetupImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of AuthState
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$AuthNeedsSetupImpl implements AuthNeedsSetup {
+  const _$AuthNeedsSetupImpl();
+
+  @override
+  String toString() {
+    return 'AuthState.needsSetup()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$AuthNeedsSetupImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() needsSetup,
+    required TResult Function(
+      UserInfo user,
+      List<CompanyInfo> companies,
+      int activeCompanyId,
+      String clientId,
+    )
+    authenticated,
+    required TResult Function(String clientId, String? error) unauthenticated,
+  }) {
+    return needsSetup();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? needsSetup,
+    TResult? Function(
+      UserInfo user,
+      List<CompanyInfo> companies,
+      int activeCompanyId,
+      String clientId,
+    )?
+    authenticated,
+    TResult? Function(String clientId, String? error)? unauthenticated,
+  }) {
+    return needsSetup?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? needsSetup,
+    TResult Function(
+      UserInfo user,
+      List<CompanyInfo> companies,
+      int activeCompanyId,
+      String clientId,
+    )?
+    authenticated,
+    TResult Function(String clientId, String? error)? unauthenticated,
+    required TResult orElse(),
+  }) {
+    if (needsSetup != null) {
+      return needsSetup();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(AuthInitial value) initial,
+    required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthNeedsSetup value) needsSetup,
+    required TResult Function(AuthAuthenticated value) authenticated,
+    required TResult Function(AuthUnauthenticated value) unauthenticated,
+  }) {
+    return needsSetup(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(AuthInitial value)? initial,
+    TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthNeedsSetup value)? needsSetup,
+    TResult? Function(AuthAuthenticated value)? authenticated,
+    TResult? Function(AuthUnauthenticated value)? unauthenticated,
+  }) {
+    return needsSetup?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(AuthInitial value)? initial,
+    TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthNeedsSetup value)? needsSetup,
+    TResult Function(AuthAuthenticated value)? authenticated,
+    TResult Function(AuthUnauthenticated value)? unauthenticated,
+    required TResult orElse(),
+  }) {
+    if (needsSetup != null) {
+      return needsSetup(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class AuthNeedsSetup implements AuthState {
+  const factory AuthNeedsSetup() = _$AuthNeedsSetupImpl;
+}
+
+/// @nodoc
 abstract class _$$AuthAuthenticatedImplCopyWith<$Res> {
   factory _$$AuthAuthenticatedImplCopyWith(
     _$AuthAuthenticatedImpl value,
     $Res Function(_$AuthAuthenticatedImpl) then,
   ) = __$$AuthAuthenticatedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({UserInfo user, List<CompanyInfo> companies, int activeCompanyId});
+  $Res call({
+    UserInfo user,
+    List<CompanyInfo> companies,
+    int activeCompanyId,
+    String clientId,
+  });
 
   $UserInfoCopyWith<$Res> get user;
 }
@@ -395,6 +570,7 @@ class __$$AuthAuthenticatedImplCopyWithImpl<$Res>
     Object? user = null,
     Object? companies = null,
     Object? activeCompanyId = null,
+    Object? clientId = null,
   }) {
     return _then(
       _$AuthAuthenticatedImpl(
@@ -410,6 +586,10 @@ class __$$AuthAuthenticatedImplCopyWithImpl<$Res>
             ? _value.activeCompanyId
             : activeCompanyId // ignore: cast_nullable_to_non_nullable
                   as int,
+        clientId: null == clientId
+            ? _value.clientId
+            : clientId // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -432,6 +612,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     required this.user,
     required final List<CompanyInfo> companies,
     required this.activeCompanyId,
+    required this.clientId,
   }) : _companies = companies;
 
   @override
@@ -446,10 +627,12 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
 
   @override
   final int activeCompanyId;
+  @override
+  final String clientId;
 
   @override
   String toString() {
-    return 'AuthState.authenticated(user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
+    return 'AuthState.authenticated(user: $user, companies: $companies, activeCompanyId: $activeCompanyId, clientId: $clientId)';
   }
 
   @override
@@ -463,7 +646,9 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
               _companies,
             ) &&
             (identical(other.activeCompanyId, activeCompanyId) ||
-                other.activeCompanyId == activeCompanyId));
+                other.activeCompanyId == activeCompanyId) &&
+            (identical(other.clientId, clientId) ||
+                other.clientId == clientId));
   }
 
   @override
@@ -472,6 +657,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
     user,
     const DeepCollectionEquality().hash(_companies),
     activeCompanyId,
+    clientId,
   );
 
   /// Create a copy of AuthState
@@ -490,15 +676,17 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function() needsSetup,
     required TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )
     authenticated,
-    required TResult Function(String? error) unauthenticated,
+    required TResult Function(String clientId, String? error) unauthenticated,
   }) {
-    return authenticated(user, companies, activeCompanyId);
+    return authenticated(user, companies, activeCompanyId, clientId);
   }
 
   @override
@@ -506,15 +694,17 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function()? needsSetup,
     TResult? Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult? Function(String? error)? unauthenticated,
+    TResult? Function(String clientId, String? error)? unauthenticated,
   }) {
-    return authenticated?.call(user, companies, activeCompanyId);
+    return authenticated?.call(user, companies, activeCompanyId, clientId);
   }
 
   @override
@@ -522,17 +712,19 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function()? needsSetup,
     TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult Function(String? error)? unauthenticated,
+    TResult Function(String clientId, String? error)? unauthenticated,
     required TResult orElse(),
   }) {
     if (authenticated != null) {
-      return authenticated(user, companies, activeCompanyId);
+      return authenticated(user, companies, activeCompanyId, clientId);
     }
     return orElse();
   }
@@ -542,6 +734,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
   TResult map<TResult extends Object?>({
     required TResult Function(AuthInitial value) initial,
     required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthNeedsSetup value) needsSetup,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
   }) {
@@ -553,6 +746,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AuthInitial value)? initial,
     TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthNeedsSetup value)? needsSetup,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
   }) {
@@ -564,6 +758,7 @@ class _$AuthAuthenticatedImpl implements AuthAuthenticated {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AuthInitial value)? initial,
     TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthNeedsSetup value)? needsSetup,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
     required TResult orElse(),
@@ -580,11 +775,13 @@ abstract class AuthAuthenticated implements AuthState {
     required final UserInfo user,
     required final List<CompanyInfo> companies,
     required final int activeCompanyId,
+    required final String clientId,
   }) = _$AuthAuthenticatedImpl;
 
   UserInfo get user;
   List<CompanyInfo> get companies;
   int get activeCompanyId;
+  String get clientId;
 
   /// Create a copy of AuthState
   /// with the given fields replaced by the non-null parameter values.
@@ -600,7 +797,7 @@ abstract class _$$AuthUnauthenticatedImplCopyWith<$Res> {
     $Res Function(_$AuthUnauthenticatedImpl) then,
   ) = __$$AuthUnauthenticatedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String? error});
+  $Res call({String clientId, String? error});
 }
 
 /// @nodoc
@@ -616,9 +813,13 @@ class __$$AuthUnauthenticatedImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? error = freezed}) {
+  $Res call({Object? clientId = null, Object? error = freezed}) {
     return _then(
       _$AuthUnauthenticatedImpl(
+        clientId: null == clientId
+            ? _value.clientId
+            : clientId // ignore: cast_nullable_to_non_nullable
+                  as String,
         error: freezed == error
             ? _value.error
             : error // ignore: cast_nullable_to_non_nullable
@@ -631,14 +832,16 @@ class __$$AuthUnauthenticatedImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
-  const _$AuthUnauthenticatedImpl({this.error});
+  const _$AuthUnauthenticatedImpl({required this.clientId, this.error});
 
+  @override
+  final String clientId;
   @override
   final String? error;
 
   @override
   String toString() {
-    return 'AuthState.unauthenticated(error: $error)';
+    return 'AuthState.unauthenticated(clientId: $clientId, error: $error)';
   }
 
   @override
@@ -646,11 +849,13 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AuthUnauthenticatedImpl &&
+            (identical(other.clientId, clientId) ||
+                other.clientId == clientId) &&
             (identical(other.error, error) || other.error == error));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, error);
+  int get hashCode => Object.hash(runtimeType, clientId, error);
 
   /// Create a copy of AuthState
   /// with the given fields replaced by the non-null parameter values.
@@ -668,15 +873,17 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
+    required TResult Function() needsSetup,
     required TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )
     authenticated,
-    required TResult Function(String? error) unauthenticated,
+    required TResult Function(String clientId, String? error) unauthenticated,
   }) {
-    return unauthenticated(error);
+    return unauthenticated(clientId, error);
   }
 
   @override
@@ -684,15 +891,17 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
+    TResult? Function()? needsSetup,
     TResult? Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult? Function(String? error)? unauthenticated,
+    TResult? Function(String clientId, String? error)? unauthenticated,
   }) {
-    return unauthenticated?.call(error);
+    return unauthenticated?.call(clientId, error);
   }
 
   @override
@@ -700,17 +909,19 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
+    TResult Function()? needsSetup,
     TResult Function(
       UserInfo user,
       List<CompanyInfo> companies,
       int activeCompanyId,
+      String clientId,
     )?
     authenticated,
-    TResult Function(String? error)? unauthenticated,
+    TResult Function(String clientId, String? error)? unauthenticated,
     required TResult orElse(),
   }) {
     if (unauthenticated != null) {
-      return unauthenticated(error);
+      return unauthenticated(clientId, error);
     }
     return orElse();
   }
@@ -720,6 +931,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
   TResult map<TResult extends Object?>({
     required TResult Function(AuthInitial value) initial,
     required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthNeedsSetup value) needsSetup,
     required TResult Function(AuthAuthenticated value) authenticated,
     required TResult Function(AuthUnauthenticated value) unauthenticated,
   }) {
@@ -731,6 +943,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(AuthInitial value)? initial,
     TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthNeedsSetup value)? needsSetup,
     TResult? Function(AuthAuthenticated value)? authenticated,
     TResult? Function(AuthUnauthenticated value)? unauthenticated,
   }) {
@@ -742,6 +955,7 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(AuthInitial value)? initial,
     TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthNeedsSetup value)? needsSetup,
     TResult Function(AuthAuthenticated value)? authenticated,
     TResult Function(AuthUnauthenticated value)? unauthenticated,
     required TResult orElse(),
@@ -754,9 +968,12 @@ class _$AuthUnauthenticatedImpl implements AuthUnauthenticated {
 }
 
 abstract class AuthUnauthenticated implements AuthState {
-  const factory AuthUnauthenticated({final String? error}) =
-      _$AuthUnauthenticatedImpl;
+  const factory AuthUnauthenticated({
+    required final String clientId,
+    final String? error,
+  }) = _$AuthUnauthenticatedImpl;
 
+  String get clientId;
   String? get error;
 
   /// Create a copy of AuthState
