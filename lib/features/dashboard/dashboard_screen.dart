@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/auth/auth_state.dart';
 import '../../core/models/dashboard.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency.dart';
@@ -13,7 +14,10 @@ import '../../widgets/empty_state.dart';
 
 final dashboardProvider =
     FutureProvider.autoDispose<DashboardSummary>((ref) async {
-  final endpoints = ref.watch(endpointsProvider);
+  // Wait until authenticated before calling API
+  final auth = ref.watch(authProvider);
+  if (auth is! AuthAuthenticated) throw StateError('Not authenticated');
+  final endpoints = ref.read(endpointsProvider);
   return endpoints.getDashboardSummary();
 });
 
@@ -71,7 +75,7 @@ class DashboardScreen extends ConsumerWidget {
                     clientName: inv.clientName,
                     total: inv.total,
                     issuedAt: inv.issuedAt,
-                    onTap: () => context.go('/invoices/${inv.id}'),
+                    onTap: () => context.push('/invoices/${inv.id}'),
                   )),
           ],
         ),

@@ -99,7 +99,7 @@ class InvoicesScreen extends ConsumerWidget {
                         clientName: inv.client?.name,
                         total: inv.total,
                         issuedAt: inv.issuedAt,
-                        onTap: () => context.go('/invoices/${inv.id}'),
+                        onTap: () => context.push('/invoices/${inv.id}'),
                       )),
                   PaginationControls(
                     currentPage: response.currentPage,

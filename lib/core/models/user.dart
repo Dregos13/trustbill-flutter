@@ -36,8 +36,8 @@ class UserInfo with _$UserInfo {
     required int id,
     required String name,
     required String email,
-    required String role,
-    required List<String> permissions,
+    @Default('') String role,
+    @Default([]) List<String> permissions,
   }) = _UserInfo;
 
   factory UserInfo.fromJson(Map<String, dynamic> json) =>
@@ -49,7 +49,7 @@ class CompanyInfo with _$CompanyInfo {
   const factory CompanyInfo({
     required int id,
     required String name,
-    required String role,
+    @Default('') String role,
   }) = _CompanyInfo;
 
   factory CompanyInfo.fromJson(Map<String, dynamic> json) =>

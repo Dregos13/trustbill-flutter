@@ -5,12 +5,14 @@ class ClientCard extends StatelessWidget {
   final String name;
   final String taxId;
   final String? email;
+  final VoidCallback? onTap;
 
   const ClientCard({
     super.key,
     required this.name,
     required this.taxId,
     this.email,
+    this.onTap,
   });
 
   @override
@@ -31,54 +33,64 @@ class ClientCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primaryBg,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryBg,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: AppColors.gray900,
-                    ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: AppColors.gray900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        [taxId, if (email != null && email!.isNotEmpty) email]
+                            .join(' · '),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.gray500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    [taxId, if (email != null && email!.isNotEmpty) email]
-                        .join(' · '),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.gray500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                ),
+                const Icon(Icons.chevron_right,
+                    size: 20, color: AppColors.gray400),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

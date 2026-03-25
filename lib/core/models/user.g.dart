@@ -49,10 +49,12 @@ _$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       email: json['email'] as String,
-      role: json['role'] as String,
-      permissions: (json['permissions'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
+      role: json['role'] as String? ?? '',
+      permissions:
+          (json['permissions'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
@@ -68,7 +70,7 @@ _$CompanyInfoImpl _$$CompanyInfoImplFromJson(Map<String, dynamic> json) =>
     _$CompanyInfoImpl(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
-      role: json['role'] as String,
+      role: json['role'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$CompanyInfoImplToJson(_$CompanyInfoImpl instance) =>

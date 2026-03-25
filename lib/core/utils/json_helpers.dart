@@ -1,3 +1,7 @@
-/// Safely converts a JSON num (int or double) to double.
-/// json_serializable fails when API returns `0` instead of `0.0`.
-double toDouble(dynamic v) => (v as num).toDouble();
+/// Safely converts a JSON value (num or String) to double.
+/// The API may return amounts as int, double, or String.
+double toDouble(dynamic v) {
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v) ?? 0.0;
+  return 0.0;
+}

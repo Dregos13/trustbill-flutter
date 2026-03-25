@@ -7,6 +7,7 @@ import '../../features/setup/setup_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/clients/clients_screen.dart';
+import '../../features/clients/client_detail_screen.dart';
 import '../../features/invoices/invoices_screen.dart';
 import '../../features/invoices/invoice_detail_screen.dart';
 import '../../features/account/account_screen.dart';
@@ -21,7 +22,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   });
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login',
     refreshListenable: authNotifier,
     redirect: (context, state) {
       final authState = authNotifier.value;
@@ -60,6 +61,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/clients',
             builder: (_, __) => const ClientsScreen(),
+          ),
+          GoRoute(
+            path: '/clients/:id',
+            builder: (_, state) => ClientDetailScreen(
+              id: int.parse(state.pathParameters['id']!),
+            ),
           ),
           GoRoute(
             path: '/invoices',

@@ -673,8 +673,8 @@ class _$UserInfoImpl implements _UserInfo {
     required this.id,
     required this.name,
     required this.email,
-    required this.role,
-    required final List<String> permissions,
+    this.role = '',
+    final List<String> permissions = const [],
   }) : _permissions = permissions;
 
   factory _$UserInfoImpl.fromJson(Map<String, dynamic> json) =>
@@ -687,9 +687,11 @@ class _$UserInfoImpl implements _UserInfo {
   @override
   final String email;
   @override
+  @JsonKey()
   final String role;
   final List<String> _permissions;
   @override
+  @JsonKey()
   List<String> get permissions {
     if (_permissions is EqualUnmodifiableListView) return _permissions;
     // ignore: implicit_dynamic_type
@@ -746,8 +748,8 @@ abstract class _UserInfo implements UserInfo {
     required final int id,
     required final String name,
     required final String email,
-    required final String role,
-    required final List<String> permissions,
+    final String role,
+    final List<String> permissions,
   }) = _$UserInfoImpl;
 
   factory _UserInfo.fromJson(Map<String, dynamic> json) =
@@ -888,7 +890,7 @@ class _$CompanyInfoImpl implements _CompanyInfo {
   const _$CompanyInfoImpl({
     required this.id,
     required this.name,
-    required this.role,
+    this.role = '',
   });
 
   factory _$CompanyInfoImpl.fromJson(Map<String, dynamic> json) =>
@@ -899,6 +901,7 @@ class _$CompanyInfoImpl implements _CompanyInfo {
   @override
   final String name;
   @override
+  @JsonKey()
   final String role;
 
   @override
@@ -938,7 +941,7 @@ abstract class _CompanyInfo implements CompanyInfo {
   const factory _CompanyInfo({
     required final int id,
     required final String name,
-    required final String role,
+    final String role,
   }) = _$CompanyInfoImpl;
 
   factory _CompanyInfo.fromJson(Map<String, dynamic> json) =

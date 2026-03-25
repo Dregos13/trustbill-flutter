@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
@@ -93,6 +94,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                         name: c.name,
                         taxId: c.taxId,
                         email: c.email,
+                        onTap: () => context.push('/clients/${c.id}'),
                       )),
                   PaginationControls(
                     currentPage: response.currentPage,

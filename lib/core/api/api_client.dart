@@ -67,6 +67,7 @@ class ApiClient {
     ));
   }
 
+  FlutterSecureStorage get storage => _storage;
   String get baseUrl => _baseUrl;
 
   void configure(String clientId) {

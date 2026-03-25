@@ -15,6 +15,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _rememberCredentials = false;
+  bool _loadedSaved = false;
 
   @override
   void dispose() {
@@ -23,11 +25,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _loadSavedCredentials() async {
+    if (_loadedSaved) return;
+    _loadedSaved = true;
+    final saved =
+        await ref.read(authProvider.notifier).getSavedCredentials();
+    if (saved != null && mounted) {
+      setState(() {
+        _emailController.text = saved['email']!;
+        _passwordController.text = saved['password']!;
+        _rememberCredentials = true;
+      });
+    }
+  }
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
     await ref.read(authProvider.notifier).login(
           _emailController.text.trim(),
           _passwordController.text,
+          rememberCredentials: _rememberCredentials,
         );
   }
 
@@ -39,6 +56,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         authState is AuthUnauthenticated ? authState.error : null;
     final clientId =
         authState is AuthUnauthenticated ? authState.clientId : '';
+
+    // Load saved credentials once when screen renders
+    if (authState is AuthUnauthenticated && !_loadedSaved) {
+      _loadSavedCredentials();
+    }
 
     return Scaffold(
       body: Container(
@@ -184,7 +206,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             },
                             onFieldSubmitted: (_) => _handleLogin(),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: _rememberCredentials,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      _rememberCredentials = v ?? false;
+                                    });
+                                  },
+                                  activeColor: AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _rememberCredentials =
+                                        !_rememberCredentials;
+                                  });
+                                },
+                                child: const Text(
+                                  'Recordar credenciales',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.gray600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
                           SizedBox(
                             height: 46,
                             child: ElevatedButton(

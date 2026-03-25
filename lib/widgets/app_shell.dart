@@ -15,16 +15,25 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          const AppHeader(),
-          Expanded(child: child),
-        ],
-      ),
-      bottomNavigationBar: AppBottomNav(
-        currentLocation: currentLocation,
-        onNavigate: (path) => context.go(path),
+    // On back press: if not on home, go home. Otherwise let system handle (exit).
+    return PopScope(
+      canPop: currentLocation == '/',
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
+            const AppHeader(),
+            Expanded(child: child),
+          ],
+        ),
+        bottomNavigationBar: AppBottomNav(
+          currentLocation: currentLocation,
+          onNavigate: (path) => context.go(path),
+        ),
       ),
     );
   }

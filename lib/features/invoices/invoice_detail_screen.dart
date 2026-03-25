@@ -82,7 +82,13 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         Row(
           children: [
             GestureDetector(
-              onTap: () => context.go('/invoices'),
+              onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/invoices');
+                }
+              },
               child: Container(
                 width: 36,
                 height: 36,
