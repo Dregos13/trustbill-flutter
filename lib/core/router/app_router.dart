@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
@@ -12,14 +13,22 @@ import '../../features/account/account_screen.dart';
 import '../../widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  // Use a ValueNotifier so GoRouter re-evaluates redirect on auth changes
+  // without being recreated itself.
+  final authNotifier = ValueNotifier<AuthState>(ref.read(authProvider));
+  ref.listen<AuthState>(authProvider, (_, next) {
+    authNotifier.value = next;
+  });
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: authNotifier,
     redirect: (context, state) {
+      final authState = authNotifier.value;
       final isSetup = authState is AuthNeedsSetup;
       final isLoggedIn = authState is AuthAuthenticated;
-      final isLoading = authState is AuthLoading || authState is AuthInitial;
+      final isLoading =
+          authState is AuthLoading || authState is AuthInitial;
       final loc = state.matchedLocation;
 
       if (isLoading) return null;

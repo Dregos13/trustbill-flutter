@@ -10,12 +10,12 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 final endpointsProvider = Provider<Endpoints>((ref) {
-  return Endpoints(ref.watch(apiClientProvider));
+  return Endpoints(ref.read(apiClientProvider));
 });
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  final endpoints = ref.watch(endpointsProvider);
+  final apiClient = ref.read(apiClientProvider);
+  final endpoints = ref.read(endpointsProvider);
   final notifier = AuthNotifier(apiClient, endpoints);
   apiClient.onAuthError = () {
     notifier.forceLogout();

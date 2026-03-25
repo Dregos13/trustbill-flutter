@@ -48,6 +48,7 @@ class ApiClient {
             }
           } else {
             onAuthError?.call();
+            return handler.next(error);
           }
         }
 
