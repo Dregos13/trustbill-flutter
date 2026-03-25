@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'payment.dart';
+import '../utils/json_helpers.dart';
 
 part 'invoice.freezed.dart';
 part 'invoice.g.dart';
@@ -13,7 +14,7 @@ class InvoiceListItem with _$InvoiceListItem {
     required String series,
     required int number,
     required String issuedAt,
-    required double total,
+    @JsonKey(fromJson: toDouble) required double total,
     required String invoiceType,
     String? taxKind,
     InvoiceClient? client,
@@ -44,7 +45,7 @@ class InvoiceDetail with _$InvoiceDetail {
     required String series,
     required int number,
     required String issuedAt,
-    required double total,
+    @JsonKey(fromJson: toDouble) required double total,
     required String invoiceType,
     String? taxKind,
     String? publicNotes,
@@ -91,12 +92,12 @@ class InvoiceLine with _$InvoiceLine {
   const factory InvoiceLine({
     required int id,
     required String description,
-    required double quantity,
-    required double unitPrice,
-    required double discountRate,
-    required double taxRate,
-    required double taxAmount,
-    required double total,
+    @JsonKey(fromJson: toDouble) required double quantity,
+    @JsonKey(fromJson: toDouble) required double unitPrice,
+    @JsonKey(fromJson: toDouble) required double discountRate,
+    @JsonKey(fromJson: toDouble) required double taxRate,
+    @JsonKey(fromJson: toDouble) required double taxAmount,
+    @JsonKey(fromJson: toDouble) required double total,
   }) = _InvoiceLine;
 
   factory InvoiceLine.fromJson(Map<String, dynamic> json) =>

@@ -22,6 +22,7 @@ Payment _$PaymentFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Payment {
   int get id => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get amount => throw _privateConstructorUsedError;
   String get method => throw _privateConstructorUsedError;
   String get paidAt => throw _privateConstructorUsedError;
@@ -43,7 +44,7 @@ abstract class $PaymentCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    double amount,
+    @JsonKey(fromJson: toDouble) double amount,
     String method,
     String paidAt,
     String? reference,
@@ -109,7 +110,7 @@ abstract class _$$PaymentImplCopyWith<$Res> implements $PaymentCopyWith<$Res> {
   @useResult
   $Res call({
     int id,
-    double amount,
+    @JsonKey(fromJson: toDouble) double amount,
     String method,
     String paidAt,
     String? reference,
@@ -168,7 +169,7 @@ class __$$PaymentImplCopyWithImpl<$Res>
 class _$PaymentImpl implements _Payment {
   const _$PaymentImpl({
     required this.id,
-    required this.amount,
+    @JsonKey(fromJson: toDouble) required this.amount,
     required this.method,
     required this.paidAt,
     this.reference,
@@ -180,6 +181,7 @@ class _$PaymentImpl implements _Payment {
   @override
   final int id;
   @override
+  @JsonKey(fromJson: toDouble)
   final double amount;
   @override
   final String method;
@@ -228,7 +230,7 @@ class _$PaymentImpl implements _Payment {
 abstract class _Payment implements Payment {
   const factory _Payment({
     required final int id,
-    required final double amount,
+    @JsonKey(fromJson: toDouble) required final double amount,
     required final String method,
     required final String paidAt,
     final String? reference,
@@ -239,6 +241,7 @@ abstract class _Payment implements Payment {
   @override
   int get id;
   @override
+  @JsonKey(fromJson: toDouble)
   double get amount;
   @override
   String get method;

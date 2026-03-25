@@ -27,6 +27,7 @@ mixin _$InvoiceListItem {
   String get series => throw _privateConstructorUsedError;
   int get number => throw _privateConstructorUsedError;
   String get issuedAt => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get total => throw _privateConstructorUsedError;
   String get invoiceType => throw _privateConstructorUsedError;
   String? get taxKind => throw _privateConstructorUsedError;
@@ -56,7 +57,7 @@ abstract class $InvoiceListItemCopyWith<$Res> {
     String series,
     int number,
     String issuedAt,
-    double total,
+    @JsonKey(fromJson: toDouble) double total,
     String invoiceType,
     String? taxKind,
     InvoiceClient? client,
@@ -169,7 +170,7 @@ abstract class _$$InvoiceListItemImplCopyWith<$Res>
     String series,
     int number,
     String issuedAt,
-    double total,
+    @JsonKey(fromJson: toDouble) double total,
     String invoiceType,
     String? taxKind,
     InvoiceClient? client,
@@ -261,7 +262,7 @@ class _$InvoiceListItemImpl implements _InvoiceListItem {
     required this.series,
     required this.number,
     required this.issuedAt,
-    required this.total,
+    @JsonKey(fromJson: toDouble) required this.total,
     required this.invoiceType,
     this.taxKind,
     this.client,
@@ -283,6 +284,7 @@ class _$InvoiceListItemImpl implements _InvoiceListItem {
   @override
   final String issuedAt;
   @override
+  @JsonKey(fromJson: toDouble)
   final double total;
   @override
   final String invoiceType;
@@ -356,7 +358,7 @@ abstract class _InvoiceListItem implements InvoiceListItem {
     required final String series,
     required final int number,
     required final String issuedAt,
-    required final double total,
+    @JsonKey(fromJson: toDouble) required final double total,
     required final String invoiceType,
     final String? taxKind,
     final InvoiceClient? client,
@@ -378,6 +380,7 @@ abstract class _InvoiceListItem implements InvoiceListItem {
   @override
   String get issuedAt;
   @override
+  @JsonKey(fromJson: toDouble)
   double get total;
   @override
   String get invoiceType;
@@ -593,6 +596,7 @@ mixin _$InvoiceDetail {
   String get series => throw _privateConstructorUsedError;
   int get number => throw _privateConstructorUsedError;
   String get issuedAt => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get total => throw _privateConstructorUsedError;
   String get invoiceType => throw _privateConstructorUsedError;
   String? get taxKind => throw _privateConstructorUsedError;
@@ -627,7 +631,7 @@ abstract class $InvoiceDetailCopyWith<$Res> {
     String series,
     int number,
     String issuedAt,
-    double total,
+    @JsonKey(fromJson: toDouble) double total,
     String invoiceType,
     String? taxKind,
     String? publicNotes,
@@ -785,7 +789,7 @@ abstract class _$$InvoiceDetailImplCopyWith<$Res>
     String series,
     int number,
     String issuedAt,
-    double total,
+    @JsonKey(fromJson: toDouble) double total,
     String invoiceType,
     String? taxKind,
     String? publicNotes,
@@ -909,7 +913,7 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
     required this.series,
     required this.number,
     required this.issuedAt,
-    required this.total,
+    @JsonKey(fromJson: toDouble) required this.total,
     required this.invoiceType,
     this.taxKind,
     this.publicNotes,
@@ -937,6 +941,7 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
   @override
   final String issuedAt;
   @override
+  @JsonKey(fromJson: toDouble)
   final double total;
   @override
   final String invoiceType;
@@ -1041,7 +1046,7 @@ abstract class _InvoiceDetail implements InvoiceDetail {
     required final String series,
     required final int number,
     required final String issuedAt,
-    required final double total,
+    @JsonKey(fromJson: toDouble) required final double total,
     required final String invoiceType,
     final String? taxKind,
     final String? publicNotes,
@@ -1068,6 +1073,7 @@ abstract class _InvoiceDetail implements InvoiceDetail {
   @override
   String get issuedAt;
   @override
+  @JsonKey(fromJson: toDouble)
   double get total;
   @override
   String get invoiceType;
@@ -1555,11 +1561,17 @@ InvoiceLine _$InvoiceLineFromJson(Map<String, dynamic> json) {
 mixin _$InvoiceLine {
   int get id => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get quantity => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get unitPrice => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get discountRate => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get taxRate => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get taxAmount => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get total => throw _privateConstructorUsedError;
 
   /// Serializes this InvoiceLine to a JSON map.
@@ -1582,12 +1594,12 @@ abstract class $InvoiceLineCopyWith<$Res> {
   $Res call({
     int id,
     String description,
-    double quantity,
-    double unitPrice,
-    double discountRate,
-    double taxRate,
-    double taxAmount,
-    double total,
+    @JsonKey(fromJson: toDouble) double quantity,
+    @JsonKey(fromJson: toDouble) double unitPrice,
+    @JsonKey(fromJson: toDouble) double discountRate,
+    @JsonKey(fromJson: toDouble) double taxRate,
+    @JsonKey(fromJson: toDouble) double taxAmount,
+    @JsonKey(fromJson: toDouble) double total,
   });
 }
 
@@ -1667,12 +1679,12 @@ abstract class _$$InvoiceLineImplCopyWith<$Res>
   $Res call({
     int id,
     String description,
-    double quantity,
-    double unitPrice,
-    double discountRate,
-    double taxRate,
-    double taxAmount,
-    double total,
+    @JsonKey(fromJson: toDouble) double quantity,
+    @JsonKey(fromJson: toDouble) double unitPrice,
+    @JsonKey(fromJson: toDouble) double discountRate,
+    @JsonKey(fromJson: toDouble) double taxRate,
+    @JsonKey(fromJson: toDouble) double taxAmount,
+    @JsonKey(fromJson: toDouble) double total,
   });
 }
 
@@ -1744,12 +1756,12 @@ class _$InvoiceLineImpl implements _InvoiceLine {
   const _$InvoiceLineImpl({
     required this.id,
     required this.description,
-    required this.quantity,
-    required this.unitPrice,
-    required this.discountRate,
-    required this.taxRate,
-    required this.taxAmount,
-    required this.total,
+    @JsonKey(fromJson: toDouble) required this.quantity,
+    @JsonKey(fromJson: toDouble) required this.unitPrice,
+    @JsonKey(fromJson: toDouble) required this.discountRate,
+    @JsonKey(fromJson: toDouble) required this.taxRate,
+    @JsonKey(fromJson: toDouble) required this.taxAmount,
+    @JsonKey(fromJson: toDouble) required this.total,
   });
 
   factory _$InvoiceLineImpl.fromJson(Map<String, dynamic> json) =>
@@ -1760,16 +1772,22 @@ class _$InvoiceLineImpl implements _InvoiceLine {
   @override
   final String description;
   @override
+  @JsonKey(fromJson: toDouble)
   final double quantity;
   @override
+  @JsonKey(fromJson: toDouble)
   final double unitPrice;
   @override
+  @JsonKey(fromJson: toDouble)
   final double discountRate;
   @override
+  @JsonKey(fromJson: toDouble)
   final double taxRate;
   @override
+  @JsonKey(fromJson: toDouble)
   final double taxAmount;
   @override
+  @JsonKey(fromJson: toDouble)
   final double total;
 
   @override
@@ -1829,12 +1847,12 @@ abstract class _InvoiceLine implements InvoiceLine {
   const factory _InvoiceLine({
     required final int id,
     required final String description,
-    required final double quantity,
-    required final double unitPrice,
-    required final double discountRate,
-    required final double taxRate,
-    required final double taxAmount,
-    required final double total,
+    @JsonKey(fromJson: toDouble) required final double quantity,
+    @JsonKey(fromJson: toDouble) required final double unitPrice,
+    @JsonKey(fromJson: toDouble) required final double discountRate,
+    @JsonKey(fromJson: toDouble) required final double taxRate,
+    @JsonKey(fromJson: toDouble) required final double taxAmount,
+    @JsonKey(fromJson: toDouble) required final double total,
   }) = _$InvoiceLineImpl;
 
   factory _InvoiceLine.fromJson(Map<String, dynamic> json) =
@@ -1845,16 +1863,22 @@ abstract class _InvoiceLine implements InvoiceLine {
   @override
   String get description;
   @override
+  @JsonKey(fromJson: toDouble)
   double get quantity;
   @override
+  @JsonKey(fromJson: toDouble)
   double get unitPrice;
   @override
+  @JsonKey(fromJson: toDouble)
   double get discountRate;
   @override
+  @JsonKey(fromJson: toDouble)
   double get taxRate;
   @override
+  @JsonKey(fromJson: toDouble)
   double get taxAmount;
   @override
+  @JsonKey(fromJson: toDouble)
   double get total;
 
   /// Create a copy of InvoiceLine

@@ -10,7 +10,7 @@ class InvoiceCard extends StatelessWidget {
   final String status;
   final String? clientName;
   final double total;
-  final String issuedAt;
+  final String? issuedAt;
   final VoidCallback? onTap;
 
   const InvoiceCard({

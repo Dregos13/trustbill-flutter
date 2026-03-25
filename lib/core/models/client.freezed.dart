@@ -225,8 +225,8 @@ class _$ClientImpl implements _Client {
     this.email,
     this.phone,
     this.address,
-    required this.postalCode,
-    required this.city,
+    this.postalCode = '',
+    this.city = '',
     required this.companyId,
   });
 
@@ -246,8 +246,10 @@ class _$ClientImpl implements _Client {
   @override
   final String? address;
   @override
+  @JsonKey()
   final String postalCode;
   @override
+  @JsonKey()
   final String city;
   @override
   final int companyId;
@@ -312,8 +314,8 @@ abstract class _Client implements Client {
     final String? email,
     final String? phone,
     final String? address,
-    required final String postalCode,
-    required final String city,
+    final String postalCode,
+    final String city,
     required final int companyId,
   }) = _$ClientImpl;
 

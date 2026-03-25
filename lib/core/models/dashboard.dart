@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../utils/json_helpers.dart';
 
 part 'dashboard.freezed.dart';
 part 'dashboard.g.dart';
@@ -7,9 +8,9 @@ part 'dashboard.g.dart';
 class DashboardSummary with _$DashboardSummary {
   const factory DashboardSummary({
     required int invoicesThisMonth,
-    required double totalBilled,
-    required double totalCollected,
-    required double totalPending,
+    @JsonKey(fromJson: toDouble) required double totalBilled,
+    @JsonKey(fromJson: toDouble) required double totalCollected,
+    @JsonKey(fromJson: toDouble) required double totalPending,
     required List<DashboardInvoice> recentInvoices,
   }) = _DashboardSummary;
 
@@ -24,8 +25,9 @@ class DashboardInvoice with _$DashboardInvoice {
     required String series,
     required int number,
     required String status,
-    required double total,
+    @JsonKey(fromJson: toDouble) required double total,
     String? clientName,
+    String? issuedAt,
   }) = _DashboardInvoice;
 
   factory DashboardInvoice.fromJson(Map<String, dynamic> json) =>

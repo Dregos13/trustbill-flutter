@@ -70,7 +70,7 @@ class DashboardScreen extends ConsumerWidget {
                     status: inv.status,
                     clientName: inv.clientName,
                     total: inv.total,
-                    issuedAt: '', // Dashboard invoices may not have issuedAt
+                    issuedAt: inv.issuedAt,
                     onTap: () => context.go('/invoices/${inv.id}'),
                   )),
           ],

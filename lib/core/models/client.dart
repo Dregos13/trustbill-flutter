@@ -12,8 +12,8 @@ class Client with _$Client {
     String? email,
     String? phone,
     String? address,
-    required String postalCode,
-    required String city,
+    @Default('') String postalCode,
+    @Default('') String city,
     required int companyId,
   }) = _Client;
 

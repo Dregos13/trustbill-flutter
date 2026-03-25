@@ -10,9 +10,9 @@ _$DashboardSummaryImpl _$$DashboardSummaryImplFromJson(
   Map<String, dynamic> json,
 ) => _$DashboardSummaryImpl(
   invoicesThisMonth: (json['invoicesThisMonth'] as num).toInt(),
-  totalBilled: (json['totalBilled'] as num).toDouble(),
-  totalCollected: (json['totalCollected'] as num).toDouble(),
-  totalPending: (json['totalPending'] as num).toDouble(),
+  totalBilled: toDouble(json['totalBilled']),
+  totalCollected: toDouble(json['totalCollected']),
+  totalPending: toDouble(json['totalPending']),
   recentInvoices: (json['recentInvoices'] as List<dynamic>)
       .map((e) => DashboardInvoice.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -35,8 +35,9 @@ _$DashboardInvoiceImpl _$$DashboardInvoiceImplFromJson(
   series: json['series'] as String,
   number: (json['number'] as num).toInt(),
   status: json['status'] as String,
-  total: (json['total'] as num).toDouble(),
+  total: toDouble(json['total']),
   clientName: json['clientName'] as String?,
+  issuedAt: json['issuedAt'] as String?,
 );
 
 Map<String, dynamic> _$$DashboardInvoiceImplToJson(
@@ -48,4 +49,5 @@ Map<String, dynamic> _$$DashboardInvoiceImplToJson(
   'status': instance.status,
   'total': instance.total,
   'clientName': instance.clientName,
+  'issuedAt': instance.issuedAt,
 };

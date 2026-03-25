@@ -22,8 +22,11 @@ DashboardSummary _$DashboardSummaryFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$DashboardSummary {
   int get invoicesThisMonth => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get totalBilled => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get totalCollected => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get totalPending => throw _privateConstructorUsedError;
   List<DashboardInvoice> get recentInvoices =>
       throw _privateConstructorUsedError;
@@ -47,9 +50,9 @@ abstract class $DashboardSummaryCopyWith<$Res> {
   @useResult
   $Res call({
     int invoicesThisMonth,
-    double totalBilled,
-    double totalCollected,
-    double totalPending,
+    @JsonKey(fromJson: toDouble) double totalBilled,
+    @JsonKey(fromJson: toDouble) double totalCollected,
+    @JsonKey(fromJson: toDouble) double totalPending,
     List<DashboardInvoice> recentInvoices,
   });
 }
@@ -114,9 +117,9 @@ abstract class _$$DashboardSummaryImplCopyWith<$Res>
   @useResult
   $Res call({
     int invoicesThisMonth,
-    double totalBilled,
-    double totalCollected,
-    double totalPending,
+    @JsonKey(fromJson: toDouble) double totalBilled,
+    @JsonKey(fromJson: toDouble) double totalCollected,
+    @JsonKey(fromJson: toDouble) double totalPending,
     List<DashboardInvoice> recentInvoices,
   });
 }
@@ -173,9 +176,9 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
 class _$DashboardSummaryImpl implements _DashboardSummary {
   const _$DashboardSummaryImpl({
     required this.invoicesThisMonth,
-    required this.totalBilled,
-    required this.totalCollected,
-    required this.totalPending,
+    @JsonKey(fromJson: toDouble) required this.totalBilled,
+    @JsonKey(fromJson: toDouble) required this.totalCollected,
+    @JsonKey(fromJson: toDouble) required this.totalPending,
     required final List<DashboardInvoice> recentInvoices,
   }) : _recentInvoices = recentInvoices;
 
@@ -185,10 +188,13 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
   @override
   final int invoicesThisMonth;
   @override
+  @JsonKey(fromJson: toDouble)
   final double totalBilled;
   @override
+  @JsonKey(fromJson: toDouble)
   final double totalCollected;
   @override
+  @JsonKey(fromJson: toDouble)
   final double totalPending;
   final List<DashboardInvoice> _recentInvoices;
   @override
@@ -253,9 +259,9 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
 abstract class _DashboardSummary implements DashboardSummary {
   const factory _DashboardSummary({
     required final int invoicesThisMonth,
-    required final double totalBilled,
-    required final double totalCollected,
-    required final double totalPending,
+    @JsonKey(fromJson: toDouble) required final double totalBilled,
+    @JsonKey(fromJson: toDouble) required final double totalCollected,
+    @JsonKey(fromJson: toDouble) required final double totalPending,
     required final List<DashboardInvoice> recentInvoices,
   }) = _$DashboardSummaryImpl;
 
@@ -265,10 +271,13 @@ abstract class _DashboardSummary implements DashboardSummary {
   @override
   int get invoicesThisMonth;
   @override
+  @JsonKey(fromJson: toDouble)
   double get totalBilled;
   @override
+  @JsonKey(fromJson: toDouble)
   double get totalCollected;
   @override
+  @JsonKey(fromJson: toDouble)
   double get totalPending;
   @override
   List<DashboardInvoice> get recentInvoices;
@@ -291,8 +300,10 @@ mixin _$DashboardInvoice {
   String get series => throw _privateConstructorUsedError;
   int get number => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: toDouble)
   double get total => throw _privateConstructorUsedError;
   String? get clientName => throw _privateConstructorUsedError;
+  String? get issuedAt => throw _privateConstructorUsedError;
 
   /// Serializes this DashboardInvoice to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -316,8 +327,9 @@ abstract class $DashboardInvoiceCopyWith<$Res> {
     String series,
     int number,
     String status,
-    double total,
+    @JsonKey(fromJson: toDouble) double total,
     String? clientName,
+    String? issuedAt,
   });
 }
 
@@ -342,6 +354,7 @@ class _$DashboardInvoiceCopyWithImpl<$Res, $Val extends DashboardInvoice>
     Object? status = null,
     Object? total = null,
     Object? clientName = freezed,
+    Object? issuedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -369,6 +382,10 @@ class _$DashboardInvoiceCopyWithImpl<$Res, $Val extends DashboardInvoice>
                 ? _value.clientName
                 : clientName // ignore: cast_nullable_to_non_nullable
                       as String?,
+            issuedAt: freezed == issuedAt
+                ? _value.issuedAt
+                : issuedAt // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -389,8 +406,9 @@ abstract class _$$DashboardInvoiceImplCopyWith<$Res>
     String series,
     int number,
     String status,
-    double total,
+    @JsonKey(fromJson: toDouble) double total,
     String? clientName,
+    String? issuedAt,
   });
 }
 
@@ -414,6 +432,7 @@ class __$$DashboardInvoiceImplCopyWithImpl<$Res>
     Object? status = null,
     Object? total = null,
     Object? clientName = freezed,
+    Object? issuedAt = freezed,
   }) {
     return _then(
       _$DashboardInvoiceImpl(
@@ -441,6 +460,10 @@ class __$$DashboardInvoiceImplCopyWithImpl<$Res>
             ? _value.clientName
             : clientName // ignore: cast_nullable_to_non_nullable
                   as String?,
+        issuedAt: freezed == issuedAt
+            ? _value.issuedAt
+            : issuedAt // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -454,8 +477,9 @@ class _$DashboardInvoiceImpl implements _DashboardInvoice {
     required this.series,
     required this.number,
     required this.status,
-    required this.total,
+    @JsonKey(fromJson: toDouble) required this.total,
     this.clientName,
+    this.issuedAt,
   });
 
   factory _$DashboardInvoiceImpl.fromJson(Map<String, dynamic> json) =>
@@ -470,13 +494,16 @@ class _$DashboardInvoiceImpl implements _DashboardInvoice {
   @override
   final String status;
   @override
+  @JsonKey(fromJson: toDouble)
   final double total;
   @override
   final String? clientName;
+  @override
+  final String? issuedAt;
 
   @override
   String toString() {
-    return 'DashboardInvoice(id: $id, series: $series, number: $number, status: $status, total: $total, clientName: $clientName)';
+    return 'DashboardInvoice(id: $id, series: $series, number: $number, status: $status, total: $total, clientName: $clientName, issuedAt: $issuedAt)';
   }
 
   @override
@@ -490,13 +517,23 @@ class _$DashboardInvoiceImpl implements _DashboardInvoice {
             (identical(other.status, status) || other.status == status) &&
             (identical(other.total, total) || other.total == total) &&
             (identical(other.clientName, clientName) ||
-                other.clientName == clientName));
+                other.clientName == clientName) &&
+            (identical(other.issuedAt, issuedAt) ||
+                other.issuedAt == issuedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, series, number, status, total, clientName);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    series,
+    number,
+    status,
+    total,
+    clientName,
+    issuedAt,
+  );
 
   /// Create a copy of DashboardInvoice
   /// with the given fields replaced by the non-null parameter values.
@@ -521,8 +558,9 @@ abstract class _DashboardInvoice implements DashboardInvoice {
     required final String series,
     required final int number,
     required final String status,
-    required final double total,
+    @JsonKey(fromJson: toDouble) required final double total,
     final String? clientName,
+    final String? issuedAt,
   }) = _$DashboardInvoiceImpl;
 
   factory _DashboardInvoice.fromJson(Map<String, dynamic> json) =
@@ -537,9 +575,12 @@ abstract class _DashboardInvoice implements DashboardInvoice {
   @override
   String get status;
   @override
+  @JsonKey(fromJson: toDouble)
   double get total;
   @override
   String? get clientName;
+  @override
+  String? get issuedAt;
 
   /// Create a copy of DashboardInvoice
   /// with the given fields replaced by the non-null parameter values.

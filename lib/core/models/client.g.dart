@@ -13,8 +13,8 @@ _$ClientImpl _$$ClientImplFromJson(Map<String, dynamic> json) => _$ClientImpl(
   email: json['email'] as String?,
   phone: json['phone'] as String?,
   address: json['address'] as String?,
-  postalCode: json['postalCode'] as String,
-  city: json['city'] as String,
+  postalCode: json['postalCode'] as String? ?? '',
+  city: json['city'] as String? ?? '',
   companyId: (json['companyId'] as num).toInt(),
 );
 

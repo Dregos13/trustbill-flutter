@@ -15,7 +15,7 @@ _$InvoiceListItemImpl _$$InvoiceListItemImplFromJson(
   series: json['series'] as String,
   number: (json['number'] as num).toInt(),
   issuedAt: json['issuedAt'] as String,
-  total: (json['total'] as num).toDouble(),
+  total: toDouble(json['total']),
   invoiceType: json['invoiceType'] as String,
   taxKind: json['taxKind'] as String?,
   client: json['client'] == null
@@ -60,7 +60,7 @@ _$InvoiceDetailImpl _$$InvoiceDetailImplFromJson(Map<String, dynamic> json) =>
       series: json['series'] as String,
       number: (json['number'] as num).toInt(),
       issuedAt: json['issuedAt'] as String,
-      total: (json['total'] as num).toDouble(),
+      total: toDouble(json['total']),
       invoiceType: json['invoiceType'] as String,
       taxKind: json['taxKind'] as String?,
       publicNotes: json['publicNotes'] as String?,
@@ -137,12 +137,12 @@ _$InvoiceLineImpl _$$InvoiceLineImplFromJson(Map<String, dynamic> json) =>
     _$InvoiceLineImpl(
       id: (json['id'] as num).toInt(),
       description: json['description'] as String,
-      quantity: (json['quantity'] as num).toDouble(),
-      unitPrice: (json['unitPrice'] as num).toDouble(),
-      discountRate: (json['discountRate'] as num).toDouble(),
-      taxRate: (json['taxRate'] as num).toDouble(),
-      taxAmount: (json['taxAmount'] as num).toDouble(),
-      total: (json['total'] as num).toDouble(),
+      quantity: toDouble(json['quantity']),
+      unitPrice: toDouble(json['unitPrice']),
+      discountRate: toDouble(json['discountRate']),
+      taxRate: toDouble(json['taxRate']),
+      taxAmount: toDouble(json['taxAmount']),
+      total: toDouble(json['total']),
     );
 
 Map<String, dynamic> _$$InvoiceLineImplToJson(_$InvoiceLineImpl instance) =>
