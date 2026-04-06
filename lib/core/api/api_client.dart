@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_error.dart';
@@ -132,6 +133,29 @@ class ApiClient {
 
   Future<Response> post(String path, {dynamic data}) =>
       _dio.post(path, data: data);
+
+  Future<Response> postMultipart(
+    String path, {
+    required Uint8List fileBytes,
+    required String fileName,
+    required String mimeType,
+  }) {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(
+        fileBytes,
+        filename: fileName,
+        contentType: DioMediaType.parse(mimeType),
+      ),
+    });
+    return _dio.post(
+      path,
+      data: formData,
+      options: Options(
+        headers: {'Content-Type': 'multipart/form-data'},
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
+  }
 
   Future<Response> download(String path, String savePath) =>
       _dio.download(path, savePath,

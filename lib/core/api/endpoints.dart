@@ -1,9 +1,12 @@
+import 'dart:typed_data';
 import 'api_client.dart';
 import '../models/user.dart';
 import '../models/client.dart';
 import '../models/invoice.dart';
 import '../models/dashboard.dart';
 import '../models/paginated.dart';
+import '../models/scan_result.dart';
+import '../models/expense.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -97,5 +100,27 @@ class Endpoints {
 
   Future<void> downloadPdf(int invoiceId, String savePath) async {
     await _api.download('/invoices/$invoiceId/pdf', savePath);
+  }
+
+  // ---- Receipt OCR ----
+
+  Future<ScanResult> scanReceipt({
+    required Uint8List imageBytes,
+    required String fileName,
+    required String mimeType,
+  }) async {
+    final res = await _api.postMultipart(
+      '/receipts/scan',
+      fileBytes: imageBytes,
+      fileName: fileName,
+      mimeType: mimeType,
+    );
+    return ScanResult.fromJson(res.data);
+  }
+
+  Future<ExpenseCreatedResponse> confirmScan(
+      ExpenseConfirmPayload payload) async {
+    final res = await _api.post('/receipts/confirm', data: payload.toJson());
+    return ExpenseCreatedResponse.fromJson(res.data);
   }
 }
