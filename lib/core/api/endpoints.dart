@@ -119,10 +119,10 @@ class Endpoints {
     return ScanResult.fromJson(res.data as Map<String, dynamic>);
   }
 
-  Future<ExpenseCreatedResponse> confirmScan(
-      ExpenseConfirmPayload payload) async {
+  Future<InvoiceCreatedResponse> confirmScan(
+      SupplierInvoiceConfirmPayload payload) async {
     final res = await _api.post('/receipts/confirm', data: payload.toJson());
-    return ExpenseCreatedResponse.fromJson(res.data);
+    return InvoiceCreatedResponse.fromJson(res.data);
   }
 
   Future<List<SupplierMatch>> lookupSupplier({String? taxId, String? name}) async {
@@ -132,5 +132,11 @@ class Endpoints {
     });
     final list = res.data as List<dynamic>;
     return list.map((e) => SupplierMatch.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<Map<String, dynamic>> createSupplier(
+      Map<String, dynamic> supplierData) async {
+    final res = await _api.post('/suppliers', data: supplierData);
+    return res.data as Map<String, dynamic>;
   }
 }

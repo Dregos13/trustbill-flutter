@@ -12,7 +12,7 @@ class ScanState {
   final bool isScanning;
   final bool isConfirming;
   final String? error;
-  final ExpenseCreatedResponse? confirmed;
+  final InvoiceCreatedResponse? confirmed;
 
   const ScanState({
     this.result,
@@ -31,7 +31,7 @@ class ScanState {
     bool? isScanning,
     bool? isConfirming,
     String? error,
-    ExpenseCreatedResponse? confirmed,
+    InvoiceCreatedResponse? confirmed,
   }) {
     return ScanState(
       result: result ?? this.result,
@@ -73,7 +73,7 @@ class ScanNotifier extends StateNotifier<ScanState> {
     }
   }
 
-  Future<void> confirmExpense(ExpenseConfirmPayload payload) async {
+  Future<void> confirmExpense(SupplierInvoiceConfirmPayload payload) async {
     state = state.copyWith(isConfirming: true, error: null);
 
     try {

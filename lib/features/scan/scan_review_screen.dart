@@ -18,26 +18,29 @@ class ScanReviewScreen extends ConsumerStatefulWidget {
 class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // Supplier fields
   late TextEditingController _supplierNameCtrl;
   late TextEditingController _supplierCifCtrl;
-  late TextEditingController _descriptionCtrl;
-  late TextEditingController _baseAmountCtrl;
-  late TextEditingController _taxRateCtrl;
-  late TextEditingController _vatAmountCtrl;
-  late TextEditingController _totalAmountCtrl;
-  late TextEditingController _dateCtrl;
+  late TextEditingController _supplierEmailCtrl;
+  late TextEditingController _supplierPhoneCtrl;
+  late TextEditingController _supplierAddressCtrl;
+  late TextEditingController _supplierPostalCtrl;
+  late TextEditingController _supplierNotesCtrl;
 
-  String _category = 'OTHER';
+  // Invoice fields
+  late TextEditingController _invoiceNumberCtrl;
+  late TextEditingController _issueDateCtrl;
+  late TextEditingController _dueDateCtrl;
+
+  // Amount fields
+  late TextEditingController _totalCtrl;
+  late TextEditingController _taxCtrl;
+
+  String _taxKind = 'IVA';
+  String _status = 'UNPAID';
+
   SupplierMatch? _matchedSupplier;
   bool _searchingSupplier = false;
-
-  static const _categories = {
-    'OTHER': 'Otros',
-    'RENT': 'Alquiler',
-    'UTILITIES': 'Suministros',
-    'SOFTWARE': 'Software',
-    'PAYROLL': 'Nominas',
-  };
 
   @override
   void initState() {
@@ -48,41 +51,23 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         TextEditingController(text: result?.supplierName ?? '');
     _supplierCifCtrl =
         TextEditingController(text: result?.supplierCif ?? '');
+    _supplierEmailCtrl = TextEditingController();
+    _supplierPhoneCtrl = TextEditingController();
+    _supplierAddressCtrl =
+        TextEditingController(text: result?.supplierAddress ?? '');
+    _supplierPostalCtrl = TextEditingController();
+    _supplierNotesCtrl = TextEditingController();
 
-    // Build description from first line items or supplier name
-    String desc = '';
-    if (result != null && result.lines.isNotEmpty) {
-      desc = result.lines.map((l) => l.description).take(3).join(', ');
-    }
-    if (desc.isEmpty) {
-      desc = result?.supplierName != null
-          ? 'Gasto - ${result!.supplierName}'
-          : 'Gasto escaneado';
-    }
-    _descriptionCtrl = TextEditingController(text: desc);
+    _invoiceNumberCtrl =
+        TextEditingController(text: result?.invoiceNumber ?? '');
+    _issueDateCtrl = TextEditingController(
+        text: _formatDisplayDate(result?.date ?? DateTime.now().toIso8601String()));
+    _dueDateCtrl = TextEditingController();
 
-    _baseAmountCtrl = TextEditingController(
-        text: (result?.subtotal ?? 0).toStringAsFixed(2));
-    _taxRateCtrl = TextEditingController(
-        text: _inferTaxRate(result?.subtotal ?? 0, result?.taxAmount ?? 0));
-    _vatAmountCtrl = TextEditingController(
-        text: (result?.taxAmount ?? 0).toStringAsFixed(2));
-    _totalAmountCtrl = TextEditingController(
+    _totalCtrl = TextEditingController(
         text: (result?.total ?? 0).toStringAsFixed(2));
-
-    // Parse date
-    final dateStr = result?.date ?? DateTime.now().toIso8601String();
-    _dateCtrl = TextEditingController(text: _formatDisplayDate(dateStr));
-  }
-
-  String _inferTaxRate(double base, double tax) {
-    if (base <= 0) return '21';
-    final rate = (tax / base * 100).roundToDouble();
-    // Snap to common Spanish rates
-    if ((rate - 21).abs() < 2) return '21';
-    if ((rate - 10).abs() < 2) return '10';
-    if ((rate - 4).abs() < 2) return '4';
-    return rate.toStringAsFixed(0);
+    _taxCtrl = TextEditingController(
+        text: (result?.taxAmount ?? 0).toStringAsFixed(2));
   }
 
   String _formatDisplayDate(String iso) {
@@ -109,17 +94,18 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return DateTime.now().toIso8601String();
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickDate(TextEditingController ctrl,
+      {bool allowFuture = false}) async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: now,
       firstDate: DateTime(2020),
-      lastDate: now,
+      lastDate: allowFuture ? DateTime(2100) : now,
       locale: const Locale('es', 'ES'),
     );
     if (picked != null) {
-      _dateCtrl.text = _formatDisplayDate(picked.toIso8601String());
+      ctrl.text = _formatDisplayDate(picked.toIso8601String());
     }
   }
 
@@ -141,18 +127,21 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       if (results.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('No se encontró ningún proveedor. Se creará uno nuevo al confirmar.'),
+            content: Text(
+                'No se encontró ningún proveedor. Se creará uno nuevo al confirmar.'),
             duration: Duration(seconds: 3),
           ),
         );
-        setState(() { _matchedSupplier = null; _searchingSupplier = false; });
+        setState(() {
+          _matchedSupplier = null;
+          _searchingSupplier = false;
+        });
         return;
       }
 
       if (results.length == 1) {
         _applySupplier(results.first);
       } else {
-        // Show picker dialog
         final picked = await showDialog<SupplierMatch>(
           context: context,
           builder: (_) => _SupplierPickerDialog(suppliers: results),
@@ -171,15 +160,10 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       _matchedSupplier = s;
       _supplierNameCtrl.text = s.name;
       _supplierCifCtrl.text = s.taxId ?? '';
+      if (s.address != null && s.address!.isNotEmpty) {
+        _supplierAddressCtrl.text = s.address!;
+      }
     });
-  }
-
-  void _recalculateFromBase() {
-    final base = double.tryParse(_baseAmountCtrl.text) ?? 0;
-    final rate = double.tryParse(_taxRateCtrl.text) ?? 0;
-    final vat = (base * rate / 100);
-    _vatAmountCtrl.text = vat.toStringAsFixed(2);
-    _totalAmountCtrl.text = (base + vat).toStringAsFixed(2);
   }
 
   Future<void> _submit() async {
@@ -188,16 +172,52 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     final state = ref.read(scanProvider);
     if (state.imageBytes == null) return;
 
-    final payload = ExpenseConfirmPayload(
+    final scanResult = state.result;
+    final lines = scanResult?.lines
+            .map((l) => <String, dynamic>{
+                  'description': l.description,
+                  'base': l.unitPrice * l.quantity,
+                  'taxRate': l.taxRate,
+                  'taxAmount': l.unitPrice * l.quantity * l.taxRate / 100,
+                })
+            .toList() ??
+        <Map<String, dynamic>>[];
+
+    final dueDateText = _dueDateCtrl.text.trim();
+
+    final payload = SupplierInvoiceConfirmPayload(
+      supplierId: _matchedSupplier?.id,
       supplierName: _supplierNameCtrl.text.trim(),
-      supplierCif: _supplierCifCtrl.text.trim(),
-      date: _parseDisplayDateToIso(_dateCtrl.text),
-      category: _category,
-      description: _descriptionCtrl.text.trim(),
-      baseAmount: double.tryParse(_baseAmountCtrl.text) ?? 0,
-      taxRate: double.tryParse(_taxRateCtrl.text) ?? 0,
-      vatAmount: double.tryParse(_vatAmountCtrl.text) ?? 0,
-      totalAmount: double.tryParse(_totalAmountCtrl.text) ?? 0,
+      supplierCif: _supplierCifCtrl.text.trim().isNotEmpty
+          ? _supplierCifCtrl.text.trim()
+          : null,
+      supplierEmail: _supplierEmailCtrl.text.trim().isNotEmpty
+          ? _supplierEmailCtrl.text.trim()
+          : null,
+      supplierPhone: _supplierPhoneCtrl.text.trim().isNotEmpty
+          ? _supplierPhoneCtrl.text.trim()
+          : null,
+      supplierAddress: _supplierAddressCtrl.text.trim().isNotEmpty
+          ? _supplierAddressCtrl.text.trim()
+          : null,
+      supplierPostalCode: _supplierPostalCtrl.text.trim().isNotEmpty
+          ? _supplierPostalCtrl.text.trim()
+          : null,
+      supplierNotes: _supplierNotesCtrl.text.trim().isNotEmpty
+          ? _supplierNotesCtrl.text.trim()
+          : null,
+      invoiceNumber: _invoiceNumberCtrl.text.trim().isNotEmpty
+          ? _invoiceNumberCtrl.text.trim()
+          : null,
+      issueDate: _parseDisplayDateToIso(_issueDateCtrl.text),
+      dueDate: dueDateText.isNotEmpty
+          ? _parseDisplayDateToIso(dueDateText)
+          : null,
+      taxKind: _taxKind,
+      status: _status,
+      total: double.tryParse(_totalCtrl.text) ?? 0,
+      tax: double.tryParse(_taxCtrl.text) ?? 0,
+      lines: lines,
       imageBase64: base64Encode(state.imageBytes!),
       imageMimeType: state.imageMimeType ?? 'image/jpeg',
     );
@@ -209,12 +229,16 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   void dispose() {
     _supplierNameCtrl.dispose();
     _supplierCifCtrl.dispose();
-    _descriptionCtrl.dispose();
-    _baseAmountCtrl.dispose();
-    _taxRateCtrl.dispose();
-    _vatAmountCtrl.dispose();
-    _totalAmountCtrl.dispose();
-    _dateCtrl.dispose();
+    _supplierEmailCtrl.dispose();
+    _supplierPhoneCtrl.dispose();
+    _supplierAddressCtrl.dispose();
+    _supplierPostalCtrl.dispose();
+    _supplierNotesCtrl.dispose();
+    _invoiceNumberCtrl.dispose();
+    _issueDateCtrl.dispose();
+    _dueDateCtrl.dispose();
+    _totalCtrl.dispose();
+    _taxCtrl.dispose();
     super.dispose();
   }
 
@@ -226,10 +250,11 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     // Navigate home on success
     ref.listen<ScanState>(scanProvider, (prev, next) {
       if (next.confirmed != null && prev?.confirmed == null) {
-        final supplierCreated = next.confirmed!.supplier.created;
+        final supplierName = next.confirmed!.supplier['name'] as String? ?? '';
+        final supplierCreated = next.confirmed!.supplierCreated;
         final msg = supplierCreated
-            ? 'Gasto creado. Proveedor "${next.confirmed!.supplier.name}" creado automaticamente.'
-            : 'Gasto creado correctamente.';
+            ? 'Factura registrada. Proveedor "$supplierName" creado automáticamente.'
+            : 'Factura registrada correctamente.';
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -244,7 +269,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Revisar datos'),
+        title: const Text('Revisar factura'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
@@ -269,47 +294,57 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                 ),
                 child: Text(
                   state.error!,
-                  style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                  style:
+                      const TextStyle(color: AppColors.danger, fontSize: 13),
                 ),
               ),
               const SizedBox(height: 16),
             ],
 
-            // Supplier section
+            // ── Proveedor ──────────────────────────────────────────────────
             _SectionTitle('Proveedor'),
             const SizedBox(height: 8),
+
+            // Matched supplier banner
             if (_matchedSupplier != null)
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.successBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.success, size: 16),
+                    const Icon(Icons.check_circle,
+                        color: AppColors.success, size: 16),
                     const SizedBox(width: 8),
-                    Expanded(
+                    const Expanded(
                       child: Text(
                         'Proveedor encontrado en tu base de datos',
-                        style: const TextStyle(color: AppColors.success, fontSize: 13),
+                        style: TextStyle(
+                            color: AppColors.success, fontSize: 13),
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => setState(() => _matchedSupplier = null),
-                      child: const Icon(Icons.close, color: AppColors.success, size: 16),
+                      onTap: () =>
+                          setState(() => _matchedSupplier = null),
+                      child: const Icon(Icons.close,
+                          color: AppColors.success, size: 16),
                     ),
                   ],
                 ),
               ),
+
+            // Nombre fiscal + search button
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildField(
                     controller: _supplierNameCtrl,
-                    label: 'Nombre del proveedor',
+                    label: 'Nombre fiscal',
                     icon: Icons.store,
                     validator: (v) =>
                         v == null || v.isEmpty ? 'Nombre requerido' : null,
@@ -320,37 +355,95 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   padding: const EdgeInsets.only(top: 4),
                   child: _searchingSupplier
                       ? const SizedBox(
-                          width: 48, height: 48,
-                          child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                          width: 48,
+                          height: 48,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2),
+                            ),
+                          ),
                         )
                       : IconButton.filled(
                           onPressed: _searchSupplier,
                           icon: const Icon(Icons.search),
                           tooltip: 'Buscar en tu base de datos',
-                          style: IconButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                          style: IconButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white),
                         ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+
             _buildField(
               controller: _supplierCifCtrl,
               label: 'CIF / NIF',
               icon: Icons.badge,
               hint: 'Busca por CIF para encontrar el proveedor',
             ),
+            const SizedBox(height: 12),
 
+            _buildField(
+              controller: _supplierEmailCtrl,
+              label: 'Email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 12),
+
+            _buildField(
+              controller: _supplierPhoneCtrl,
+              label: 'Teléfono',
+              icon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 12),
+
+            _buildField(
+              controller: _supplierAddressCtrl,
+              label: 'Dirección',
+              icon: Icons.location_on_outlined,
+            ),
+            const SizedBox(height: 12),
+
+            _buildField(
+              controller: _supplierPostalCtrl,
+              label: 'Código postal',
+              icon: Icons.markunread_mailbox_outlined,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+
+            _buildField(
+              controller: _supplierNotesCtrl,
+              label: 'Notas',
+              icon: Icons.notes,
+              maxLines: 2,
+            ),
+
+            // ── Datos de la factura ────────────────────────────────────────
             const SizedBox(height: 24),
-            _SectionTitle('Datos del gasto'),
+            _SectionTitle('Datos de la factura'),
             const SizedBox(height: 8),
 
-            // Date picker
+            _buildField(
+              controller: _invoiceNumberCtrl,
+              label: 'Nº Factura',
+              icon: Icons.tag,
+            ),
+            const SizedBox(height: 12),
+
+            // Fecha emisión
             GestureDetector(
-              onTap: _pickDate,
+              onTap: () => _pickDate(_issueDateCtrl),
               child: AbsorbPointer(
                 child: _buildField(
-                  controller: _dateCtrl,
-                  label: 'Fecha',
+                  controller: _issueDateCtrl,
+                  label: 'Fecha emisión',
                   icon: Icons.calendar_today,
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Fecha requerida' : null,
@@ -359,103 +452,91 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Category dropdown
+            // Fecha vencimiento
+            GestureDetector(
+              onTap: () => _pickDate(_dueDateCtrl, allowFuture: true),
+              child: AbsorbPointer(
+                child: _buildField(
+                  controller: _dueDateCtrl,
+                  label: 'Fecha vencimiento',
+                  icon: Icons.event_outlined,
+                  hint: 'Opcional',
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Régimen fiscal
             DropdownButtonFormField<String>(
-              initialValue: _category,
+              value: _taxKind,
               decoration: InputDecoration(
-                labelText: 'Categoria',
-                prefixIcon:
-                    const Icon(Icons.category, color: AppColors.gray400),
+                labelText: 'Régimen fiscal',
+                prefixIcon: const Icon(Icons.account_balance_outlined,
+                    color: AppColors.gray400),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              items: _categories.entries
-                  .map((e) => DropdownMenuItem(
-                        value: e.key,
-                        child: Text(e.value),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => _category = v ?? 'OTHER'),
+              items: const [
+                DropdownMenuItem(value: 'IVA', child: Text('IVA')),
+                DropdownMenuItem(value: 'IPSI', child: Text('IPSI')),
+              ],
+              onChanged: (v) => setState(() => _taxKind = v ?? 'IVA'),
             ),
             const SizedBox(height: 12),
 
-            _buildField(
-              controller: _descriptionCtrl,
-              label: 'Descripcion',
-              icon: Icons.notes,
-              maxLines: 2,
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Descripcion requerida' : null,
+            // Estado
+            DropdownButtonFormField<String>(
+              value: _status,
+              decoration: InputDecoration(
+                labelText: 'Estado',
+                prefixIcon: const Icon(Icons.payments_outlined,
+                    color: AppColors.gray400),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              items: const [
+                DropdownMenuItem(
+                    value: 'UNPAID', child: Text('Pendiente')),
+                DropdownMenuItem(value: 'PAID', child: Text('Pagada')),
+              ],
+              onChanged: (v) => setState(() => _status = v ?? 'UNPAID'),
             ),
 
+            // ── Importes ───────────────────────────────────────────────────
             const SizedBox(height: 24),
             _SectionTitle('Importes'),
             const SizedBox(height: 8),
 
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: _buildField(
-                    controller: _baseAmountCtrl,
-                    label: 'Base imponible',
-                    icon: Icons.euro,
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => _recalculateFromBase(),
-                    validator: (v) {
-                      final n = double.tryParse(v ?? '');
-                      if (n == null || n < 0) return 'Importe invalido';
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildField(
-                    controller: _taxRateCtrl,
-                    label: '% IVA',
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => _recalculateFromBase(),
-                  ),
-                ),
-              ],
+            _buildField(
+              controller: _totalCtrl,
+              label: 'Total',
+              icon: Icons.euro,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              validator: (v) {
+                final n = double.tryParse(v ?? '');
+                if (n == null || n <= 0) return 'Total requerido';
+                return null;
+              },
             ),
             const SizedBox(height: 12),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _buildField(
-                    controller: _vatAmountCtrl,
-                    label: 'IVA',
-                    icon: Icons.receipt_long,
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildField(
-                    controller: _totalAmountCtrl,
-                    label: 'Total',
-                    icon: Icons.payments,
-                    keyboardType: TextInputType.number,
-                    validator: (v) {
-                      final n = double.tryParse(v ?? '');
-                      if (n == null || n <= 0) return 'Total requerido';
-                      return null;
-                    },
-                  ),
-                ),
-              ],
+            _buildField(
+              controller: _taxCtrl,
+              label: 'Impuesto / IVA',
+              icon: Icons.receipt_long,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
 
-            // Line items preview (read-only)
+            // ── Líneas detectadas (read-only) ──────────────────────────────
             if (state.result != null &&
                 state.result!.lines.isNotEmpty) ...[
               const SizedBox(height: 24),
               _SectionTitle(
-                  'Lineas detectadas (${state.result!.lines.length})'),
+                  'Líneas detectadas (${state.result!.lines.length})'),
               const SizedBox(height: 8),
               ...state.result!.lines.map((line) => Container(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -491,14 +572,24 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
             const SizedBox(height: 32),
 
-            // Submit button (disabled until backend confirm is ready)
+            // Submit button
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
-                onPressed: null,
-                icon: const Icon(Icons.check),
-                label: const Text('Crear gasto (próximamente)'),
+                onPressed:
+                    state.isConfirming ? null : _submit,
+                icon: state.isConfirming
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.check),
+                label: Text(state.isConfirming
+                    ? 'Registrando...'
+                    : 'Registrar factura'),
               ),
             ),
             const SizedBox(height: 16),
@@ -523,9 +614,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: icon != null
-            ? Icon(icon, color: AppColors.gray400)
-            : null,
+        prefixIcon:
+            icon != null ? Icon(icon, color: AppColors.gray400) : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -572,10 +662,12 @@ class _SupplierPickerDialog extends StatelessWidget {
           itemBuilder: (_, i) {
             final s = suppliers[i];
             return ListTile(
-              leading: const Icon(Icons.store, color: AppColors.primary),
+              leading:
+                  const Icon(Icons.store, color: AppColors.primary),
               title: Text(s.name),
               subtitle: s.taxId != null && s.taxId!.isNotEmpty
-                  ? Text(s.taxId!, style: const TextStyle(fontSize: 12))
+                  ? Text(s.taxId!,
+                      style: const TextStyle(fontSize: 12))
                   : null,
               onTap: () => Navigator.of(context).pop(s),
             );
