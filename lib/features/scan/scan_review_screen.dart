@@ -259,7 +259,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
             // Category dropdown
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: InputDecoration(
                 labelText: 'Categoria',
                 prefixIcon:

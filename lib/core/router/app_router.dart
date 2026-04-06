@@ -11,6 +11,8 @@ import '../../features/clients/client_detail_screen.dart';
 import '../../features/invoices/invoices_screen.dart';
 import '../../features/invoices/invoice_detail_screen.dart';
 import '../../features/account/account_screen.dart';
+import '../../features/scan/scan_screen.dart';
+import '../../features/scan/scan_review_screen.dart';
 import '../../widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -77,6 +79,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, state) => InvoiceDetailScreen(
               id: int.parse(state.pathParameters['id']!),
             ),
+          ),
+          GoRoute(
+            path: '/scan',
+            builder: (_, __) => const ScanScreen(),
+          ),
+          GoRoute(
+            path: '/scan/review',
+            builder: (_, __) => const ScanReviewScreen(),
           ),
           GoRoute(
             path: '/account',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'app_header.dart';
 import 'app_bottom_nav.dart';
+import '../core/theme/app_colors.dart';
 
 class AppShell extends StatelessWidget {
   final String currentLocation;
@@ -29,6 +30,13 @@ class AppShell extends StatelessWidget {
             const AppHeader(),
             Expanded(child: child),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => context.push('/scan'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          child: const Icon(Icons.document_scanner),
         ),
         bottomNavigationBar: AppBottomNav(
           currentLocation: currentLocation,
