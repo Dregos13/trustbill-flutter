@@ -7,6 +7,7 @@ import '../models/dashboard.dart';
 import '../models/paginated.dart';
 import '../models/scan_result.dart';
 import '../models/expense.dart';
+import '../models/supplier.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -115,12 +116,21 @@ class Endpoints {
       fileName: fileName,
       mimeType: mimeType,
     );
-    return ScanResult.fromJson(res.data);
+    return ScanResult.fromJson(res.data as Map<String, dynamic>);
   }
 
   Future<ExpenseCreatedResponse> confirmScan(
       ExpenseConfirmPayload payload) async {
     final res = await _api.post('/receipts/confirm', data: payload.toJson());
     return ExpenseCreatedResponse.fromJson(res.data);
+  }
+
+  Future<List<SupplierMatch>> lookupSupplier({String? taxId, String? name}) async {
+    final res = await _api.get('/suppliers/lookup', queryParams: {
+      if (taxId != null && taxId.isNotEmpty) 'taxId': taxId,
+      if (name != null && name.isNotEmpty) 'name': name,
+    });
+    final list = res.data as List<dynamic>;
+    return list.map((e) => SupplierMatch.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

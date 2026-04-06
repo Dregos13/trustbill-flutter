@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/models/expense.dart';
+import '../../core/models/supplier.dart';
+import '../../core/auth/auth_provider.dart';
 import 'scan_provider.dart';
 
 class ScanReviewScreen extends ConsumerStatefulWidget {
@@ -26,6 +28,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   late TextEditingController _dateCtrl;
 
   String _category = 'OTHER';
+  SupplierMatch? _matchedSupplier;
+  bool _searchingSupplier = false;
 
   static const _categories = {
     'OTHER': 'Otros',
@@ -117,6 +121,57 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     if (picked != null) {
       _dateCtrl.text = _formatDisplayDate(picked.toIso8601String());
     }
+  }
+
+  Future<void> _searchSupplier() async {
+    final cif = _supplierCifCtrl.text.trim();
+    final name = _supplierNameCtrl.text.trim();
+    if (cif.isEmpty && name.isEmpty) return;
+
+    setState(() => _searchingSupplier = true);
+    try {
+      final endpoints = ref.read(endpointsProvider);
+      final results = await endpoints.lookupSupplier(
+        taxId: cif.isNotEmpty ? cif : null,
+        name: name.isNotEmpty ? name : null,
+      );
+
+      if (!mounted) return;
+
+      if (results.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se encontró ningún proveedor. Se creará uno nuevo al confirmar.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        setState(() { _matchedSupplier = null; _searchingSupplier = false; });
+        return;
+      }
+
+      if (results.length == 1) {
+        _applySupplier(results.first);
+      } else {
+        // Show picker dialog
+        final picked = await showDialog<SupplierMatch>(
+          context: context,
+          builder: (_) => _SupplierPickerDialog(suppliers: results),
+        );
+        if (picked != null && mounted) _applySupplier(picked);
+      }
+    } catch (_) {
+      // Silently ignore search errors — user can still fill fields manually
+    } finally {
+      if (mounted) setState(() => _searchingSupplier = false);
+    }
+  }
+
+  void _applySupplier(SupplierMatch s) {
+    setState(() {
+      _matchedSupplier = s;
+      _supplierNameCtrl.text = s.name;
+      _supplierCifCtrl.text = s.taxId ?? '';
+    });
   }
 
   void _recalculateFromBase() {
@@ -223,19 +278,66 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
             // Supplier section
             _SectionTitle('Proveedor'),
             const SizedBox(height: 8),
-            _buildField(
-              controller: _supplierNameCtrl,
-              label: 'Nombre del proveedor',
-              icon: Icons.store,
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Nombre requerido' : null,
+            if (_matchedSupplier != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.successBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: AppColors.success, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Proveedor encontrado en tu base de datos',
+                        style: const TextStyle(color: AppColors.success, fontSize: 13),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _matchedSupplier = null),
+                      child: const Icon(Icons.close, color: AppColors.success, size: 16),
+                    ),
+                  ],
+                ),
+              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _buildField(
+                    controller: _supplierNameCtrl,
+                    label: 'Nombre del proveedor',
+                    icon: Icons.store,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Nombre requerido' : null,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _searchingSupplier
+                      ? const SizedBox(
+                          width: 48, height: 48,
+                          child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                        )
+                      : IconButton.filled(
+                          onPressed: _searchSupplier,
+                          icon: const Icon(Icons.search),
+                          tooltip: 'Buscar en tu base de datos',
+                          style: IconButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                        ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             _buildField(
               controller: _supplierCifCtrl,
               label: 'CIF / NIF',
               icon: Icons.badge,
-              hint: 'Si existe, se vinculara al proveedor existente',
+              hint: 'Busca por CIF para encontrar el proveedor',
             ),
 
             const SizedBox(height: 24),
@@ -389,24 +491,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
             const SizedBox(height: 32),
 
-            // Submit button
+            // Submit button (disabled until backend confirm is ready)
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
-                onPressed: state.isConfirming ? null : _submit,
-                icon: state.isConfirming
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.check),
-                label: Text(
-                    state.isConfirming ? 'Guardando...' : 'Crear gasto'),
+                onPressed: null,
+                icon: const Icon(Icons.check),
+                label: const Text('Crear gasto (próximamente)'),
               ),
             ),
             const SizedBox(height: 16),
@@ -459,6 +551,43 @@ class _SectionTitle extends StatelessWidget {
         fontWeight: FontWeight.w700,
         color: AppColors.gray800,
       ),
+    );
+  }
+}
+
+class _SupplierPickerDialog extends StatelessWidget {
+  final List<SupplierMatch> suppliers;
+  const _SupplierPickerDialog({required this.suppliers});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Seleccionar proveedor'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: suppliers.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (_, i) {
+            final s = suppliers[i];
+            return ListTile(
+              leading: const Icon(Icons.store, color: AppColors.primary),
+              title: Text(s.name),
+              subtitle: s.taxId != null && s.taxId!.isNotEmpty
+                  ? Text(s.taxId!, style: const TextStyle(fontSize: 12))
+                  : null,
+              onTap: () => Navigator.of(context).pop(s),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+      ],
     );
   }
 }

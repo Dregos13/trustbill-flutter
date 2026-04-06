@@ -18,7 +18,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(scanProvider.notifier).reset();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(scanProvider.notifier).reset();
+    });
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -42,10 +44,13 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(scanProvider);
 
-    // Navigate to review when scan completes
+    // Navigate to review when scan completes (deferred to avoid modifying
+    // provider during build)
     ref.listen<ScanState>(scanProvider, (prev, next) {
       if (next.result != null && prev?.result == null) {
-        context.push('/scan/review');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.push('/scan/review');
+        });
       }
     });
 
@@ -251,7 +256,7 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
