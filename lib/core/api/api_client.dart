@@ -151,7 +151,6 @@ class ApiClient {
       path,
       data: formData,
       options: Options(
-        headers: {'Content-Type': 'multipart/form-data'},
         receiveTimeout: const Duration(seconds: 60),
       ),
     );
