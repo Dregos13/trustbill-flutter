@@ -8,6 +8,7 @@ import '../models/paginated.dart';
 import '../models/scan_result.dart';
 import '../models/expense.dart';
 import '../models/supplier.dart';
+import '../models/purchase.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -138,5 +139,20 @@ class Endpoints {
       Map<String, dynamic> supplierData) async {
     final res = await _api.post('/suppliers', data: supplierData);
     return res.data as Map<String, dynamic>;
+  }
+
+  // ---- Purchases ----
+
+  Future<PaginatedResponse<PurchaseListItem>> getPurchases({
+    int limit = 50,
+    int offset = 0,
+    String? status,
+  }) async {
+    final res = await _api.get('/purchases', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (status != null && status.isNotEmpty) 'status': status,
+    });
+    return PaginatedResponse.fromJson(res.data, PurchaseListItem.fromJson);
   }
 }

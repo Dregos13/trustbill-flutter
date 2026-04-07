@@ -13,6 +13,7 @@ import '../../features/invoices/invoice_detail_screen.dart';
 import '../../features/account/account_screen.dart';
 import '../../features/scan/scan_screen.dart';
 import '../../features/scan/scan_review_screen.dart';
+import '../../features/purchases/purchases_screen.dart';
 import '../../widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -87,6 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/scan/review',
             builder: (_, __) => const ScanReviewScreen(),
+          ),
+          GoRoute(
+            path: '/purchases',
+            builder: (_, __) => const PurchasesScreen(),
           ),
           GoRoute(
             path: '/account',

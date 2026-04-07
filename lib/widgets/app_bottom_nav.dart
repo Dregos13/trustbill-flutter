@@ -15,7 +15,8 @@ class AppBottomNav extends StatelessWidget {
     if (currentLocation == '/') return 0;
     if (currentLocation.startsWith('/clients')) return 1;
     if (currentLocation.startsWith('/invoices')) return 2;
-    if (currentLocation.startsWith('/account')) return 3;
+    if (currentLocation.startsWith('/purchases')) return 3;
+    if (currentLocation.startsWith('/account')) return 4;
     return 0;
   }
 
@@ -61,10 +62,17 @@ class AppBottomNav extends StatelessWidget {
                 onTap: () => onNavigate('/invoices'),
               ),
               _NavItem(
+                icon: Icons.shopping_bag_outlined,
+                activeIcon: Icons.shopping_bag,
+                label: 'Compras',
+                isActive: _currentIndex == 3,
+                onTap: () => onNavigate('/purchases'),
+              ),
+              _NavItem(
                 icon: Icons.settings_outlined,
                 activeIcon: Icons.settings,
                 label: 'Cuenta',
-                isActive: _currentIndex == 3,
+                isActive: _currentIndex == 4,
                 onTap: () => onNavigate('/account'),
               ),
             ],
