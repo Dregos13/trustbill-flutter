@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -88,10 +89,10 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
           int.parse(parts[1]),
           int.parse(parts[0]),
         );
-        return dt.toIso8601String();
+        return dt.toUtc().toIso8601String();
       }
     } catch (_) {}
-    return DateTime.now().toIso8601String();
+    return DateTime.now().toUtc().toIso8601String();
   }
 
   Future<void> _pickDate(TextEditingController ctrl,
@@ -102,11 +103,15 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       initialDate: now,
       firstDate: DateTime(2020),
       lastDate: allowFuture ? DateTime(2100) : now,
-      locale: const Locale('es', 'ES'),
     );
     if (picked != null) {
       ctrl.text = _formatDisplayDate(picked.toIso8601String());
     }
+  }
+
+  bool _isValidEmail(String v) {
+    if (v.isEmpty) return false;
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v);
   }
 
   Future<void> _searchSupplier() async {
@@ -191,7 +196,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       supplierCif: _supplierCifCtrl.text.trim().isNotEmpty
           ? _supplierCifCtrl.text.trim()
           : null,
-      supplierEmail: _supplierEmailCtrl.text.trim().isNotEmpty
+      supplierEmail: _isValidEmail(_supplierEmailCtrl.text.trim())
           ? _supplierEmailCtrl.text.trim()
           : null,
       supplierPhone: _supplierPhoneCtrl.text.trim().isNotEmpty
@@ -267,7 +272,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       }
     });
 
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       appBar: AppBar(
         title: const Text('Revisar factura'),
         backgroundColor: AppColors.primary,
@@ -577,25 +584,18 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
-                onPressed:
-                    state.isConfirming ? null : _submit,
-                icon: state.isConfirming
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.check),
-                label: Text(state.isConfirming
-                    ? 'Registrando...'
-                    : 'Registrar factura'),
+                onPressed: state.isConfirming ? null : _submit,
+                icon: const Icon(Icons.check),
+                label: const Text('Registrar factura'),
               ),
             ),
             const SizedBox(height: 16),
           ],
         ),
       ),
+        ),
+        if (state.isConfirming) const _ConfirmProgressOverlay(),
+      ],
     );
   }
 
@@ -680,6 +680,131 @@ class _SupplierPickerDialog extends StatelessWidget {
           child: const Text('Cancelar'),
         ),
       ],
+    );
+  }
+}
+
+// ── Confirm progress overlay ───────────────────────────────────────────────
+
+class _ConfirmProgressOverlay extends StatefulWidget {
+  const _ConfirmProgressOverlay();
+
+  @override
+  State<_ConfirmProgressOverlay> createState() =>
+      _ConfirmProgressOverlayState();
+}
+
+class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
+  // 0 = pending, 1 = active, 2 = done
+  final List<int> _stepState = [1, 0, 0];
+
+  final List<String> _labels = [
+    'Guardando imagen',
+    'Registrando proveedor',
+    'Creando factura de compra',
+  ];
+
+  final List<IconData> _icons = [
+    Icons.image_outlined,
+    Icons.store_outlined,
+    Icons.receipt_long_outlined,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(milliseconds: 900), () {
+      if (mounted) setState(() { _stepState[0] = 2; _stepState[1] = 1; });
+    });
+    Timer(const Duration(milliseconds: 1900), () {
+      if (mounted) setState(() { _stepState[1] = 2; _stepState[2] = 1; });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black54,
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Registrando factura',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.gray800,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ...List.generate(_labels.length, (i) => _StepRow(
+                    icon: _icons[i],
+                    label: _labels[i],
+                    state: _stepState[i],
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StepRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final int state; // 0=pending, 1=active, 2=done
+
+  const _StepRow({required this.icon, required this.label, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPending = state == 0;
+    final isActive = state == 1;
+    final isDone = state == 2;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: isActive
+                ? const CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: AppColors.primary,
+                  )
+                : isDone
+                    ? const Icon(Icons.check_circle,
+                        color: AppColors.success, size: 28)
+                    : Icon(Icons.radio_button_unchecked,
+                        color: AppColors.gray300, size: 28),
+          ),
+          const SizedBox(width: 14),
+          Icon(icon,
+              size: 18,
+              color: isPending ? AppColors.gray300 : AppColors.primary),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight:
+                  isActive ? FontWeight.w600 : FontWeight.w400,
+              color: isPending ? AppColors.gray400 : AppColors.gray800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
