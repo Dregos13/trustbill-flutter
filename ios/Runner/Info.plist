@@ -30,6 +30,8 @@
 	<array>
 		<integer>1</integer>
 	</array>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>TrustInFacts necesita acceso a la cámara para fotografiar facturas y documentos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
