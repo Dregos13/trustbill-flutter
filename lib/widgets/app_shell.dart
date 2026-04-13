@@ -14,6 +14,34 @@ class AppShell extends StatelessWidget {
     required this.child,
   });
 
+  Widget _buildFab(BuildContext context) {
+    if (currentLocation == '/clients') {
+      return FloatingActionButton.extended(
+        onPressed: () => context.push('/clients/new'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.person_add),
+        label: const Text('Nuevo cliente'),
+      );
+    }
+    if (currentLocation == '/invoices') {
+      return FloatingActionButton.extended(
+        onPressed: () => context.push('/invoices/new'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Nueva factura'),
+      );
+    }
+    return FloatingActionButton(
+      onPressed: () => context.push('/scan'),
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      elevation: 4,
+      child: const Icon(Icons.document_scanner),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // On back press: if not on home, go home. Otherwise let system handle (exit).
@@ -31,13 +59,7 @@ class AppShell extends StatelessWidget {
             Expanded(child: child),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push('/scan'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          child: const Icon(Icons.document_scanner),
-        ),
+        floatingActionButton: _buildFab(context),
         bottomNavigationBar: AppBottomNav(
           currentLocation: currentLocation,
           onNavigate: (path) => context.go(path),

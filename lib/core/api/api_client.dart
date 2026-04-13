@@ -134,6 +134,9 @@ class ApiClient {
   Future<Response> post(String path, {dynamic data}) =>
       _dio.post(path, data: data);
 
+  Future<Response> put(String path, {dynamic data}) =>
+      _dio.put(path, data: data);
+
   Future<Response> postMultipart(
     String path, {
     required Uint8List fileBytes,

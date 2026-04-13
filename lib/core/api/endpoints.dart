@@ -9,6 +9,8 @@ import '../models/scan_result.dart';
 import '../models/expense.dart';
 import '../models/supplier.dart';
 import '../models/purchase.dart';
+import '../models/product.dart';
+import '../models/service.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -72,6 +74,16 @@ class Endpoints {
     return Client.fromJson(res.data);
   }
 
+  Future<Client> createClient(Map<String, dynamic> data) async {
+    final res = await _api.post('/clients', data: data);
+    return Client.fromJson(res.data);
+  }
+
+  Future<Client> updateClient(int id, Map<String, dynamic> data) async {
+    final res = await _api.put('/clients/$id', data: data);
+    return Client.fromJson(res.data);
+  }
+
   // ---- Invoices ----
 
   Future<PaginatedResponse<InvoiceListItem>> getInvoices({
@@ -96,6 +108,64 @@ class Endpoints {
   Future<InvoiceDetail> getInvoice(int id) async {
     final res = await _api.get('/invoices/$id');
     return InvoiceDetail.fromJson(res.data);
+  }
+
+  Future<Map<String, dynamic>> createInvoice(Map<String, dynamic> data) async {
+    final res = await _api.post('/invoices', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ---- Catalog ----
+
+  Future<PaginatedResponse<Product>> getProducts({
+    int limit = 100,
+    int offset = 0,
+    String? search,
+  }) async {
+    final res = await _api.get('/products', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (search != null && search.isNotEmpty) 'search': search,
+    });
+    return PaginatedResponse.fromJson(res.data, Product.fromJson);
+  }
+
+  Future<PaginatedResponse<Service>> getServices({
+    int limit = 100,
+    int offset = 0,
+    String? search,
+  }) async {
+    final res = await _api.get('/services', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (search != null && search.isNotEmpty) 'search': search,
+    });
+    return PaginatedResponse.fromJson(res.data, Service.fromJson);
+  }
+
+  // ---- Company ----
+
+  Future<Map<String, dynamic>> getCompanySettings() async {
+    final res = await _api.get('/company');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> uploadCompanyLogo({
+    required Uint8List imageBytes,
+    required String mimeType,
+  }) async {
+    final ext = mimeType == 'image/png'
+        ? 'logo.png'
+        : mimeType == 'image/webp'
+            ? 'logo.webp'
+            : 'logo.jpg';
+    final res = await _api.postMultipart(
+      '/company/logo',
+      fileBytes: imageBytes,
+      fileName: ext,
+      mimeType: mimeType,
+    );
+    return res.data as Map<String, dynamic>;
   }
 
   // ---- PDF ----

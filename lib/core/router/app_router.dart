@@ -14,6 +14,8 @@ import '../../features/account/account_screen.dart';
 import '../../features/scan/scan_screen.dart';
 import '../../features/scan/scan_review_screen.dart';
 import '../../features/purchases/purchases_screen.dart';
+import '../../features/clients/create_client_screen.dart';
+import '../../features/invoices/create_invoice_screen.dart';
 import '../../widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -66,14 +68,30 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const ClientsScreen(),
           ),
           GoRoute(
+            path: '/clients/new',
+            builder: (_, __) => const CreateClientScreen(),
+          ),
+          GoRoute(
             path: '/clients/:id',
             builder: (_, state) => ClientDetailScreen(
               id: int.parse(state.pathParameters['id']!),
             ),
           ),
           GoRoute(
+            path: '/clients/:id/edit',
+            builder: (_, state) {
+              // Pass client via extra
+              final client = state.extra as dynamic;
+              return CreateClientScreen(existingClient: client);
+            },
+          ),
+          GoRoute(
             path: '/invoices',
             builder: (_, __) => const InvoicesScreen(),
+          ),
+          GoRoute(
+            path: '/invoices/new',
+            builder: (_, __) => const CreateInvoiceScreen(),
           ),
           GoRoute(
             path: '/invoices/:id',

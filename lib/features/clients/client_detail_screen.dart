@@ -7,6 +7,7 @@ import '../../core/models/client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
+import 'create_client_screen.dart';
 
 final clientDetailProvider =
     FutureProvider.autoDispose.family<Client, int>((ref, id) async {
@@ -29,11 +30,11 @@ class ClientDetailScreen extends ConsumerWidget {
         message:
             err is ApiError ? err.message : 'Error al cargar el cliente',
       ),
-      data: (client) => _buildContent(context, client),
+      data: (client) => _buildContent(context, ref, client),
     );
   }
 
-  Widget _buildContent(BuildContext context, Client client) {
+  Widget _buildContent(BuildContext context, WidgetRef ref, Client client) {
     final initial = client.name.isNotEmpty ? client.name[0].toUpperCase() : '?';
 
     return ListView(
@@ -101,6 +102,21 @@ class ClientDetailScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+              tooltip: 'Editar cliente',
+              onPressed: () async {
+                final updated = await Navigator.of(context).push<Client>(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        CreateClientScreen(existingClient: client),
+                  ),
+                );
+                if (updated != null) {
+                  ref.invalidate(clientDetailProvider(id));
+                }
+              },
             ),
           ],
         ),
