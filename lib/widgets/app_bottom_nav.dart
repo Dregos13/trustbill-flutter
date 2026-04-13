@@ -1,7 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/auth/permission_helpers.dart';
+import '../core/auth/permission_provider.dart';
 import '../core/theme/app_colors.dart';
 
-class AppBottomNav extends StatelessWidget {
+// ── Tab definition ─────────────────────────────────────────────────────────────
+
+class _TabDef {
+  final String route;
+  final String routePrefix;
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  /// null = always visible (no permission required)
+  final String? requiredPermission;
+
+  const _TabDef({
+    required this.route,
+    required this.routePrefix,
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    this.requiredPermission,
+  });
+}
+
+const _allTabs = [
+  _TabDef(
+    route: '/',
+    routePrefix: '/',
+    icon: Icons.home_outlined,
+    activeIcon: Icons.home,
+    label: 'Inicio',
+    requiredPermission: Permissions.reportsRead,
+  ),
+  _TabDef(
+    route: '/clients',
+    routePrefix: '/clients',
+    icon: Icons.people_outline,
+    activeIcon: Icons.people,
+    label: 'Clientes',
+    requiredPermission: Permissions.clientsRead,
+  ),
+  _TabDef(
+    route: '/invoices',
+    routePrefix: '/invoices',
+    icon: Icons.description_outlined,
+    activeIcon: Icons.description,
+    label: 'Facturas',
+    requiredPermission: Permissions.documentsRead,
+  ),
+  _TabDef(
+    route: '/purchases',
+    routePrefix: '/purchases',
+    icon: Icons.shopping_bag_outlined,
+    activeIcon: Icons.shopping_bag,
+    label: 'Compras',
+    requiredPermission: Permissions.expensesRead,
+  ),
+  _TabDef(
+    route: '/account',
+    routePrefix: '/account',
+    icon: Icons.settings_outlined,
+    activeIcon: Icons.settings,
+    label: 'Cuenta',
+    requiredPermission: null, // always visible
+  ),
+];
+
+// ── Provider: visible tabs ─────────────────────────────────────────────────────
+
+/// List of tabs visible to the current user based on their permissions.
+final visibleTabsProvider = Provider<List<_TabDef>>((ref) {
+  final perms = ref.watch(permissionsProvider);
+  return _allTabs.where((tab) {
+    if (tab.requiredPermission == null) return true;
+    final key = tab.requiredPermission!;
+    final category = key.split('.').first;
+    return perms.contains(key) || perms.contains('$category.*');
+  }).toList();
+});
+
+// ── Widget ─────────────────────────────────────────────────────────────────────
+
+class AppBottomNav extends ConsumerWidget {
   final String currentLocation;
   final ValueChanged<String> onNavigate;
 
@@ -11,17 +93,20 @@ class AppBottomNav extends StatelessWidget {
     required this.onNavigate,
   });
 
-  int get _currentIndex {
-    if (currentLocation == '/') return 0;
-    if (currentLocation.startsWith('/clients')) return 1;
-    if (currentLocation.startsWith('/invoices')) return 2;
-    if (currentLocation.startsWith('/purchases')) return 3;
-    if (currentLocation.startsWith('/account')) return 4;
+  int _currentIndex(List<_TabDef> tabs) {
+    for (int i = 0; i < tabs.length; i++) {
+      final tab = tabs[i];
+      if (tab.route == '/' && currentLocation == '/') return i;
+      if (tab.route != '/' && currentLocation.startsWith(tab.routePrefix)) return i;
+    }
     return 0;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tabs = ref.watch(visibleTabsProvider);
+    final activeIdx = _currentIndex(tabs);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -39,49 +124,25 @@ class AppBottomNav extends StatelessWidget {
           height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Inicio',
-                isActive: _currentIndex == 0,
-                onTap: () => onNavigate('/'),
-              ),
-              _NavItem(
-                icon: Icons.people_outline,
-                activeIcon: Icons.people,
-                label: 'Clientes',
-                isActive: _currentIndex == 1,
-                onTap: () => onNavigate('/clients'),
-              ),
-              _NavItem(
-                icon: Icons.description_outlined,
-                activeIcon: Icons.description,
-                label: 'Facturas',
-                isActive: _currentIndex == 2,
-                onTap: () => onNavigate('/invoices'),
-              ),
-              _NavItem(
-                icon: Icons.shopping_bag_outlined,
-                activeIcon: Icons.shopping_bag,
-                label: 'Compras',
-                isActive: _currentIndex == 3,
-                onTap: () => onNavigate('/purchases'),
-              ),
-              _NavItem(
-                icon: Icons.settings_outlined,
-                activeIcon: Icons.settings,
-                label: 'Cuenta',
-                isActive: _currentIndex == 4,
-                onTap: () => onNavigate('/account'),
-              ),
-            ],
+            children: tabs
+                .asMap()
+                .entries
+                .map((entry) => _NavItem(
+                      icon: entry.value.icon,
+                      activeIcon: entry.value.activeIcon,
+                      label: entry.value.label,
+                      isActive: entry.key == activeIdx,
+                      onTap: () => onNavigate(entry.value.route),
+                    ))
+                .toList(),
           ),
         ),
       ),
     );
   }
 }
+
+// ── Nav item ───────────────────────────────────────────────────────────────────
 
 class _NavItem extends StatelessWidget {
   final IconData icon;

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'app_header.dart';
 import 'app_bottom_nav.dart';
+import '../core/auth/permission_helpers.dart';
+import '../core/auth/permission_provider.dart';
 import '../core/theme/app_colors.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   final String currentLocation;
   final Widget child;
 
@@ -14,8 +17,11 @@ class AppShell extends StatelessWidget {
     required this.child,
   });
 
-  Widget _buildFab(BuildContext context) {
+  Widget? _buildFab(BuildContext context, WidgetRef ref) {
+    // ── /clients → "Nuevo cliente" (requires clients.write) ──────────────────
     if (currentLocation == '/clients') {
+      final can = ref.watch(hasPermissionProvider(Permissions.clientsWrite));
+      if (!can) return null;
       return FloatingActionButton.extended(
         onPressed: () => context.push('/clients/new'),
         backgroundColor: AppColors.primary,
@@ -24,7 +30,11 @@ class AppShell extends StatelessWidget {
         label: const Text('Nuevo cliente'),
       );
     }
+
+    // ── /invoices → "Nueva factura" (requires documents.write) ───────────────
     if (currentLocation == '/invoices') {
+      final can = ref.watch(hasPermissionProvider(Permissions.documentsWrite));
+      if (!can) return null;
       return FloatingActionButton.extended(
         onPressed: () => context.push('/invoices/new'),
         backgroundColor: AppColors.primary,
@@ -33,6 +43,10 @@ class AppShell extends StatelessWidget {
         label: const Text('Nueva factura'),
       );
     }
+
+    // ── default → scanner FAB (requires expenses.write) ──────────────────────
+    final canScan = ref.watch(hasPermissionProvider(Permissions.expensesWrite));
+    if (!canScan) return null;
     return FloatingActionButton(
       onPressed: () => context.push('/scan'),
       backgroundColor: AppColors.primary,
@@ -43,8 +57,7 @@ class AppShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    // On back press: if not on home, go home. Otherwise let system handle (exit).
+  Widget build(BuildContext context, WidgetRef ref) {
     return PopScope(
       canPop: currentLocation == '/',
       onPopInvokedWithResult: (didPop, _) {
@@ -59,7 +72,7 @@ class AppShell extends StatelessWidget {
             Expanded(child: child),
           ],
         ),
-        floatingActionButton: _buildFab(context),
+        floatingActionButton: _buildFab(context, ref),
         bottomNavigationBar: AppBottomNav(
           currentLocation: currentLocation,
           onNavigate: (path) => context.go(path),

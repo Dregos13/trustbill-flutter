@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 import '../auth/auth_state.dart';
+import '../auth/permission_helpers.dart';
 import '../../features/setup/setup_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
@@ -16,11 +17,35 @@ import '../../features/scan/scan_review_screen.dart';
 import '../../features/purchases/purchases_screen.dart';
 import '../../features/clients/create_client_screen.dart';
 import '../../features/invoices/create_invoice_screen.dart';
+import '../../features/permissions/permissions_screen.dart';
 import '../../widgets/app_shell.dart';
+import '../../widgets/no_permission_screen.dart';
+
+// ── Route permission requirements ──────────────────────────────────────────────
+
+/// Maps route prefixes to the permission they require.
+/// Checked in order — first match wins.
+const _routePermissions = <String, String>{
+  '/clients/new': Permissions.clientsWrite,
+  '/clients/': Permissions.clientsWrite, // edit: /clients/:id/edit
+  '/invoices/new': Permissions.documentsWrite,
+  '/scan': Permissions.expensesWrite,
+};
+
+String? _requiredPermission(String location) {
+  for (final entry in _routePermissions.entries) {
+    if (location.startsWith(entry.key)) return entry.value;
+  }
+  return null;
+}
+
+bool _isSuperadminRoute(String location) =>
+    location.startsWith('/permissions');
+
+// ── Router ─────────────────────────────────────────────────────────────────────
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Use a ValueNotifier so GoRouter re-evaluates redirect on auth changes
-  // without being recreated itself.
+  // ValueNotifier lets GoRouter re-evaluate redirect on auth changes
   final authNotifier = ValueNotifier<AuthState>(ref.read(authProvider));
   ref.listen<AuthState>(authProvider, (_, next) {
     authNotifier.value = next;
@@ -33,25 +58,51 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = authNotifier.value;
       final isSetup = authState is AuthNeedsSetup;
       final isLoggedIn = authState is AuthAuthenticated;
-      final isLoading =
-          authState is AuthLoading || authState is AuthInitial;
+      final isLoading = authState is AuthLoading || authState is AuthInitial;
       final loc = state.matchedLocation;
 
+      // ── Loading / setup / auth gates ─────────────────────────────────────
       if (isLoading) return null;
       if (isSetup && loc != '/setup') return '/setup';
       if (!isSetup && loc == '/setup') return isLoggedIn ? '/' : '/login';
       if (!isLoggedIn && !isSetup && loc != '/login') return '/login';
       if (isLoggedIn && loc == '/login') return '/';
+
+      // ── Permission gates (only when authenticated) ────────────────────────
+      // Use pattern match for Dart type narrowing — no cast needed.
+      if (authState is AuthAuthenticated) {
+        final user = authState.user;
+        final perms = user.permissions.toSet();
+
+        // Superadmin-only routes
+        if (_isSuperadminRoute(loc) && user.role != 'superadmin') {
+          return '/no-permission';
+        }
+
+        // Permission-gated routes
+        final required = _requiredPermission(loc);
+        if (required != null) {
+          final category = required.split('.').first;
+          final has =
+              perms.contains(required) || perms.contains('$category.*');
+          if (!has) return '/no-permission';
+        }
+      }
+
       return null;
     },
     routes: [
       GoRoute(
         path: '/setup',
-        builder: (_, __) => const SetupScreen(),
+        builder: (context, _) => const SetupScreen(),
       ),
       GoRoute(
         path: '/login',
-        builder: (_, __) => const LoginScreen(),
+        builder: (context, _) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/no-permission',
+        builder: (context, _) => const NoPermissionScreen(),
       ),
       ShellRoute(
         builder: (_, state, child) => AppShell(
@@ -61,15 +112,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/',
-            builder: (_, __) => const DashboardScreen(),
+            builder: (context, _) => const DashboardScreen(),
           ),
           GoRoute(
             path: '/clients',
-            builder: (_, __) => const ClientsScreen(),
+            builder: (context, _) => const ClientsScreen(),
           ),
           GoRoute(
             path: '/clients/new',
-            builder: (_, __) => const CreateClientScreen(),
+            builder: (context, _) => const CreateClientScreen(),
           ),
           GoRoute(
             path: '/clients/:id',
@@ -80,18 +131,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/clients/:id/edit',
             builder: (_, state) {
-              // Pass client via extra
               final client = state.extra as dynamic;
               return CreateClientScreen(existingClient: client);
             },
           ),
           GoRoute(
             path: '/invoices',
-            builder: (_, __) => const InvoicesScreen(),
+            builder: (context, _) => const InvoicesScreen(),
           ),
           GoRoute(
             path: '/invoices/new',
-            builder: (_, __) => const CreateInvoiceScreen(),
+            builder: (context, _) => const CreateInvoiceScreen(),
           ),
           GoRoute(
             path: '/invoices/:id',
@@ -101,19 +151,23 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/scan',
-            builder: (_, __) => const ScanScreen(),
+            builder: (context, _) => const ScanScreen(),
           ),
           GoRoute(
             path: '/scan/review',
-            builder: (_, __) => const ScanReviewScreen(),
+            builder: (context, _) => const ScanReviewScreen(),
           ),
           GoRoute(
             path: '/purchases',
-            builder: (_, __) => const PurchasesScreen(),
+            builder: (context, _) => const PurchasesScreen(),
           ),
           GoRoute(
             path: '/account',
-            builder: (_, __) => const AccountScreen(),
+            builder: (context, _) => const AccountScreen(),
+          ),
+          GoRoute(
+            path: '/permissions',
+            builder: (context, _) => const PermissionsScreen(),
           ),
         ],
       ),

@@ -1,10 +1,12 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/auth/auth_state.dart';
+import '../../core/auth/permission_provider.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
@@ -107,6 +109,71 @@ class AccountScreen extends ConsumerWidget {
           );
         }),
         const SizedBox(height: 32),
+
+        // ── Administración (solo superadmin) ───────────────────────────────
+        if (ref.watch(isSuperadminProvider)) ...[
+          const Text(
+            'Administración',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.gray900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => context.push('/permissions'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.gray200),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBg,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.admin_panel_settings_outlined,
+                        size: 18, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Gestión de permisos',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: AppColors.gray900,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Configura qué puede hacer cada usuario',
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.gray500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right,
+                      size: 18, color: AppColors.gray400),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+
         SizedBox(
           height: 48,
           child: ElevatedButton(

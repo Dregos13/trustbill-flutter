@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'api_client.dart';
 import '../models/user.dart';
+import '../models/user_permissions.dart';
 import '../models/client.dart';
 import '../models/invoice.dart';
 import '../models/dashboard.dart';
@@ -174,6 +175,28 @@ class Endpoints {
       mimeType: mimeType,
     );
     return res.data as Map<String, dynamic>;
+  }
+
+  // ---- Users (superadmin) ----
+
+  Future<List<UserWithPermissions>> getUsers() async {
+    final res = await _api.get('/users');
+    final list = res.data as List<dynamic>;
+    return list
+        .map((e) => UserWithPermissions.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<UserWithPermissions> getUserPermissions(int userId) async {
+    final res = await _api.get('/users/$userId');
+    return UserWithPermissions.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<UserWithPermissions> updateUserPermissions(
+      int userId, List<String> permissions) async {
+    final res = await _api.put('/users/$userId/permissions',
+        data: {'permissions': permissions});
+    return UserWithPermissions.fromJson(res.data as Map<String, dynamic>);
   }
 
   // ---- PDF ----
