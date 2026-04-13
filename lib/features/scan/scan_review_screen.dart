@@ -42,6 +42,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
   SupplierMatch? _matchedSupplier;
   bool _searchingSupplier = false;
+  bool _showSuccess = false;
 
   @override
   void initState() {
@@ -117,17 +118,25 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v);
   }
 
+  /// Normaliza un CIF/NIF quitando espacios, guiones y puntos para comparar.
+  String _normalizeCif(String raw) =>
+      raw.replaceAll(RegExp(r'[\s\-.]'), '').toUpperCase();
+
   Future<void> _searchSupplier() async {
-    final cif = _supplierCifCtrl.text.trim();
+    final rawCif = _supplierCifCtrl.text.trim();
     final name = _supplierNameCtrl.text.trim();
-    if (cif.isEmpty && name.isEmpty) return;
+    if (rawCif.isEmpty && name.isEmpty) return;
+
+    // Si hay CIF buscamos SOLO por CIF (normalizado); el nombre puede tener
+    // variaciones tipográficas y daría falsos negativos.
+    final cif = rawCif.isNotEmpty ? _normalizeCif(rawCif) : '';
 
     setState(() => _searchingSupplier = true);
     try {
       final endpoints = ref.read(endpointsProvider);
       final results = await endpoints.lookupSupplier(
         taxId: cif.isNotEmpty ? cif : null,
-        name: name.isNotEmpty ? name : null,
+        name: cif.isEmpty && name.isNotEmpty ? name : null,
       );
 
       if (!mounted) return;
@@ -262,23 +271,27 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     final state = ref.watch(scanProvider);
     final confidence = state.result?.confidence ?? 0;
 
-    // Navigate home on success
+    // Navigate home on success — show success overlay for 2 s first
     ref.listen<ScanState>(scanProvider, (prev, next) {
       if (next.confirmed != null && prev?.confirmed == null) {
-        final supplierName = next.confirmed!.supplier['name'] as String? ?? '';
-        final supplierCreated = next.confirmed!.supplierCreated;
-        final msg = supplierCreated
-            ? 'Factura registrada. Proveedor "$supplierName" creado automáticamente.'
-            : 'Factura registrada correctamente.';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-        context.go('/');
+        setState(() => _showSuccess = true);
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          final supplierName =
+              next.confirmed!.supplier['name'] as String? ?? '';
+          final supplierCreated = next.confirmed!.supplierCreated;
+          final msg = supplierCreated
+              ? 'Factura registrada. Proveedor "$supplierName" creado automáticamente.'
+              : 'Factura registrada correctamente.';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(msg),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          context.go('/');
+        });
       }
     });
 
@@ -604,7 +617,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         ),
       ),
         ),
-        if (state.isConfirming) const _ConfirmProgressOverlay(),
+        if (state.isConfirming || _showSuccess)
+          _ConfirmProgressOverlay(success: _showSuccess),
       ],
     );
   }
@@ -697,7 +711,8 @@ class _SupplierPickerDialog extends StatelessWidget {
 // ── Confirm progress overlay ───────────────────────────────────────────────
 
 class _ConfirmProgressOverlay extends StatefulWidget {
-  const _ConfirmProgressOverlay();
+  final bool success;
+  const _ConfirmProgressOverlay({this.success = false});
 
   @override
   State<_ConfirmProgressOverlay> createState() =>
@@ -723,16 +738,21 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 900), () {
-      if (mounted) setState(() { _stepState[0] = 2; _stepState[1] = 1; });
-    });
-    Timer(const Duration(milliseconds: 1900), () {
-      if (mounted) setState(() { _stepState[1] = 2; _stepState[2] = 1; });
-    });
+    if (!widget.success) {
+      Timer(const Duration(milliseconds: 900), () {
+        if (mounted) setState(() { _stepState[0] = 2; _stepState[1] = 1; });
+      });
+      Timer(const Duration(milliseconds: 1900), () {
+        if (mounted) setState(() { _stepState[1] = 2; _stepState[2] = 1; });
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // When success=true all steps are done and we show the success banner
+    final allDone = widget.success;
+
     return Container(
       color: Colors.black54,
       child: Center(
@@ -746,20 +766,47 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Registrando factura',
+              Text(
+                allDone ? '¡Factura registrada!' : 'Registrando factura',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.gray800,
+                  color: allDone ? AppColors.success : AppColors.gray800,
                 ),
               ),
               const SizedBox(height: 24),
               ...List.generate(_labels.length, (i) => _StepRow(
                     icon: _icons[i],
                     label: _labels[i],
-                    state: _stepState[i],
+                    state: allDone ? 2 : _stepState[i],
                   )),
+              if (allDone) ...[
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.successBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle,
+                          color: AppColors.success, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Todo listo',
+                        style: TextStyle(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
