@@ -168,9 +168,16 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       _matchedSupplier = s;
       _supplierNameCtrl.text = s.name;
       _supplierCifCtrl.text = s.taxId ?? '';
-      if (s.address != null && s.address!.isNotEmpty) {
+      if (s.email != null && s.email!.isNotEmpty)
+        _supplierEmailCtrl.text = s.email!;
+      if (s.phone != null && s.phone!.isNotEmpty)
+        _supplierPhoneCtrl.text = s.phone!;
+      if (s.address != null && s.address!.isNotEmpty)
         _supplierAddressCtrl.text = s.address!;
-      }
+      if (s.postalCode != null && s.postalCode!.isNotEmpty)
+        _supplierPostalCtrl.text = s.postalCode!;
+      if (s.notes != null && s.notes!.isNotEmpty)
+        _supplierNotesCtrl.text = s.notes!;
     });
   }
 
