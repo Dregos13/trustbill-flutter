@@ -159,6 +159,15 @@ class ApiClient {
     );
   }
 
+  /// Download a binary resource (e.g. logo) and return its raw bytes.
+  Future<Uint8List> getBytes(String path) async {
+    final res = await _dio.get<List<int>>(
+      path,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    return Uint8List.fromList(res.data ?? []);
+  }
+
   Future<Response> download(String path, String savePath) =>
       _dio.download(path, savePath,
           options: Options(headers: {

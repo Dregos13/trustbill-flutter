@@ -150,6 +150,14 @@ class Endpoints {
     return res.data as Map<String, dynamic>;
   }
 
+  Future<Uint8List?> getCompanyLogo() async {
+    try {
+      return await _api.getBytes('/company/logo');
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> uploadCompanyLogo({
     required Uint8List imageBytes,
     required String mimeType,
