@@ -277,8 +277,10 @@ mixin _$ScanResult {
   String? get supplierName => throw _privateConstructorUsedError;
   String? get supplierCif => throw _privateConstructorUsedError;
   String? get supplierAddress => throw _privateConstructorUsedError;
+  String? get supplierPhone => throw _privateConstructorUsedError;
   String? get invoiceNumber => throw _privateConstructorUsedError;
   String? get date => throw _privateConstructorUsedError;
+  String? get dueDate => throw _privateConstructorUsedError;
   String get currency => throw _privateConstructorUsedError;
   List<OcrLineItem> get lines => throw _privateConstructorUsedError;
   double get subtotal => throw _privateConstructorUsedError;
@@ -307,8 +309,10 @@ abstract class $ScanResultCopyWith<$Res> {
     String? supplierName,
     String? supplierCif,
     String? supplierAddress,
+    String? supplierPhone,
     String? invoiceNumber,
     String? date,
+    String? dueDate,
     String currency,
     List<OcrLineItem> lines,
     double subtotal,
@@ -336,8 +340,10 @@ class _$ScanResultCopyWithImpl<$Res, $Val extends ScanResult>
     Object? supplierName = freezed,
     Object? supplierCif = freezed,
     Object? supplierAddress = freezed,
+    Object? supplierPhone = freezed,
     Object? invoiceNumber = freezed,
     Object? date = freezed,
+    Object? dueDate = freezed,
     Object? currency = null,
     Object? lines = null,
     Object? subtotal = null,
@@ -359,6 +365,10 @@ class _$ScanResultCopyWithImpl<$Res, $Val extends ScanResult>
                 ? _value.supplierAddress
                 : supplierAddress // ignore: cast_nullable_to_non_nullable
                       as String?,
+            supplierPhone: freezed == supplierPhone
+                ? _value.supplierPhone
+                : supplierPhone // ignore: cast_nullable_to_non_nullable
+                      as String?,
             invoiceNumber: freezed == invoiceNumber
                 ? _value.invoiceNumber
                 : invoiceNumber // ignore: cast_nullable_to_non_nullable
@@ -366,6 +376,10 @@ class _$ScanResultCopyWithImpl<$Res, $Val extends ScanResult>
             date: freezed == date
                 ? _value.date
                 : date // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            dueDate: freezed == dueDate
+                ? _value.dueDate
+                : dueDate // ignore: cast_nullable_to_non_nullable
                       as String?,
             currency: null == currency
                 ? _value.currency
@@ -410,8 +424,10 @@ abstract class _$$ScanResultImplCopyWith<$Res>
     String? supplierName,
     String? supplierCif,
     String? supplierAddress,
+    String? supplierPhone,
     String? invoiceNumber,
     String? date,
+    String? dueDate,
     String currency,
     List<OcrLineItem> lines,
     double subtotal,
@@ -438,8 +454,10 @@ class __$$ScanResultImplCopyWithImpl<$Res>
     Object? supplierName = freezed,
     Object? supplierCif = freezed,
     Object? supplierAddress = freezed,
+    Object? supplierPhone = freezed,
     Object? invoiceNumber = freezed,
     Object? date = freezed,
+    Object? dueDate = freezed,
     Object? currency = null,
     Object? lines = null,
     Object? subtotal = null,
@@ -461,6 +479,10 @@ class __$$ScanResultImplCopyWithImpl<$Res>
             ? _value.supplierAddress
             : supplierAddress // ignore: cast_nullable_to_non_nullable
                   as String?,
+        supplierPhone: freezed == supplierPhone
+            ? _value.supplierPhone
+            : supplierPhone // ignore: cast_nullable_to_non_nullable
+                  as String?,
         invoiceNumber: freezed == invoiceNumber
             ? _value.invoiceNumber
             : invoiceNumber // ignore: cast_nullable_to_non_nullable
@@ -468,6 +490,10 @@ class __$$ScanResultImplCopyWithImpl<$Res>
         date: freezed == date
             ? _value.date
             : date // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        dueDate: freezed == dueDate
+            ? _value.dueDate
+            : dueDate // ignore: cast_nullable_to_non_nullable
                   as String?,
         currency: null == currency
             ? _value.currency
@@ -505,8 +531,10 @@ class _$ScanResultImpl implements _ScanResult {
     this.supplierName,
     this.supplierCif,
     this.supplierAddress,
+    this.supplierPhone,
     this.invoiceNumber,
     this.date,
+    this.dueDate,
     this.currency = 'EUR',
     final List<OcrLineItem> lines = const [],
     this.subtotal = 0,
@@ -525,9 +553,13 @@ class _$ScanResultImpl implements _ScanResult {
   @override
   final String? supplierAddress;
   @override
+  final String? supplierPhone;
+  @override
   final String? invoiceNumber;
   @override
   final String? date;
+  @override
+  final String? dueDate;
   @override
   @JsonKey()
   final String currency;
@@ -555,7 +587,7 @@ class _$ScanResultImpl implements _ScanResult {
 
   @override
   String toString() {
-    return 'ScanResult(supplierName: $supplierName, supplierCif: $supplierCif, supplierAddress: $supplierAddress, invoiceNumber: $invoiceNumber, date: $date, currency: $currency, lines: $lines, subtotal: $subtotal, taxAmount: $taxAmount, total: $total, confidence: $confidence)';
+    return 'ScanResult(supplierName: $supplierName, supplierCif: $supplierCif, supplierAddress: $supplierAddress, supplierPhone: $supplierPhone, invoiceNumber: $invoiceNumber, date: $date, dueDate: $dueDate, currency: $currency, lines: $lines, subtotal: $subtotal, taxAmount: $taxAmount, total: $total, confidence: $confidence)';
   }
 
   @override
@@ -569,9 +601,12 @@ class _$ScanResultImpl implements _ScanResult {
                 other.supplierCif == supplierCif) &&
             (identical(other.supplierAddress, supplierAddress) ||
                 other.supplierAddress == supplierAddress) &&
+            (identical(other.supplierPhone, supplierPhone) ||
+                other.supplierPhone == supplierPhone) &&
             (identical(other.invoiceNumber, invoiceNumber) ||
                 other.invoiceNumber == invoiceNumber) &&
             (identical(other.date, date) || other.date == date) &&
+            (identical(other.dueDate, dueDate) || other.dueDate == dueDate) &&
             (identical(other.currency, currency) ||
                 other.currency == currency) &&
             const DeepCollectionEquality().equals(other._lines, _lines) &&
@@ -591,8 +626,10 @@ class _$ScanResultImpl implements _ScanResult {
     supplierName,
     supplierCif,
     supplierAddress,
+    supplierPhone,
     invoiceNumber,
     date,
+    dueDate,
     currency,
     const DeepCollectionEquality().hash(_lines),
     subtotal,
@@ -620,8 +657,10 @@ abstract class _ScanResult implements ScanResult {
     final String? supplierName,
     final String? supplierCif,
     final String? supplierAddress,
+    final String? supplierPhone,
     final String? invoiceNumber,
     final String? date,
+    final String? dueDate,
     final String currency,
     final List<OcrLineItem> lines,
     final double subtotal,
@@ -640,9 +679,13 @@ abstract class _ScanResult implements ScanResult {
   @override
   String? get supplierAddress;
   @override
+  String? get supplierPhone;
+  @override
   String? get invoiceNumber;
   @override
   String? get date;
+  @override
+  String? get dueDate;
   @override
   String get currency;
   @override

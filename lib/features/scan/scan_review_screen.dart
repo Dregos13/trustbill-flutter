@@ -53,7 +53,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     _supplierCifCtrl =
         TextEditingController(text: result?.supplierCif ?? '');
     _supplierEmailCtrl = TextEditingController();
-    _supplierPhoneCtrl = TextEditingController();
+    _supplierPhoneCtrl =
+        TextEditingController(text: result?.supplierPhone ?? '');
     _supplierAddressCtrl =
         TextEditingController(text: result?.supplierAddress ?? '');
     _supplierPostalCtrl = TextEditingController();
@@ -63,7 +64,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         TextEditingController(text: result?.invoiceNumber ?? '');
     _issueDateCtrl = TextEditingController(
         text: _formatDisplayDate(result?.date ?? DateTime.now().toIso8601String()));
-    _dueDateCtrl = TextEditingController();
+    _dueDateCtrl = TextEditingController(
+        text: _formatDisplayDate(result?.dueDate ?? ''));
 
     _totalCtrl = TextEditingController(
         text: (result?.total ?? 0).toStringAsFixed(2));
@@ -72,11 +74,12 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   String _formatDisplayDate(String iso) {
+    if (iso.isEmpty) return '';
     try {
       final dt = DateTime.parse(iso);
       return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
     } catch (_) {
-      return iso;
+      return '';
     }
   }
 

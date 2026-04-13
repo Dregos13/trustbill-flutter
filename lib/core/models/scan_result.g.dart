@@ -29,8 +29,10 @@ _$ScanResultImpl _$$ScanResultImplFromJson(Map<String, dynamic> json) =>
       supplierName: json['supplierName'] as String?,
       supplierCif: json['supplierCif'] as String?,
       supplierAddress: json['supplierAddress'] as String?,
+      supplierPhone: json['supplierPhone'] as String?,
       invoiceNumber: json['invoiceNumber'] as String?,
       date: json['date'] as String?,
+      dueDate: json['dueDate'] as String?,
       currency: json['currency'] as String? ?? 'EUR',
       lines:
           (json['lines'] as List<dynamic>?)
@@ -48,8 +50,10 @@ Map<String, dynamic> _$$ScanResultImplToJson(_$ScanResultImpl instance) =>
       'supplierName': instance.supplierName,
       'supplierCif': instance.supplierCif,
       'supplierAddress': instance.supplierAddress,
+      'supplierPhone': instance.supplierPhone,
       'invoiceNumber': instance.invoiceNumber,
       'date': instance.date,
+      'dueDate': instance.dueDate,
       'currency': instance.currency,
       'lines': instance.lines,
       'subtotal': instance.subtotal,
