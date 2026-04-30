@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme.dart';
 import '../core/auth/auth_provider.dart';
 import '../core/auth/auth_state.dart';
 
@@ -24,8 +25,10 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
       companyName = activeCompany?.name ?? '';
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      color: AppColors.primary,
+      color: isDark ? darkHeader : AppColors.primary,
       child: SafeArea(
         bottom: false,
         child: SizedBox(
@@ -37,7 +40,7 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
                 Image.asset(
                   'assets/images/trustinfacts-logo-light.png',
                   height: 26,
-                  errorBuilder: (_, __, ___) => const Text(
+                  errorBuilder: (_, _, _) => const Text(
                     'TrustInFacts',
                     style: TextStyle(
                       color: Colors.white,

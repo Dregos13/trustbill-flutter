@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/auth/auth_provider.dart';
 
@@ -16,6 +17,7 @@ class _TrustInFactsAppState extends ConsumerState<TrustInFactsApp> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      ref.read(themeControllerProvider.notifier).initialize();
       ref.read(authProvider.notifier).initialize();
     });
   }
@@ -23,11 +25,14 @@ class _TrustInFactsAppState extends ConsumerState<TrustInFactsApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeControllerProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'TrustInFacts',
       theme: buildAppTheme(),
+      darkTheme: buildDarkAppTheme(),
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme_tokens.dart';
 
 class StatusBadge extends StatelessWidget {
   final String status;
@@ -8,7 +9,7 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final config = _getConfig(status);
+    final config = _getConfig(context, status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -27,10 +28,10 @@ class StatusBadge extends StatelessWidget {
     );
   }
 
-  static _StatusConfig _getConfig(String status) {
+  static _StatusConfig _getConfig(BuildContext context, String status) {
     switch (status.toLowerCase()) {
       case 'draft':
-        return _StatusConfig('BORRADOR', AppColors.gray100, AppColors.gray600);
+        return _StatusConfig('BORRADOR', context.appSurfaceRaised, context.appTextMuted);
       case 'confirmed':
         return _StatusConfig('CONFIRMADA', AppColors.primaryBg, AppColors.primary);
       case 'paid':
@@ -39,7 +40,7 @@ class StatusBadge extends StatelessWidget {
         return _StatusConfig('ANULADA', AppColors.dangerBg, AppColors.danger);
       default:
         return _StatusConfig(
-            status.toUpperCase(), AppColors.gray100, AppColors.gray600);
+            status.toUpperCase(), context.appSurfaceRaised, context.appTextMuted);
     }
   }
 }

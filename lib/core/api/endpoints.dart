@@ -12,6 +12,7 @@ import '../models/supplier.dart';
 import '../models/purchase.dart';
 import '../models/product.dart';
 import '../models/service.dart';
+import '../models/tax_return.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -255,5 +256,26 @@ class Endpoints {
       if (status != null && status.isNotEmpty) 'status': status,
     });
     return PaginatedResponse.fromJson(res.data, PurchaseListItem.fromJson);
+  }
+
+  // ---- Tax returns ----
+
+  Future<TaxReturnListResponse> getTaxReturns({
+    int limit = 80,
+    int offset = 0,
+    String? model,
+    int? year,
+    String? status,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'limit': limit,
+      'offset': offset,
+    };
+    if (model != null && model.isNotEmpty) queryParams['model'] = model;
+    if (year != null) queryParams['year'] = year;
+    if (status != null && status.isNotEmpty) queryParams['status'] = status;
+
+    final res = await _api.get('/tax/returns', queryParams: queryParams);
+    return TaxReturnListResponse.fromJson(res.data as Map<String, dynamic>);
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
+import '../../core/theme/theme_controller.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/auth/permission_provider.dart';
@@ -43,35 +45,35 @@ class AccountScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
+        Text(
           'Cuenta',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
-            color: AppColors.gray900,
+            color: context.appText,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           user.name,
-          style: const TextStyle(fontSize: 14, color: AppColors.gray500),
+          style: TextStyle(fontSize: 14, color: context.appTextMuted),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.gray50,
+            color: context.appSurfaceRaised,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             children: [
-              const Icon(Icons.dns_outlined, size: 16, color: AppColors.gray400),
+              Icon(Icons.dns_outlined, size: 16, color: context.appTextSubtle),
               const SizedBox(width: 8),
               Text(
                 'app.$clientId.trustinfacts.com',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.gray500,
+                  color: context.appTextMuted,
                   fontFamily: 'monospace',
                 ),
               ),
@@ -84,13 +86,16 @@ class AccountScreen extends ConsumerWidget {
         _CompanyLogoSection(),
         const SizedBox(height: 24),
 
+        const _AppearanceSection(),
+        const SizedBox(height: 24),
+
         // ── Empresas ───────────────────────────────────────────────
-        const Text(
+        Text(
           'Empresas',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.gray900,
+            color: context.appText,
           ),
         ),
         const SizedBox(height: 12),
@@ -112,12 +117,12 @@ class AccountScreen extends ConsumerWidget {
 
         // ── Administración (solo superadmin) ───────────────────────────────
         if (ref.watch(isSuperadminProvider)) ...[
-          const Text(
+          Text(
             'Administración',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.gray900,
+              color: context.appText,
             ),
           ),
           const SizedBox(height: 12),
@@ -126,9 +131,9 @@ class AccountScreen extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.appSurface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.gray200),
+                border: Border.all(color: context.appBorder),
               ),
               child: Row(
                 children: [
@@ -144,7 +149,7 @@ class AccountScreen extends ConsumerWidget {
                         size: 18, color: AppColors.primary),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -153,20 +158,20 @@ class AccountScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
-                            color: AppColors.gray900,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
                           'Configura qué puede hacer cada usuario',
                           style: TextStyle(
-                              fontSize: 12, color: AppColors.gray500),
+                              fontSize: 12, color: Theme.of(context).hintColor),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right,
-                      size: 18, color: AppColors.gray400),
+                  Icon(Icons.chevron_right,
+                      size: 18, color: context.appTextSubtle),
                 ],
               ),
             ),
@@ -194,6 +199,70 @@ class AccountScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AppearanceSection extends ConsumerWidget {
+  const _AppearanceSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeControllerProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: context.appPrimarySoft,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              isDark ? Icons.dark_mode : Icons.light_mode,
+              color: context.appPrimary,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Apariencia',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isDark ? 'Modo oscuro activo' : 'Modo claro activo',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: context.appTextMuted,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: isDark,
+            onChanged: (_) {
+              ref.read(themeControllerProvider.notifier).toggleDarkLight();
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -267,18 +336,18 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Logo de empresa',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.gray900,
+            color: context.appText,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Se usa en las facturas generadas desde la app.',
-          style: TextStyle(fontSize: 12, color: AppColors.gray500),
+          style: TextStyle(fontSize: 12, color: context.appTextMuted),
         ),
         const SizedBox(height: 12),
         Row(
@@ -288,9 +357,9 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
               width: 130,
               height: 56,
               decoration: BoxDecoration(
-                color: AppColors.gray100,
+                color: context.appSurfaceRaised,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.appBorder),
               ),
               clipBehavior: Clip.antiAlias,
               child: hasLogo
@@ -302,9 +371,9 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
-                      error: (_, __) => const Icon(
+                      error: (_, _) => Icon(
                         Icons.broken_image_outlined,
-                        color: AppColors.gray400,
+                        color: context.appTextSubtle,
                       ),
                       data: (bytes) => bytes != null
                           ? Image.memory(
@@ -313,14 +382,14 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                               width: 130,
                               height: 56,
                             )
-                          : const Icon(
+                          : Icon(
                               Icons.image_outlined,
-                              color: AppColors.gray400,
+                              color: context.appTextSubtle,
                             ),
                     )
-                  : const Center(
+                  : Center(
                       child: Icon(Icons.image_outlined,
-                          color: AppColors.gray400, size: 28),
+                          color: context.appTextSubtle, size: 28),
                     ),
             ),
             const SizedBox(width: 14),
@@ -329,10 +398,10 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (!hasLogo)
-                    const Text(
+                    Text(
                       'Sin logo configurado',
                       style: TextStyle(
-                          fontSize: 13, color: AppColors.gray500),
+                          fontSize: 13, color: context.appTextMuted),
                     ),
                   if (hasLogo)
                     const Text(
@@ -376,9 +445,9 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'JPEG, PNG o WebP · max 2 MB',
-                    style: TextStyle(fontSize: 10, color: AppColors.gray400),
+                    style: TextStyle(fontSize: 10, color: context.appTextSubtle),
                   ),
                 ],
               ),
@@ -413,10 +482,10 @@ class _CompanyCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.appSurface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isActive ? AppColors.primary : AppColors.gray200,
+            color: isActive ? context.appPrimary : context.appBorder,
             width: isActive ? 2 : 1,
           ),
         ),
@@ -426,14 +495,14 @@ class _CompanyCard extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: isActive ? AppColors.primary : AppColors.gray200,
+                color: isActive ? context.appPrimary : context.appBorder,
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
               child: Text(
                 initial,
                 style: TextStyle(
-                  color: isActive ? Colors.white : AppColors.gray600,
+                  color: isActive ? Colors.white : context.appTextMuted,
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
                 ),
@@ -443,10 +512,10 @@ class _CompanyCard extends StatelessWidget {
             Expanded(
               child: Text(
                 name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
-                  color: AppColors.gray900,
+                  color: context.appText,
                 ),
               ),
             ),

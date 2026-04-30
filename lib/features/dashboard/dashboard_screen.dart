@@ -6,7 +6,9 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/models/dashboard.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/currency.dart';
+import '../tax/tax_returns_screen.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/invoice_card.dart';
 import '../../widgets/loading_indicator.dart';
@@ -45,23 +47,25 @@ class DashboardScreen extends ConsumerWidget {
         data: (summary) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
+            Text(
               'Resumen',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: AppColors.gray900,
+                color: context.appText,
               ),
             ),
             const SizedBox(height: 16),
             _buildStatGrid(summary),
+            const SizedBox(height: 16),
+            _buildTaxSnapshot(context, ref),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Ultimas facturas',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.gray900,
+                color: context.appText,
               ),
             ),
             const SizedBox(height: 12),
@@ -78,6 +82,72 @@ class DashboardScreen extends ConsumerWidget {
                     onTap: () => context.push('/invoices/${inv.id}'),
                   )),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTaxSnapshot(BuildContext context, WidgetRef ref) {
+    final taxAsync = ref.watch(taxReturnsProvider);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => context.push('/tax'),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.isDark ? context.appSurfaceRaised : AppColors.gray900,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: taxAsync.when(
+          loading: () => const Text(
+            'Cargando situación fiscal...',
+            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w700),
+          ),
+          error: (error, stackTrace) => const Text(
+            'Ver historial fiscal',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+          ),
+          data: (tax) => Row(
+            children: [
+              const Icon(Icons.account_balance_outlined, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Historial fiscal',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${tax.summary.presented} presentados · ${tax.summary.draft} borradores',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (tax.summary.nextDue != null)
+                Text(
+                  tax.summary.nextDue!.label,
+                  style: const TextStyle(
+                    color: AppColors.primaryLight,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              const SizedBox(width: 6),
+              const Icon(Icons.chevron_right, color: Colors.white70),
+            ],
+          ),
         ),
       ),
     );

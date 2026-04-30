@@ -15,6 +15,7 @@ import '../../features/account/account_screen.dart';
 import '../../features/scan/scan_screen.dart';
 import '../../features/scan/scan_review_screen.dart';
 import '../../features/purchases/purchases_screen.dart';
+import '../../features/tax/tax_returns_screen.dart';
 import '../../features/clients/create_client_screen.dart';
 import '../../features/invoices/create_invoice_screen.dart';
 import '../../features/permissions/permissions_screen.dart';
@@ -30,6 +31,7 @@ const _routePermissions = <String, String>{
   '/clients/': Permissions.clientsWrite, // edit: /clients/:id/edit
   '/invoices/new': Permissions.documentsWrite,
   '/scan': Permissions.expensesWrite,
+  '/tax': Permissions.reportsRead,
 };
 
 String? _requiredPermission(String location) {
@@ -160,6 +162,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/purchases',
             builder: (context, _) => const PurchasesScreen(),
+          ),
+          GoRoute(
+            path: '/tax',
+            builder: (context, _) => const TaxReturnsScreen(),
           ),
           GoRoute(
             path: '/account',

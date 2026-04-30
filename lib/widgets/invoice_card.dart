@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme_tokens.dart';
 import '../core/utils/currency.dart';
 import '../core/utils/date.dart';
 import 'status_badge.dart';
@@ -29,12 +29,12 @@ class InvoiceCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appSurface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.gray100),
+        border: Border.all(color: context.appBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appShadow,
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -55,10 +55,10 @@ class InvoiceCard extends StatelessWidget {
                   children: [
                     Text(
                       '$series-${number.toString().padLeft(4, '0')}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: AppColors.gray900,
+                        color: context.appText,
                       ),
                     ),
                     StatusBadge(status: status),
@@ -71,19 +71,19 @@ class InvoiceCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         clientName ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.gray500,
+                          color: context.appTextMuted,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       formatCurrency(total),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
-                        color: AppColors.gray900,
+                        color: context.appText,
                       ),
                     ),
                   ],
@@ -95,7 +95,7 @@ class InvoiceCard extends StatelessWidget {
                     formatDate(issuedAt),
                     style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.gray400,
+                      color: context.appTextSubtle,
                     ),
                   ),
                 ),

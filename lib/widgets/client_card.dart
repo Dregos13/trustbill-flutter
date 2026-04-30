@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme_tokens.dart';
 
 class ClientCard extends StatelessWidget {
   final String name;
@@ -22,12 +22,12 @@ class ClientCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appSurface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.gray100),
+        border: Border.all(color: context.appBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appShadow,
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -46,15 +46,15 @@ class ClientCard extends StatelessWidget {
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryBg,
+                  decoration: BoxDecoration(
+                    color: context.appPrimarySoft,
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     initial,
-                    style: const TextStyle(
-                      color: AppColors.primary,
+                    style: TextStyle(
+                      color: context.appPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                     ),
@@ -67,27 +67,27 @@ class ClientCard extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
-                          color: AppColors.gray900,
+                          color: context.appText,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         [taxId, if (email != null && email!.isNotEmpty) email]
                             .join(' · '),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.gray500,
+                          color: context.appTextMuted,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right,
-                    size: 20, color: AppColors.gray400),
+                Icon(Icons.chevron_right,
+                    size: 20, color: context.appTextSubtle),
               ],
             ),
           ),
