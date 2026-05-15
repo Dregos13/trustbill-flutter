@@ -194,6 +194,10 @@ class _TaxReturnCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topCasillas = item.casillas.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final displayCasillas = topCasillas.take(4).toList();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -229,31 +233,102 @@ class _TaxReturnCard extends StatelessWidget {
               StatusBadge(status: item.status),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
-            item.period == 'A' ? 'Declaración anual' : 'Periodo ${item.period}',
+            _periodLabel(item.period),
             style: TextStyle(color: context.appTextMuted, fontSize: 13),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: _Meta(label: 'Presentación', value: _formatDate(item.presentedAt)),
-              ),
               Expanded(
                 child: _Meta(
-                  label: 'Importe trazado',
-                  value: '${formatAmount(item.totalAmount)} €',
+                  label: 'Presentación',
+                  value: _formatDate(item.presentedAt),
                 ),
               ),
+              if (item.presentedBy != null)
+                Expanded(
+                  child: _Meta(
+                    label: 'Presentado por',
+                    value: item.presentedBy!.split('@').first,
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(child: _Meta(label: 'Casillas', value: '${item.boxCount}')),
-              Expanded(child: _Meta(label: 'Exports', value: '${item.exportCount}')),
-            ],
+          if (displayCasillas.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              'CASILLAS',
+              style: TextStyle(
+                color: context.appTextSubtle,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: displayCasillas
+                  .map((e) => _CasillaChip(key_: e.key, value: e.value))
+                  .toList(),
+            ),
+          ],
+          if (item.totalAmount != 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _Meta(
+                    label: 'Resultado',
+                    value: '${formatAmount(item.totalAmount)} €',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CasillaChip extends StatelessWidget {
+  final String key_;
+  final double value;
+
+  const _CasillaChip({required this.key_, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'C${key_.padLeft(2, '0')}',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: context.appPrimary,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '${formatAmount(value)} €',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: context.appText,
+            ),
           ),
         ],
       ),
@@ -299,4 +374,61 @@ String _formatDate(String? value) {
   final date = DateTime.tryParse(value);
   if (date == null) return 'Sin fecha';
   return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+}
+
+String _periodLabel(String period) {
+  switch (period.toUpperCase()) {
+    case 'A':
+      return 'Declaración anual';
+    case '1':
+    case '1T':
+      return '1T · Ene/Mar';
+    case '2':
+    case '2T':
+      return '2T · Abr/Jun';
+    case '3':
+    case '3T':
+      return '3T · Jul/Sep';
+    case '4':
+    case '4T':
+      return '4T · Oct/Dic';
+    case 'M01':
+    case '01':
+      return 'Enero';
+    case 'M02':
+    case '02':
+      return 'Febrero';
+    case 'M03':
+    case '03':
+      return 'Marzo';
+    case 'M04':
+    case '04':
+      return 'Abril';
+    case 'M05':
+    case '05':
+      return 'Mayo';
+    case 'M06':
+    case '06':
+      return 'Junio';
+    case 'M07':
+    case '07':
+      return 'Julio';
+    case 'M08':
+    case '08':
+      return 'Agosto';
+    case 'M09':
+    case '09':
+      return 'Septiembre';
+    case 'M10':
+    case '10':
+      return 'Octubre';
+    case 'M11':
+    case '11':
+      return 'Noviembre';
+    case 'M12':
+    case '12':
+      return 'Diciembre';
+    default:
+      return 'Periodo $period';
+  }
 }

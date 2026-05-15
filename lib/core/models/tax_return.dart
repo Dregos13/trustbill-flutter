@@ -39,7 +39,9 @@ class TaxReturnListItem {
   final String createdAt;
   final String updatedAt;
   final String? presentedAt;
+  final String? presentedBy;
   final double totalAmount;
+  final Map<String, double> casillas;
   final int boxCount;
   final int exportCount;
 
@@ -52,12 +54,15 @@ class TaxReturnListItem {
     required this.createdAt,
     required this.updatedAt,
     required this.presentedAt,
+    required this.presentedBy,
     required this.totalAmount,
+    required this.casillas,
     required this.boxCount,
     required this.exportCount,
   });
 
   factory TaxReturnListItem.fromJson(Map<String, dynamic> json) {
+    final rawCasillas = json['casillas'] as Map<String, dynamic>? ?? {};
     return TaxReturnListItem(
       id: json['id'] as int,
       model: json['model'] as String? ?? '',
@@ -67,7 +72,9 @@ class TaxReturnListItem {
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String? ?? '',
       presentedAt: json['presentedAt'] as String?,
+      presentedBy: json['presentedBy'] as String?,
       totalAmount: toDouble(json['totalAmount']),
+      casillas: rawCasillas.map((k, v) => MapEntry(k, toDouble(v))),
       boxCount: json['boxCount'] as int? ?? 0,
       exportCount: json['exportCount'] as int? ?? 0,
     );
