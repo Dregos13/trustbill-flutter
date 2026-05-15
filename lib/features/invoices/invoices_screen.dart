@@ -6,6 +6,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/invoice.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/invoice_card.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
@@ -37,28 +38,29 @@ class InvoicesScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
+          Text(
             'Facturas',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppColors.gray900,
+              color: context.appText,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.appSurface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.gray300),
+              border: Border.all(color: context.appBorder),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String?>(
                 value: currentStatus,
                 isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down,
-                    color: AppColors.gray400),
+                dropdownColor: context.appSurface,
+                style: TextStyle(color: context.appText, fontSize: 14),
+                icon: Icon(Icons.keyboard_arrow_down, color: context.appTextSubtle),
                 items: const [
                   DropdownMenuItem(
                       value: null, child: Text('Todos los estados')),

@@ -96,7 +96,7 @@ class DashboardScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: context.isDark ? context.appSurfaceRaised : AppColors.gray900,
+          color: context.isDark ? context.appSurfaceRaised : AppColors.primary,
           borderRadius: BorderRadius.circular(14),
         ),
         child: taxAsync.when(

@@ -5,6 +5,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/purchase.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/pagination_controls.dart';
 
@@ -34,28 +35,29 @@ class PurchasesScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
+          Text(
             'Compras',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppColors.gray900,
+              color: context.appText,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.appSurface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.gray300),
+              border: Border.all(color: context.appBorder),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String?>(
                 value: currentStatus,
                 isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down,
-                    color: AppColors.gray400),
+                dropdownColor: context.appSurface,
+                style: TextStyle(color: context.appText, fontSize: 14),
+                icon: Icon(Icons.keyboard_arrow_down, color: context.appTextSubtle),
                 items: const [
                   DropdownMenuItem(
                       value: null, child: Text('Todos los estados')),
@@ -177,12 +179,12 @@ class _PurchaseCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appSurface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.gray200),
+        border: Border.all(color: context.appBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: context.appShadow,
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -202,19 +204,19 @@ class _PurchaseCard extends StatelessWidget {
                     children: [
                       Text(
                         purchase.supplierName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.gray900,
+                          color: context.appText,
                         ),
                       ),
                       if (purchase.supplierTaxId.isNotEmpty) ...[
                         const SizedBox(height: 2),
                         Text(
                           purchase.supplierTaxId,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.gray500,
+                            color: context.appTextMuted,
                           ),
                         ),
                       ],
@@ -224,10 +226,10 @@ class _PurchaseCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '${purchase.total.toStringAsFixed(2)} €',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.gray900,
+                    color: context.appText,
                   ),
                 ),
               ],
@@ -248,8 +250,8 @@ class _PurchaseCard extends StatelessWidget {
                           fontSize: 13,
                           color: purchase.invoiceNumber != null &&
                                   purchase.invoiceNumber!.isNotEmpty
-                              ? AppColors.gray700
-                              : AppColors.gray400,
+                              ? context.appTextMuted
+                              : context.appTextSubtle,
                           fontStyle: purchase.invoiceNumber != null &&
                                   purchase.invoiceNumber!.isNotEmpty
                               ? FontStyle.normal
@@ -259,9 +261,9 @@ class _PurchaseCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         _formatDate(purchase.issueDate),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.gray500,
+                          color: context.appTextMuted,
                         ),
                       ),
                     ],
