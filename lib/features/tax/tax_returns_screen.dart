@@ -276,19 +276,11 @@ class _TaxReturnCard extends StatelessWidget {
                   .toList(),
             ),
           ],
-          if (item.totalAmount != 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _Meta(
-                    label: 'Resultado',
-                    value: '${formatAmount(item.totalAmount)} €',
-                  ),
-                ),
-              ],
-            ),
-          ],
+          const SizedBox(height: 12),
+          _Meta(
+            label: 'Resultado',
+            value: '${formatAmount(item.totalAmount)} €',
+          ),
         ],
       ),
     );
