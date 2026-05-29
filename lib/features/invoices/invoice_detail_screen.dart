@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/invoice.dart';
@@ -152,6 +153,53 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             ],
           ),
         ),
+        // Client contact card
+        if (invoice.client != null &&
+            (invoice.client!.phone != null ||
+             invoice.client!.email != null ||
+             invoice.client!.address != null)) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.gray100),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'CONTACTO',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.gray400, letterSpacing: 0.6),
+                ),
+                const SizedBox(height: 4),
+                if (invoice.client!.phone != null)
+                  _contactRow(
+                    icon: Icons.chat,
+                    label: 'Teléfono',
+                    value: invoice.client!.phone!,
+                    uri: _whatsappUri(invoice.client!.phone),
+                  ),
+                if (invoice.client!.email != null)
+                  _contactRow(
+                    icon: Icons.email_outlined,
+                    label: 'Email',
+                    value: invoice.client!.email!,
+                    uri: _mailtoUri(invoice.client!.email),
+                  ),
+                if (invoice.client!.address != null)
+                  _contactRow(
+                    icon: Icons.location_on_outlined,
+                    label: 'Dirección',
+                    value: invoice.client!.address!,
+                    uri: _mapsUri(invoice.client!.address),
+                  ),
+              ],
+            ),
+          ),
+        ],
+
         const SizedBox(height: 20),
 
         // Lines section
@@ -240,6 +288,79 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         ],
         const SizedBox(height: 20),
       ],
+    );
+  }
+
+  // Build WhatsApp URL. Spanish 9-digit numbers get 34 prepended.
+  Uri? _whatsappUri(String? phone) {
+    if (phone == null || phone.trim().isEmpty) return null;
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return null;
+    final cc = digits.length == 9 ? '34$digits' : digits;
+    return Uri.parse('https://wa.me/$cc');
+  }
+
+  Uri? _mapsUri(String? address) {
+    if (address == null || address.trim().isEmpty) return null;
+    return Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address.trim())}');
+  }
+
+  Uri? _mailtoUri(String? email) {
+    if (email == null || email.trim().isEmpty) return null;
+    return Uri.parse('mailto:${email.trim()}');
+  }
+
+  Future<void> _openUri(Uri? uri) async {
+    if (uri == null) return;
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir el enlace')),
+        );
+      }
+    }
+  }
+
+  Widget _contactRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Uri? uri,
+  }) {
+    final hasLink = uri != null;
+    return InkWell(
+      onTap: hasLink ? () => _openUri(uri) : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: hasLink ? AppColors.primary : AppColors.gray400),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 11, color: AppColors.gray400)),
+                  const SizedBox(height: 1),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: hasLink ? AppColors.primary : AppColors.gray700,
+                      decoration: hasLink ? TextDecoration.underline : TextDecoration.none,
+                      decorationColor: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasLink)
+              Icon(Icons.open_in_new, size: 14, color: AppColors.gray400),
+          ],
+        ),
+      ),
     );
   }
 
