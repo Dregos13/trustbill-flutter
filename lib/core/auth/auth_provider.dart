@@ -70,7 +70,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     try {
-      final res = await _endpoints.refresh(refreshToken);
+      final res = await _endpoints.refresh(refreshToken, tenant: clientId);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
       // Update login timestamp on successful refresh
@@ -110,7 +110,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final clientId = _currentClientId;
     state = const AuthState.loading();
     try {
-      final res = await _endpoints.login(email, password);
+      final res = await _endpoints.login(email, password, tenant: clientId);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
       // Save login timestamp for session expiry

@@ -21,17 +21,19 @@ class Endpoints {
 
   // ---- Auth ----
 
-  Future<LoginResponse> login(String email, String password) async {
+  Future<LoginResponse> login(String email, String password, {String tenant = 'default'}) async {
     final res = await _api.post('/auth/login', data: {
       'email': email,
       'password': password,
+      'tenant': tenant,
     });
     return LoginResponse.fromJson(res.data);
   }
 
-  Future<RefreshResponse> refresh(String refreshToken) async {
+  Future<RefreshResponse> refresh(String refreshToken, {String tenant = 'default'}) async {
     final res = await _api.post('/auth/refresh', data: {
       'refreshToken': refreshToken,
+      'tenant': tenant,
     });
     return RefreshResponse.fromJson(res.data);
   }
