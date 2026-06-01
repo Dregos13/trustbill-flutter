@@ -3,7 +3,6 @@ import '../api/api_client.dart';
 import '../api/api_error.dart';
 import '../api/endpoints.dart';
 import '../models/user.dart';
-import '../utils/error_messages.dart';
 import 'auth_state.dart';
 
 const _sessionDuration = Duration(hours: 8);
@@ -70,7 +69,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     try {
-      final res = await _endpoints.refresh(refreshToken, tenant: clientId);
+      final res = await _endpoints.refresh(refreshToken);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
       // Update login timestamp on successful refresh
@@ -110,7 +109,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final clientId = _currentClientId;
     state = const AuthState.loading();
     try {
-      final res = await _endpoints.login(email, password, tenant: clientId);
+      final res = await _endpoints.login(email, password);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
       // Save login timestamp for session expiry
@@ -138,7 +137,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = AuthState.unauthenticated(
         clientId: clientId,
-        error: friendlyError(e, fallback: 'No se pudo conectar con el servidor. Comprueba tu internet.'),
+        error: 'Error de conexion: $e',
       );
     }
   }
