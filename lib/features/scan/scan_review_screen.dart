@@ -105,7 +105,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: now,
-      firstDate: DateTime(2020),
+      firstDate: DateTime(2000),
       lastDate: allowFuture ? DateTime(2100) : now,
     );
     if (picked != null) {
@@ -166,7 +166,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         if (picked != null && mounted) _applySupplier(picked);
       }
     } catch (_) {
-      // Silently ignore search errors — user can still fill fields manually
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo buscar el proveedor. Puedes rellenar los datos manualmente.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _searchingSupplier = false);
     }

@@ -3,6 +3,7 @@ import '../api/api_client.dart';
 import '../api/api_error.dart';
 import '../api/endpoints.dart';
 import '../models/user.dart';
+import '../utils/error_messages.dart';
 import 'auth_state.dart';
 
 const _sessionDuration = Duration(hours: 8);
@@ -137,7 +138,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = AuthState.unauthenticated(
         clientId: clientId,
-        error: 'Error de conexion: $e',
+        error: friendlyError(e, fallback: 'No se pudo conectar con el servidor. Comprueba tu internet.'),
       );
     }
   }

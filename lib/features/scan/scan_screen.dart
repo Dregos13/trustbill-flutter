@@ -19,7 +19,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentType = ref.read(scanProvider).scanType;
       ref.read(scanProvider.notifier).reset();
+      ref.read(scanProvider.notifier).setScanType(currentType);
     });
   }
 
@@ -28,7 +30,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       source: source,
       maxWidth: 2000,
       maxHeight: 2000,
-      imageQuality: 85,
+      imageQuality: 90,
     );
     if (file == null) return;
 
@@ -43,9 +45,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(scanProvider);
+    final isExpense = state.scanType == ScanType.expense;
 
-    // Navigate to review when scan completes (deferred to avoid modifying
-    // provider during build)
     ref.listen<ScanState>(scanProvider, (prev, next) {
       if (next.result != null && prev?.result == null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,10 +55,18 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       }
     });
 
+    final typeColor = isExpense ? const Color(0xFF0EA5E9) : AppColors.primary;
+    final typeIcon = isExpense ? Icons.receipt_long : Icons.description_outlined;
+    final typeLabel = isExpense ? 'Escanear gasto' : 'Escanear factura emitida';
+    final typeSubtitle = isExpense
+        ? 'Factura o ticket de proveedor'
+        : 'Factura emitida a cliente';
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Escanear documento'),
-        backgroundColor: AppColors.primary,
+        title: Text(typeLabel),
+        backgroundColor: typeColor,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -65,14 +74,21 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         ),
       ),
       body: state.isScanning
-          ? const _ScanningView()
+          ? _ScanningView(color: typeColor)
           : state.error != null
               ? _ErrorView(
                   error: state.error!,
-                  onRetry: () =>
-                      ref.read(scanProvider.notifier).reset(),
+                  color: typeColor,
+                  onRetry: () {
+                    final type = ref.read(scanProvider).scanType;
+                    ref.read(scanProvider.notifier).reset();
+                    ref.read(scanProvider.notifier).setScanType(type);
+                  },
                 )
               : _SelectSourceView(
+                  icon: typeIcon,
+                  color: typeColor,
+                  subtitle: typeSubtitle,
                   onCamera: () => _pickImage(ImageSource.camera),
                   onGallery: () => _pickImage(ImageSource.gallery),
                 ),
@@ -80,11 +96,19 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   }
 }
 
+// ── Source selection ──────────────────────────────────────────────────────────
+
 class _SelectSourceView extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String subtitle;
   final VoidCallback onCamera;
   final VoidCallback onGallery;
 
   const _SelectSourceView({
+    required this.icon,
+    required this.color,
+    required this.subtitle,
     required this.onCamera,
     required this.onGallery,
   });
@@ -92,46 +116,70 @@ class _SelectSourceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          const SizedBox(height: 40),
-          Icon(
-            Icons.document_scanner_outlined,
-            size: 80,
-            color: AppColors.primary.withValues(alpha: 0.6),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Escanear factura o recibo',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: AppColors.gray800,
+          const SizedBox(height: 48),
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
             ),
+            child: Icon(icon, size: 48, color: color),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Haz una foto o selecciona una imagen de tu galeria para extraer los datos automaticamente.',
+            'Haz una foto o selecciona una imagen de tu galería\npara extraer los datos automáticamente.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.gray500,
-            ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.gray500,
+                  height: 1.5,
+                ),
           ),
           const SizedBox(height: 48),
           _SourceButton(
-            icon: Icons.camera_alt,
-            label: 'Usar camara',
+            icon: Icons.camera_alt_outlined,
+            label: 'Usar cámara',
             description: 'Haz una foto del documento',
+            color: color,
+            isPrimary: true,
             onTap: onCamera,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _SourceButton(
-            icon: Icons.photo_library,
-            label: 'Galeria',
+            icon: Icons.photo_library_outlined,
+            label: 'Galería',
             description: 'Selecciona una imagen existente',
+            color: color,
+            isPrimary: false,
             onTap: onGallery,
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.lock_outline, size: 13, color: AppColors.gray400),
+                const SizedBox(width: 6),
+                Text(
+                  'Los documentos se procesan de forma segura',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.gray400,
+                        fontSize: 11,
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -143,12 +191,16 @@ class _SourceButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final String description;
+  final Color color;
+  final bool isPrimary;
   final VoidCallback onTap;
 
   const _SourceButton({
     required this.icon,
     required this.label,
     required this.description,
+    required this.color,
+    required this.isPrimary,
     required this.onTap,
   });
 
@@ -156,25 +208,31 @@ class _SourceButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.gray200),
+          color: isPrimary ? color : color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: isPrimary ? null : Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: AppColors.primaryBg,
-                borderRadius: BorderRadius.circular(12),
+                color: isPrimary
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.primary),
+              child: Icon(
+                icon,
+                color: isPrimary ? Colors.white : color,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -183,24 +241,29 @@ class _SourceButton extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.gray800,
+                      color: isPrimary ? Colors.white : color,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     description,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.gray500,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isPrimary
+                          ? Colors.white.withValues(alpha: 0.75)
+                          : AppColors.gray500,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.gray400),
+            Icon(
+              Icons.chevron_right,
+              color: isPrimary ? Colors.white.withValues(alpha: 0.7) : color.withValues(alpha: 0.5),
+            ),
           ],
         ),
       ),
@@ -208,39 +271,39 @@ class _SourceButton extends StatelessWidget {
   }
 }
 
+// ── Scanning state ────────────────────────────────────────────────────────────
+
 class _ScanningView extends StatelessWidget {
-  const _ScanningView();
+  final Color color;
+  const _ScanningView({required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 48,
-            height: 48,
+            width: 56,
+            height: 56,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              color: AppColors.primary,
+              color: color,
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 28),
           Text(
             'Analizando documento...',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.gray700,
-            ),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Esto puede tardar unos segundos',
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.gray500,
-            ),
+            'El OCR está extrayendo los datos',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.gray500,
+                ),
           ),
         ],
       ),
@@ -248,15 +311,22 @@ class _ScanningView extends StatelessWidget {
   }
 }
 
+// ── Error state ───────────────────────────────────────────────────────────────
+
 class _ErrorView extends StatelessWidget {
   final String error;
+  final Color color;
   final VoidCallback onRetry;
 
-  const _ErrorView({required this.error, required this.onRetry});
+  const _ErrorView({
+    required this.error,
+    required this.color,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -274,10 +344,7 @@ class _ErrorView extends StatelessWidget {
                 Expanded(
                   child: Text(
                     error,
-                    style: const TextStyle(
-                      color: AppColors.danger,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: AppColors.danger, fontSize: 14),
                   ),
                 ),
               ],
@@ -286,9 +353,16 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            height: 46,
+            height: 48,
             child: ElevatedButton.icon(
               onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               icon: const Icon(Icons.refresh),
               label: const Text('Intentar de nuevo'),
             ),

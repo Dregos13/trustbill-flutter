@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/error_messages.dart';
 
 class CreateClientScreen extends ConsumerStatefulWidget {
   /// If [existingClient] is provided, the screen is in edit mode.
@@ -93,7 +94,7 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al guardar: $e'),
+          content: Text(friendlyError(e, fallback: 'No se pudo guardar el cliente. Intenta de nuevo.')),
           backgroundColor: AppColors.danger,
         ),
       );

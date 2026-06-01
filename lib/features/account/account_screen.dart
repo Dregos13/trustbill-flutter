@@ -8,6 +8,7 @@ import '../../core/theme/app_theme_tokens.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/auth/auth_state.dart';
+import '../../core/utils/error_messages.dart';
 import '../../core/auth/permission_provider.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
@@ -209,7 +210,6 @@ class _AppearanceSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeControllerProvider);
-    final isDark = themeMode == ThemeMode.dark;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -218,47 +218,64 @@ class _AppearanceSection extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: context.appPrimarySoft,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              isDark ? Icons.dark_mode : Icons.light_mode,
-              color: context.appPrimary,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Apariencia',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: context.appPrimarySoft,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  isDark ? 'Modo oscuro activo' : 'Modo claro activo',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.appTextMuted,
-                      ),
+                alignment: Alignment.center,
+                child: Icon(
+                  themeMode == ThemeMode.dark
+                      ? Icons.dark_mode
+                      : themeMode == ThemeMode.light
+                          ? Icons.light_mode
+                          : Icons.brightness_auto,
+                  color: context.appPrimary,
+                  size: 18,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Apariencia',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ],
           ),
-          Switch(
-            value: isDark,
-            onChanged: (_) {
-              ref.read(themeControllerProvider.notifier).toggleDarkLight();
+          const SizedBox(height: 12),
+          SegmentedButton<ThemeMode>(
+            style: SegmentedButton.styleFrom(
+              selectedBackgroundColor: context.appPrimary,
+              selectedForegroundColor: Colors.white,
+            ),
+            segments: const [
+              ButtonSegment(
+                value: ThemeMode.system,
+                icon: Icon(Icons.brightness_auto, size: 16),
+                label: Text('Sistema'),
+              ),
+              ButtonSegment(
+                value: ThemeMode.light,
+                icon: Icon(Icons.light_mode, size: 16),
+                label: Text('Claro'),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                icon: Icon(Icons.dark_mode, size: 16),
+                label: Text('Oscuro'),
+              ),
+            ],
+            selected: {themeMode},
+            onSelectionChanged: (selection) {
+              ref.read(themeControllerProvider.notifier).setThemeMode(selection.first);
             },
           ),
         ],
@@ -310,7 +327,7 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al subir el logo: $e'),
+          content: Text(friendlyError(e, fallback: 'No se pudo actualizar el logo. Intenta con otra imagen.')),
           backgroundColor: AppColors.danger,
         ),
       );

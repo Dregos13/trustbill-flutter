@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/auth/auth_provider.dart';
 
 class SetupScreen extends ConsumerStatefulWidget {
@@ -83,7 +84,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Container(
+                  Theme(
+                    data: buildAppTheme(),
+                    child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -201,6 +204,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                         ],
                       ),
                     ),
+                  ),
                   ),
                 ],
               ),

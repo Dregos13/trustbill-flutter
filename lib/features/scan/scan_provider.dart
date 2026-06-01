@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/scan_result.dart';
 import '../../core/models/expense.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/utils/error_messages.dart';
+
+enum ScanType { expense, invoice }
 
 /// Holds the current scan result and image bytes while the user reviews.
 class ScanState {
+  final ScanType scanType;
   final ScanResult? result;
   final Uint8List? imageBytes;
   final String? imageMimeType;
@@ -15,6 +19,7 @@ class ScanState {
   final InvoiceCreatedResponse? confirmed;
 
   const ScanState({
+    this.scanType = ScanType.expense,
     this.result,
     this.imageBytes,
     this.imageMimeType,
@@ -25,6 +30,7 @@ class ScanState {
   });
 
   ScanState copyWith({
+    ScanType? scanType,
     ScanResult? result,
     Uint8List? imageBytes,
     String? imageMimeType,
@@ -34,6 +40,7 @@ class ScanState {
     InvoiceCreatedResponse? confirmed,
   }) {
     return ScanState(
+      scanType: scanType ?? this.scanType,
       result: result ?? this.result,
       imageBytes: imageBytes ?? this.imageBytes,
       imageMimeType: imageMimeType ?? this.imageMimeType,
@@ -50,8 +57,13 @@ class ScanNotifier extends StateNotifier<ScanState> {
 
   ScanNotifier(this._ref) : super(const ScanState());
 
+  void setScanType(ScanType type) {
+    state = ScanState(scanType: type);
+  }
+
   Future<void> scanImage(Uint8List bytes, String mimeType) async {
     state = ScanState(
+      scanType: state.scanType,
       imageBytes: bytes,
       imageMimeType: mimeType,
       isScanning: true,
@@ -68,7 +80,7 @@ class ScanNotifier extends StateNotifier<ScanState> {
     } catch (e) {
       state = state.copyWith(
         isScanning: false,
-        error: 'Error al escanear: ${e.toString()}',
+        error: friendlyError(e, fallback: 'No se pudo analizar la imagen. Intenta con una foto más clara.'),
       );
     }
   }
@@ -83,7 +95,7 @@ class ScanNotifier extends StateNotifier<ScanState> {
     } catch (e) {
       state = state.copyWith(
         isConfirming: false,
-        error: 'Error al guardar: ${e.toString()}',
+        error: friendlyError(e, fallback: 'No se pudo guardar la factura. Intenta de nuevo.'),
       );
     }
   }

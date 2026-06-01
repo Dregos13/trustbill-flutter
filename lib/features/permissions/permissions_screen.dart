@@ -4,6 +4,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/auth/permission_helpers.dart';
 import '../../core/models/user_permissions.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/error_messages.dart';
 
 // ── Providers ──────────────────────────────────────────────────────────────────
 
@@ -31,7 +32,7 @@ class PermissionsScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'Error al cargar usuarios: $e',
+              friendlyError(e, fallback: 'No se pudieron cargar los usuarios. Intenta de nuevo.'),
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.danger),
             ),
@@ -233,7 +234,7 @@ class _UserPermissionsDetailState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al guardar: $e'),
+          content: Text(friendlyError(e, fallback: 'No se pudieron guardar los permisos. Intenta de nuevo.')),
           backgroundColor: AppColors.danger,
         ),
       );

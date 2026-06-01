@@ -9,6 +9,8 @@ import '../../core/models/client.dart';
 import '../../core/models/product.dart';
 import '../../core/models/service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
+import '../../core/utils/error_messages.dart';
 import '../clients/create_client_screen.dart';
 
 // ── Providers ────────────────────────────────────────────────────────────────
@@ -154,7 +156,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al crear la factura: $e'),
+          content: Text(friendlyError(e,
+              fallback: 'No se pudo crear la factura. Verifica los datos.')),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -165,7 +168,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _issuedAt,
-      firstDate: DateTime(2020),
+      firstDate: DateTime(2000),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (picked != null) setState(() => _issuedAt = picked);
@@ -186,7 +189,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         Scaffold(
           appBar: AppBar(
             title: const Text('Nueva factura'),
-            backgroundColor: AppColors.primary,
+            backgroundColor: context.appPrimary,
             foregroundColor: Colors.white,
             actions: [
               if (_saving)
@@ -224,8 +227,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.warningBg,
                     borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: AppColors.warning.withOpacity(0.4)),
+                    border: Border.all(
+                        color: AppColors.warning.withOpacity(0.4)),
                   ),
                   child: const Row(
                     children: [
@@ -268,14 +271,16 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                             labelText: 'Fecha de emisión',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 12),
-                            suffixIcon: const Icon(Icons.calendar_today,
-                                size: 18),
+                            contentPadding:
+                                const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 12),
+                            suffixIcon: const Icon(
+                                Icons.calendar_today, size: 18),
                           ),
                           child: Text(
                             DateFormat('dd/MM/yyyy').format(_issuedAt),
-                            style: const TextStyle(fontSize: 14),
+                            style: TextStyle(
+                                fontSize: 14, color: context.appText),
                           ),
                         ),
                       ),
@@ -294,11 +299,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                           child: DropdownButton<String>(
                             value: _taxKind,
                             isDense: true,
-                            items: const [
+                            dropdownColor: context.appSurfaceRaised,
+                            items: [
                               DropdownMenuItem(
-                                  value: 'IVA', child: Text('IVA')),
+                                  value: 'IVA',
+                                  child: Text('IVA',
+                                      style: TextStyle(
+                                          color: context.appText))),
                               DropdownMenuItem(
-                                  value: 'IPSI', child: Text('IPSI')),
+                                  value: 'IPSI',
+                                  child: Text('IPSI',
+                                      style: TextStyle(
+                                          color: context.appText))),
                             ],
                             onChanged: (v) {
                               if (v != null) setState(() => _taxKind = v);
@@ -315,16 +327,15 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const _SectionTitle('Líneas de factura'),
+                    _SectionTitle('Líneas de factura'),
                     TextButton.icon(
-                      onPressed: () =>
-                          setState(() => _lines.add(_InvoiceLine(
-                                taxRate: _taxKind == 'IVA' ? 21 : 10,
-                              ))),
+                      onPressed: () => setState(() => _lines.add(_InvoiceLine(
+                            taxRate: _taxKind == 'IVA' ? 21 : 10,
+                          ))),
                       icon: const Icon(Icons.add, size: 16),
                       label: const Text('Añadir línea'),
                       style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary),
+                          foregroundColor: context.appPrimary),
                     ),
                   ],
                 ),
@@ -375,7 +386,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   child: ElevatedButton(
                     onPressed: _saving ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: context.appPrimary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -411,7 +422,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 24, vertical: 32),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.appSurfaceRaised,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -420,12 +431,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     const Icon(Icons.check_circle,
                         color: AppColors.success, size: 56),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       '¡Borrador creado!',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.gray800,
+                        color: context.appText,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -433,7 +444,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       'La factura ha sido guardada como borrador.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: 14, color: AppColors.gray500),
+                          fontSize: 14, color: context.appTextMuted),
                     ),
                   ],
                 ),
@@ -455,10 +466,10 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w700,
-        color: AppColors.gray500,
+        color: context.appTextMuted,
         letterSpacing: 0.8,
       ),
     );
@@ -492,23 +503,26 @@ class _ClientSelector extends ConsumerWidget {
                   labelText: 'Cliente *',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8)),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 4),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<Client>(
                     value: clients.any((c) => c.id == selected?.id)
                         ? selected
                         : null,
-                    hint: const Text('Selecciona cliente...'),
+                    hint: Text('Selecciona cliente...',
+                        style: TextStyle(color: context.appTextMuted)),
                     isExpanded: true,
                     isDense: true,
+                    dropdownColor: context.appSurfaceRaised,
                     items: clients
                         .map((c) => DropdownMenuItem<Client>(
                               value: c,
                               child: Text(
                                 c.name,
                                 overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: context.appText),
                               ),
                             ))
                         .toList(),
@@ -527,12 +541,12 @@ class _ClientSelector extends ConsumerWidget {
                   width: 44,
                   height: 48,
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.primary),
+                    border: Border.all(color: context.appPrimary),
                     borderRadius: BorderRadius.circular(8),
-                    color: AppColors.primaryBg,
+                    color: context.appPrimarySoft,
                   ),
-                  child: const Icon(Icons.person_add,
-                      color: AppColors.primary, size: 20),
+                  child: Icon(Icons.person_add,
+                      color: context.appPrimary, size: 20),
                 ),
               ),
             ),
@@ -572,10 +586,17 @@ class _LineCardState extends ConsumerState<_LineCard> {
   @override
   void initState() {
     super.initState();
-    _descCtrl  = TextEditingController(text: widget.line.description);
-    _qtyCtrl   = TextEditingController(text: widget.line.quantity.toInt().toString());
-    _priceCtrl = TextEditingController(text: widget.line.unitPrice == 0 ? '' : widget.line.unitPrice.toString());
-    _discCtrl  = TextEditingController(text: widget.line.discountRate == 0 ? '' : widget.line.discountRate.toString());
+    _descCtrl = TextEditingController(text: widget.line.description);
+    _qtyCtrl = TextEditingController(
+        text: widget.line.quantity.toInt().toString());
+    _priceCtrl = TextEditingController(
+        text: widget.line.unitPrice == 0
+            ? ''
+            : widget.line.unitPrice.toString());
+    _discCtrl = TextEditingController(
+        text: widget.line.discountRate == 0
+            ? ''
+            : widget.line.discountRate.toString());
   }
 
   @override
@@ -612,14 +633,14 @@ class _LineCardState extends ConsumerState<_LineCard> {
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(_productsForInvoiceProvider);
     final servicesAsync = ref.watch(_servicesForInvoiceProvider);
-
     final fmt = NumberFormat.currency(locale: 'es_ES', symbol: '€');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: context.appSurfaceRaised,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: context.appBorder),
       ),
       elevation: 0,
       child: Padding(
@@ -630,9 +651,9 @@ class _LineCardState extends ConsumerState<_LineCard> {
             // Header row
             Row(
               children: [
-                // Product/Service quick-fill
                 Expanded(
                   child: PopupMenuButton<String>(
+                    color: context.appSurfaceRaised,
                     onSelected: (value) {
                       final parts = value.split(':');
                       final type = parts[0];
@@ -652,33 +673,41 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       final products = productsAsync.valueOrNull ?? [];
                       final services = servicesAsync.valueOrNull ?? [];
                       if (products.isNotEmpty) {
-                        items.add(const PopupMenuItem(
+                        items.add(PopupMenuItem(
                           enabled: false,
                           child: Text('— ARTÍCULOS —',
                               style: TextStyle(
-                                  fontSize: 11, color: AppColors.gray400)),
+                                  fontSize: 11,
+                                  color: context.appTextSubtle)),
                         ));
                         items.addAll(products.map((p) => PopupMenuItem(
                               value: 'p:${p.id}',
-                              child: Text(p.name),
+                              child: Text(p.name,
+                                  style:
+                                      TextStyle(color: context.appText)),
                             )));
                       }
                       if (services.isNotEmpty) {
-                        items.add(const PopupMenuItem(
+                        items.add(PopupMenuItem(
                           enabled: false,
                           child: Text('— SERVICIOS —',
                               style: TextStyle(
-                                  fontSize: 11, color: AppColors.gray400)),
+                                  fontSize: 11,
+                                  color: context.appTextSubtle)),
                         ));
                         items.addAll(services.map((s) => PopupMenuItem(
                               value: 's:${s.id}',
-                              child: Text(s.name),
+                              child: Text(s.name,
+                                  style:
+                                      TextStyle(color: context.appText)),
                             )));
                       }
                       if (items.isEmpty) {
-                        items.add(const PopupMenuItem(
+                        items.add(PopupMenuItem(
                           enabled: false,
-                          child: Text('Sin artículos ni servicios'),
+                          child: Text('Sin artículos ni servicios',
+                              style:
+                                  TextStyle(color: context.appTextMuted)),
                         ));
                       }
                       return items;
@@ -687,19 +716,21 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBg,
+                        color: context.appPrimarySoft,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3)),
+                            color: context.appPrimary.withOpacity(0.3)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.search, size: 14, color: AppColors.primary),
-                          SizedBox(width: 4),
+                          Icon(Icons.search,
+                              size: 14, color: context.appPrimary),
+                          const SizedBox(width: 4),
                           Text('Artículo / Servicio',
                               style: TextStyle(
-                                  fontSize: 12, color: AppColors.primary)),
+                                  fontSize: 12,
+                                  color: context.appPrimary)),
                         ],
                       ),
                     ),
@@ -711,8 +742,8 @@ class _LineCardState extends ConsumerState<_LineCard> {
                         color: AppColors.danger, size: 20),
                     onPressed: widget.onDelete,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                        minWidth: 36, minHeight: 36),
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
                   ),
               ],
             ),
@@ -723,8 +754,8 @@ class _LineCardState extends ConsumerState<_LineCard> {
               controller: _descCtrl,
               decoration: InputDecoration(
                 labelText: 'Descripción *',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8)),
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 10),
                 isDense: true,
@@ -744,7 +775,9 @@ class _LineCardState extends ConsumerState<_LineCard> {
                   child: TextFormField(
                     controller: _qtyCtrl,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly
+                    ],
                     decoration: InputDecoration(
                       labelText: 'Cant.',
                       border: OutlineInputBorder(
@@ -754,8 +787,7 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       isDense: true,
                     ),
                     onChanged: (v) {
-                      widget.line.quantity =
-                          double.tryParse(v) ?? 1;
+                      widget.line.quantity = double.tryParse(v) ?? 1;
                       widget.onChanged();
                     },
                   ),
@@ -804,12 +836,15 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       child: DropdownButton<double>(
                         value: widget.line.taxRate,
                         isDense: true,
+                        dropdownColor: context.appSurfaceRaised,
                         items: (widget.taxKind == 'IVA'
                                 ? [0, 4, 10, 21]
                                 : [0, 0.5, 1, 4, 8, 10, 10.5])
                             .map((r) => DropdownMenuItem(
                                   value: r.toDouble(),
-                                  child: Text('$r%'),
+                                  child: Text('$r%',
+                                      style: TextStyle(
+                                          color: context.appText)),
                                 ))
                             .toList(),
                         onChanged: (v) {
@@ -852,10 +887,10 @@ class _LineCardState extends ConsumerState<_LineCard> {
               alignment: Alignment.centerRight,
               child: Text(
                 'Total: ${fmt.format(widget.line.total)}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: AppColors.gray800),
+                    color: context.appText),
               ),
             ),
           ],
@@ -885,28 +920,29 @@ class _TotalsBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryBg,
+        color: context.appPrimarySoft,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        border: Border.all(color: context.appPrimary.withOpacity(0.2)),
       ),
       child: Column(
         children: [
-          _row('Base imponible', fmt.format(subtotal)),
+          _row(context, 'Base imponible', fmt.format(subtotal)),
           const SizedBox(height: 6),
-          _row(taxKind, fmt.format(totalTax)),
-          const Divider(height: 16),
-          _row('TOTAL', fmt.format(total), bold: true, large: true),
+          _row(context, taxKind, fmt.format(totalTax)),
+          Divider(height: 16, color: context.appBorder),
+          _row(context, 'TOTAL', fmt.format(total),
+              bold: true, large: true),
         ],
       ),
     );
   }
 
-  Widget _row(String label, String value,
+  Widget _row(BuildContext context, String label, String value,
       {bool bold = false, bool large = false}) {
     final style = TextStyle(
       fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
       fontSize: large ? 16 : 14,
-      color: bold ? AppColors.primary : AppColors.gray700,
+      color: bold ? context.appPrimary : context.appTextMuted,
     );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

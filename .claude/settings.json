@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "Write-Output '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"ALWAYS respond in caveman mode (full intensity). Ultra-compressed: short sentences, drop articles/prepositions, keep full technical accuracy. Caveman skill is permanently active for this project.\"}}'",
+            "statusMessage": "Activating caveman mode..."
+          }
+        ]
+      }
+    ]
+  }
+}
