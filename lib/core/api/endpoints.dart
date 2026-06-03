@@ -25,6 +25,7 @@ class Endpoints {
     final res = await _api.post('/auth/login', data: {
       'email': email,
       'password': password,
+      'tenant': _api.tenant, // multi-DB: enruta a la base de datos del cliente
     });
     return LoginResponse.fromJson(res.data);
   }
@@ -32,6 +33,7 @@ class Endpoints {
   Future<RefreshResponse> refresh(String refreshToken) async {
     final res = await _api.post('/auth/refresh', data: {
       'refreshToken': refreshToken,
+      'tenant': _api.tenant,
     });
     return RefreshResponse.fromJson(res.data);
   }
