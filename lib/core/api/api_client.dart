@@ -11,6 +11,9 @@ class ApiClient {
   final FlutterSecureStorage _storage;
   String? _accessToken;
   String _baseUrl = '';
+  // Slug de tenant (multi-DB) = clientId. Se envía en login/refresh para que
+  // la API apunte a la base de datos de este cliente.
+  String _tenant = '';
   Future<bool>? _refreshFuture;
 
   void Function()? onAuthError;
@@ -70,10 +73,12 @@ class ApiClient {
 
   FlutterSecureStorage get storage => _storage;
   String get baseUrl => _baseUrl;
+  String get tenant => _tenant;
 
   void configure(String clientId) {
     _baseUrl = buildBaseUrl(clientId);
     _dio.options.baseUrl = _baseUrl;
+    _tenant = clientId;
   }
 
   String? get accessToken => _accessToken;
@@ -101,6 +106,7 @@ class ApiClient {
     await _storage.delete(key: 'refresh_token');
     await _storage.delete(key: 'client_id');
     _baseUrl = '';
+    _tenant = '';
     _dio.options.baseUrl = '';
   }
 
@@ -115,7 +121,7 @@ class ApiClient {
     try {
       final res = await Dio(BaseOptions(baseUrl: _baseUrl)).post(
         '/auth/refresh',
-        data: {'refreshToken': rt},
+        data: {'refreshToken': rt, 'tenant': _tenant},
       );
       if (res.statusCode == 200) {
         _accessToken = res.data['accessToken'];
