@@ -45,6 +45,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     _apiClient.configure(clientId);
+    await _apiClient.loadTenant(); // restaura el tenant elegido (para el refresh)
 
     // Check session expiry
     final loginTs = await _apiClient.storage.read(key: _keyLoginTimestamp);
@@ -105,10 +106,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> login(String email, String password,
-      {bool rememberCredentials = false}) async {
+      {bool rememberCredentials = false, String? tenant}) async {
     final clientId = _currentClientId;
     state = const AuthState.loading();
     try {
+      // tenant elegido (DB destino); por defecto el clientId
+      await _apiClient.setTenant(
+        (tenant != null && tenant.trim().isNotEmpty) ? tenant.trim() : clientId,
+      );
       final res = await _endpoints.login(email, password);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);

@@ -78,7 +78,19 @@ class ApiClient {
   void configure(String clientId) {
     _baseUrl = buildBaseUrl(clientId);
     _dio.options.baseUrl = _baseUrl;
-    _tenant = clientId;
+    _tenant = clientId; // por defecto el tenant = clientId (se puede override)
+  }
+
+  /// Fija el tenant (DB destino) elegido en login y lo persiste para el refresh.
+  Future<void> setTenant(String t) async {
+    _tenant = t;
+    await _storage.write(key: 'tenant', value: t);
+  }
+
+  /// Restaura el tenant persistido (si lo hay) tras reiniciar la app.
+  Future<void> loadTenant() async {
+    final t = await _storage.read(key: 'tenant');
+    if (t != null && t.isNotEmpty) _tenant = t;
   }
 
   String? get accessToken => _accessToken;
@@ -105,6 +117,7 @@ class ApiClient {
     _accessToken = null;
     await _storage.delete(key: 'refresh_token');
     await _storage.delete(key: 'client_id');
+    await _storage.delete(key: 'tenant');
     _baseUrl = '';
     _tenant = '';
     _dio.options.baseUrl = '';

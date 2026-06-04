@@ -15,14 +15,17 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _tenantController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _rememberCredentials = false;
   bool _loadedSaved = false;
+  bool _tenantPrefilled = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _tenantController.dispose();
     super.dispose();
   }
 
@@ -46,6 +49,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _emailController.text.trim(),
           _passwordController.text,
           rememberCredentials: _rememberCredentials,
+          tenant: _tenantController.text.trim(),
         );
   }
 
@@ -61,6 +65,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Load saved credentials once when screen renders
     if (authState is AuthUnauthenticated && !_loadedSaved) {
       _loadSavedCredentials();
+    }
+
+    // Prefill tenant with the clientId (server) by default
+    if (!_tenantPrefilled && clientId.isNotEmpty) {
+      _tenantController.text = clientId;
+      _tenantPrefilled = true;
     }
 
     return Scaffold(
@@ -160,6 +170,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                             ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _tenantController,
+                            autocorrect: false,
+                            decoration: const InputDecoration(
+                              labelText: 'Base de datos (tenant)',
+                              hintText: 'ej: trustcore',
+                              prefixIcon: Icon(Icons.storage_outlined, size: 18),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Introduce el tenant';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
                           if (error != null) ...[
