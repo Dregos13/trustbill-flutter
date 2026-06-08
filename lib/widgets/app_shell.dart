@@ -19,6 +19,9 @@ class AppShell extends ConsumerWidget {
   });
 
   Widget? _buildFab(BuildContext context, WidgetRef ref) {
+    // ── /catalog → tabs manage their own FABs ─────────────────────────────────
+    if (currentLocation.startsWith('/catalog')) return null;
+
     // ── /clients → "Nuevo cliente" (requires clients.write) ──────────────────
     if (currentLocation == '/clients') {
       final can = ref.watch(hasPermissionProvider(Permissions.clientsWrite));
