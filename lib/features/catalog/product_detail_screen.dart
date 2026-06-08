@@ -7,6 +7,7 @@ import '../../core/auth/permission_helpers.dart';
 import '../../core/auth/permission_provider.dart';
 import '../../core/models/catalog.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -77,22 +78,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final canProductWrite = perms.contains(Permissions.productsWrite) || perms.contains('products.*');
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.appBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.appSurface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.text),
+          icon: Icon(Icons.arrow_back, color: context.appText),
           onPressed: () => context.pop(),
         ),
         title: Text(
           _product?.name ?? 'Producto',
-          style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w700, fontSize: 18),
+          style: TextStyle(color: context.appText, fontWeight: FontWeight.w700, fontSize: 18),
         ),
         actions: [
           if (canProductWrite && _product != null)
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppColors.gray600),
+              icon: Icon(Icons.edit_outlined, color: context.appTextMuted),
               onPressed: () async {
                 await context.push('/catalog/products/${widget.id}/edit', extra: _product);
                 _load();
@@ -112,16 +113,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      _buildInfoCard(),
+                      _buildInfoCard(context),
                       const SizedBox(height: 12),
-                      _buildStockCard(canInventoryWrite),
+                      _buildStockCard(context, canInventoryWrite),
                       const SizedBox(height: 16),
-                      const Text('Movimientos recientes', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text)),
+                      Text('Movimientos recientes', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: context.appText)),
                       const SizedBox(height: 8),
                       if (_movements.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24),
-                          child: Center(child: Text('Sin movimientos', style: TextStyle(color: AppColors.gray500))),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(child: Text('Sin movimientos', style: TextStyle(color: context.appTextMuted))),
                         )
                       else
                         ..._movements.map((m) => _MovementTile(movement: m)),
@@ -131,33 +132,33 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(BuildContext context) {
     final p = _product!;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: context.appSurface, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.appBorder)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Icon(Icons.inventory_2_outlined, color: AppColors.primary, size: 18),
+            Icon(Icons.inventory_2_outlined, color: context.appPrimary, size: 18),
             const SizedBox(width: 8),
-            Text(p.sku, style: const TextStyle(fontSize: 13, color: AppColors.gray500, fontFamily: 'monospace')),
+            Text(p.sku, style: TextStyle(fontSize: 13, color: context.appTextMuted, fontFamily: 'monospace')),
           ]),
           const SizedBox(height: 8),
-          Text(p.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.text)),
+          Text(p.name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: context.appText)),
           if (p.description != null && p.description!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(p.description!, style: const TextStyle(fontSize: 13, color: AppColors.gray500)),
+            Text(p.description!, style: TextStyle(fontSize: 13, color: context.appTextMuted)),
           ],
           const SizedBox(height: 10),
-          Text('€${p.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.primary)),
+          Text('€${p.price.toStringAsFixed(2)}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: context.appPrimary)),
         ],
       ),
     );
   }
 
-  Widget _buildStockCard(bool canWrite) {
+  Widget _buildStockCard(BuildContext context, bool canWrite) {
     final qty = _product!.stockQty;
     final stockColor = qty <= 0 ? AppColors.danger : qty < 5 ? AppColors.warning : AppColors.success;
 
@@ -176,7 +177,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Stock disponible', style: TextStyle(fontSize: 12, color: AppColors.gray600)),
+                Text('Stock disponible', style: TextStyle(fontSize: 12, color: context.appTextMuted)),
                 Text('$qty unidades', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: stockColor)),
               ],
             ),
@@ -264,7 +265,7 @@ class _MovementTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: context.appSurface, borderRadius: BorderRadius.circular(10), border: Border.all(color: context.appBorder)),
       child: Row(children: [
         Container(
           width: 36, height: 36,
@@ -273,13 +274,13 @@ class _MovementTile extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(_label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text)),
+          Text(_label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.appText)),
           if (movement.notes != null && movement.notes!.isNotEmpty)
-            Text(movement.notes!, style: const TextStyle(fontSize: 11, color: AppColors.gray500), maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(movement.notes!, style: TextStyle(fontSize: 11, color: context.appTextMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
         ])),
         Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Text(_qty, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _color)),
-          Text(fmt.format(movement.occurredAt.toLocal()), style: const TextStyle(fontSize: 10, color: AppColors.gray500)),
+          Text(fmt.format(movement.occurredAt.toLocal()), style: TextStyle(fontSize: 10, color: context.appTextMuted)),
         ]),
       ]),
     );
@@ -406,11 +407,11 @@ class _InventoryAdjustSheetState extends ConsumerState<_InventoryAdjustSheet> {
         child: Column(children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: AppColors.gray100, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: context.appBorder, borderRadius: BorderRadius.circular(8)),
             child: Row(children: [
-              const Icon(Icons.info_outline, size: 16, color: AppColors.gray500),
+              Icon(Icons.info_outline, size: 16, color: context.appTextMuted),
               const SizedBox(width: 8),
-              Text('Stock actual: ${widget.currentStock} unidades', style: const TextStyle(fontSize: 13, color: AppColors.gray600)),
+              Text('Stock actual: ${widget.currentStock} unidades', style: TextStyle(fontSize: 13, color: context.appTextMuted)),
             ]),
           ),
           const SizedBox(height: 12),
@@ -447,18 +448,18 @@ class _SheetWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: context.appSurface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.gray300, borderRadius: BorderRadius.circular(2)))),
+          Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: context.appTextSubtle, borderRadius: BorderRadius.circular(2)))),
           const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.text)),
+          Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: context.appText)),
           const SizedBox(height: 16),
           child,
           const SizedBox(height: 20),

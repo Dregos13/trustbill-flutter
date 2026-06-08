@@ -6,6 +6,7 @@ import '../../core/auth/permission_helpers.dart';
 import '../../core/auth/permission_provider.dart';
 import '../../core/models/catalog.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
 
 class ProductsTab extends ConsumerStatefulWidget {
@@ -98,15 +99,15 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
                     )
                   : null,
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: context.appSurface,
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: context.appBorder),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: context.appBorder),
               ),
             ),
             onSubmitted: (v) => _load(search: v.trim().isEmpty ? null : v.trim()),
@@ -131,7 +132,7 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
                       ),
                     )
                   : _products.isEmpty
-                      ? const Center(child: Text('Sin productos', style: TextStyle(color: AppColors.gray500)))
+                      ? Center(child: Text('Sin productos', style: TextStyle(color: context.appTextMuted)))
                       : RefreshIndicator(
                           onRefresh: () => _load(search: _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim()),
                           child: ListView.separated(
@@ -193,7 +194,7 @@ class _ProductCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  Color get _stockColor {
+  Color _stockColor() {
     if (product.stockQty <= 0) return AppColors.danger;
     if (product.stockQty < 5) return AppColors.warning;
     return AppColors.success;
@@ -201,15 +202,16 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stockColor = _stockColor();
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.appSurface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.appBorder),
         ),
         child: Row(
           children: [
@@ -217,10 +219,10 @@ class _ProductCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.primaryBg,
+                color: context.appPrimarySoft,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.inventory_2_outlined, color: AppColors.primary, size: 22),
+              child: Icon(Icons.inventory_2_outlined, color: context.appPrimary, size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -229,32 +231,32 @@ class _ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.text),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: context.appText),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     product.sku,
-                    style: const TextStyle(fontSize: 12, color: AppColors.gray500, fontFamily: 'monospace'),
+                    style: TextStyle(fontSize: 12, color: context.appTextMuted, fontFamily: 'monospace'),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
                         '€${product.price.toStringAsFixed(2)}',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.appText),
                       ),
                       const SizedBox(width: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _stockColor.withValues(alpha: 0.12),
+                          color: stockColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           'Stock: ${product.stockQty}',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _stockColor),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: stockColor),
                         ),
                       ),
                     ],
@@ -264,7 +266,7 @@ class _ProductCard extends StatelessWidget {
             ),
             if (canWrite)
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: AppColors.gray400, size: 20),
+                icon: Icon(Icons.more_vert, color: context.appTextMuted, size: 20),
                 onSelected: (v) {
                   if (v == 'edit') onEdit();
                   if (v == 'delete') onDelete();

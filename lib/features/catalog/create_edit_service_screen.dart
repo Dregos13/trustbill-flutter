@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/catalog.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
 
 class CreateEditServiceScreen extends ConsumerStatefulWidget {
@@ -72,14 +73,14 @@ class _CreateEditServiceScreenState extends ConsumerState<CreateEditServiceScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.appBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.appSurface,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: AppColors.text), onPressed: () => context.pop()),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: context.appText), onPressed: () => context.pop()),
         title: Text(
           _isEdit ? 'Editar servicio' : 'Nuevo servicio',
-          style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w700, fontSize: 18),
+          style: TextStyle(color: context.appText, fontWeight: FontWeight.w700, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(

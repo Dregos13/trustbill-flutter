@@ -294,7 +294,8 @@ class Endpoints {
       'offset': offset,
       if (search != null && search.isNotEmpty) 'search': search,
     });
-    return (res.data as List).map((e) => CatalogProduct.fromJson(e as Map<String, dynamic>)).toList();
+    final items = (res.data as Map<String, dynamic>)['items'] as List;
+    return items.map((e) => CatalogProduct.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<CatalogProduct> getCatalogProduct(int id) async {
@@ -328,7 +329,8 @@ class Endpoints {
       'offset': offset,
       if (search != null && search.isNotEmpty) 'search': search,
     });
-    return (res.data as List).map((e) => CatalogService.fromJson(e as Map<String, dynamic>)).toList();
+    final items = (res.data as Map<String, dynamic>)['items'] as List;
+    return items.map((e) => CatalogService.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<CatalogService> createCatalogService(Map<String, dynamic> data) async {

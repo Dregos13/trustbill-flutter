@@ -6,6 +6,7 @@ import '../../core/auth/permission_helpers.dart';
 import '../../core/auth/permission_provider.dart';
 import '../../core/models/catalog.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
 
 class ServicesTab extends ConsumerStatefulWidget {
@@ -95,10 +96,10 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
                     )
                   : null,
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: context.appSurface,
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.appBorder)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.appBorder)),
             ),
             onSubmitted: (v) => _load(search: v.trim().isEmpty ? null : v.trim()),
             onChanged: (v) { setState(() {}); if (v.isEmpty) _load(); },
@@ -113,7 +114,7 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
                       TextButton(onPressed: _load, child: const Text('Reintentar')),
                     ]))
                   : _services.isEmpty
-                      ? const Center(child: Text('Sin servicios', style: TextStyle(color: AppColors.gray500)))
+                      ? Center(child: Text('Sin servicios', style: TextStyle(color: context.appTextMuted)))
                       : RefreshIndicator(
                           onRefresh: () => _load(search: _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim()),
                           child: ListView.separated(
@@ -167,9 +168,9 @@ class _ServiceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.appSurface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.appBorder),
       ),
       child: Row(
         children: [
@@ -183,21 +184,21 @@ class _ServiceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(service.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.text), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(service.name, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: context.appText), maxLines: 1, overflow: TextOverflow.ellipsis),
                 if (service.description != null && service.description!.isNotEmpty)
-                  Text(service.description!, style: const TextStyle(fontSize: 12, color: AppColors.gray500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(service.description!, style: TextStyle(fontSize: 12, color: context.appTextMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Row(children: [
-                  Text('€${service.unitPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('€${service.unitPrice.toStringAsFixed(2)}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.appText)),
                   const SizedBox(width: 8),
-                  Text('IVA ${service.taxRate.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 12, color: AppColors.gray500)),
+                  Text('IVA ${service.taxRate.toStringAsFixed(0)}%', style: TextStyle(fontSize: 12, color: context.appTextMuted)),
                 ]),
               ],
             ),
           ),
           if (canWrite)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: AppColors.gray400, size: 20),
+              icon: Icon(Icons.more_vert, color: context.appTextMuted, size: 20),
               onSelected: (v) { if (v == 'edit') onEdit(); if (v == 'delete') onDelete(); },
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'edit', child: Text('Editar')),

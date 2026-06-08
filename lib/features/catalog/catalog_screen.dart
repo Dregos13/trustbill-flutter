@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/permission_helpers.dart';
 import '../../core/auth/permission_provider.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import 'products_tab.dart';
 import 'services_tab.dart';
 
@@ -35,23 +35,23 @@ class CatalogScreen extends ConsumerWidget {
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.appBackground,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.appSurface,
           elevation: 0,
-          title: const Text(
+          title: Text(
             'Catálogo',
             style: TextStyle(
-              color: AppColors.text,
+              color: context.appText,
               fontWeight: FontWeight.w700,
               fontSize: 20,
             ),
           ),
           bottom: TabBar(
             tabs: tabs,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.gray500,
-            indicatorColor: AppColors.primary,
+            labelColor: context.appPrimary,
+            unselectedLabelColor: context.appTextMuted,
+            indicatorColor: context.appPrimary,
             labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
         ),
