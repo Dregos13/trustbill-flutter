@@ -35,6 +35,7 @@ String _fromApiError(ApiError e, String fallback) {
 }
 
 String _fromDio(DioException e) {
+  if (e.error is ApiError) return _fromApiError(e.error as ApiError, 'Error del servidor.');
   switch (e.type) {
     case DioExceptionType.connectionTimeout:
     case DioExceptionType.sendTimeout:

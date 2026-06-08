@@ -13,6 +13,7 @@ import '../models/purchase.dart';
 import '../models/product.dart';
 import '../models/service.dart';
 import '../models/tax_return.dart';
+import '../models/catalog.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -279,5 +280,101 @@ class Endpoints {
 
     final res = await _api.get('/tax/returns', queryParams: queryParams);
     return TaxReturnListResponse.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  // ---- Catalog: Products ----
+
+  Future<List<CatalogProduct>> getCatalogProducts({
+    int limit = 50,
+    int offset = 0,
+    String? search,
+  }) async {
+    final res = await _api.get('/products', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (search != null && search.isNotEmpty) 'search': search,
+    });
+    return (res.data as List).map((e) => CatalogProduct.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<CatalogProduct> getCatalogProduct(int id) async {
+    final res = await _api.get('/products/$id');
+    return CatalogProduct.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<CatalogProduct> createCatalogProduct(Map<String, dynamic> data) async {
+    final res = await _api.post('/products', data: data);
+    return CatalogProduct.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<CatalogProduct> updateCatalogProduct(int id, Map<String, dynamic> data) async {
+    final res = await _api.put('/products/$id', data: data);
+    return CatalogProduct.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteCatalogProduct(int id) async {
+    await _api.delete('/products/$id');
+  }
+
+  // ---- Catalog: Services ----
+
+  Future<List<CatalogService>> getCatalogServices({
+    int limit = 50,
+    int offset = 0,
+    String? search,
+  }) async {
+    final res = await _api.get('/services', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (search != null && search.isNotEmpty) 'search': search,
+    });
+    return (res.data as List).map((e) => CatalogService.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<CatalogService> createCatalogService(Map<String, dynamic> data) async {
+    final res = await _api.post('/services', data: data);
+    return CatalogService.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<CatalogService> updateCatalogService(int id, Map<String, dynamic> data) async {
+    final res = await _api.put('/services/$id', data: data);
+    return CatalogService.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteCatalogService(int id) async {
+    await _api.delete('/services/$id');
+  }
+
+  // ---- Inventory ----
+
+  Future<List<InventoryMovement>> getInventoryMovements(int productId) async {
+    final res = await _api.get('/inventory/movements/$productId');
+    return (res.data as List).map((e) => InventoryMovement.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> createInventoryEntry({
+    required int productId,
+    required int quantity,
+    required double unitCost,
+    String? notes,
+  }) async {
+    await _api.post('/inventory/entries', data: {
+      'productId': productId,
+      'quantity': quantity,
+      'unitCost': unitCost,
+      if (notes != null && notes.isNotEmpty) 'notes': notes,
+    });
+  }
+
+  Future<void> adjustInventory({
+    required int productId,
+    required int delta,
+    String? reason,
+  }) async {
+    await _api.post('/inventory/adjust', data: {
+      'productId': productId,
+      'delta': delta,
+      if (reason != null && reason.isNotEmpty) 'reason': reason,
+    });
   }
 }

@@ -34,6 +34,15 @@ _$RefreshResponseImpl _$$RefreshResponseImplFromJson(
   accessToken: json['accessToken'] as String,
   refreshToken: json['refreshToken'] as String,
   expiresIn: (json['expiresIn'] as num).toInt(),
+  user: json['user'] == null
+      ? null
+      : UserInfo.fromJson(json['user'] as Map<String, dynamic>),
+  companies:
+      (json['companies'] as List<dynamic>?)
+          ?.map((e) => CompanyInfo.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  activeCompanyId: (json['activeCompanyId'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$$RefreshResponseImplToJson(
@@ -42,6 +51,9 @@ Map<String, dynamic> _$$RefreshResponseImplToJson(
   'accessToken': instance.accessToken,
   'refreshToken': instance.refreshToken,
   'expiresIn': instance.expiresIn,
+  'user': instance.user,
+  'companies': instance.companies,
+  'activeCompanyId': instance.activeCompanyId,
 };
 
 _$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>

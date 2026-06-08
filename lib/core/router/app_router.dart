@@ -19,6 +19,10 @@ import '../../features/tax/tax_returns_screen.dart';
 import '../../features/clients/create_client_screen.dart';
 import '../../features/invoices/create_invoice_screen.dart';
 import '../../features/permissions/permissions_screen.dart';
+import '../../features/catalog/catalog_screen.dart';
+import '../../features/catalog/product_detail_screen.dart';
+import '../../features/catalog/create_edit_product_screen.dart';
+import '../../features/catalog/create_edit_service_screen.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/no_permission_screen.dart';
 
@@ -28,10 +32,14 @@ import '../../widgets/no_permission_screen.dart';
 /// Checked in order — first match wins.
 const _routePermissions = <String, String>{
   '/clients/new': Permissions.clientsWrite,
-  '/clients/': Permissions.clientsWrite, // edit: /clients/:id/edit
+  '/clients/': Permissions.clientsWrite,
   '/invoices/new': Permissions.documentsWrite,
   '/scan': Permissions.expensesWrite,
   '/tax': Permissions.reportsRead,
+  '/catalog/products/new': Permissions.productsWrite,
+  '/catalog/products/': Permissions.productsWrite,
+  '/catalog/services/new': Permissions.servicesWrite,
+  '/catalog/services/': Permissions.servicesWrite,
 };
 
 String? _requiredPermission(String location) {
@@ -174,6 +182,38 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/permissions',
             builder: (context, _) => const PermissionsScreen(),
+          ),
+          GoRoute(
+            path: '/catalog',
+            builder: (context, _) => const CatalogScreen(),
+          ),
+          GoRoute(
+            path: '/catalog/products/:id',
+            builder: (_, state) => ProductDetailScreen(
+              id: int.parse(state.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(
+            path: '/catalog/products/new',
+            builder: (_, __) => const CreateEditProductScreen(),
+          ),
+          GoRoute(
+            path: '/catalog/products/:id/edit',
+            builder: (_, state) {
+              final product = state.extra as dynamic;
+              return CreateEditProductScreen(existing: product);
+            },
+          ),
+          GoRoute(
+            path: '/catalog/services/new',
+            builder: (_, __) => const CreateEditServiceScreen(),
+          ),
+          GoRoute(
+            path: '/catalog/services/:id/edit',
+            builder: (_, state) {
+              final service = state.extra as dynamic;
+              return CreateEditServiceScreen(existing: service);
+            },
           ),
         ],
       ),

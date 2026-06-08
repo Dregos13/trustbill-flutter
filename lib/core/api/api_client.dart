@@ -58,11 +58,18 @@ class ApiClient {
 
         final data = error.response?.data;
         if (data is Map<String, dynamic>) {
-          throw ApiError(
-            status: error.response?.statusCode ?? 0,
-            code: data['error'] as String? ?? 'UNKNOWN',
-            message: data['message'] as String? ?? 'Error desconocido',
-            retryAfter: data['retryAfter'] as int?,
+          return handler.reject(
+            DioException(
+              requestOptions: error.requestOptions,
+              response: error.response,
+              error: ApiError(
+                status: error.response?.statusCode ?? 0,
+                code: data['error'] as String? ?? 'UNKNOWN',
+                message: data['message'] as String? ?? 'Error desconocido',
+                retryAfter: data['retryAfter'] as int?,
+              ),
+              type: DioExceptionType.badResponse,
+            ),
           );
         }
 
@@ -96,6 +103,7 @@ class ApiClient {
   String? get accessToken => _accessToken;
 
   void setAccessToken(String token) => _accessToken = token;
+  void clearAccessToken() => _accessToken = null;
 
   Future<void> saveRefreshToken(String token) async {
     await _storage.write(key: 'refresh_token', value: token);
@@ -155,6 +163,8 @@ class ApiClient {
 
   Future<Response> put(String path, {dynamic data}) =>
       _dio.put(path, data: data);
+
+  Future<Response> delete(String path) => _dio.delete(path);
 
   Future<Response> postMultipart(
     String path, {

@@ -59,12 +59,20 @@ const _allTabs = [
     requiredPermission: Permissions.expensesRead,
   ),
   _TabDef(
+    route: '/catalog',
+    routePrefix: '/catalog',
+    icon: Icons.inventory_2_outlined,
+    activeIcon: Icons.inventory_2,
+    label: 'Catálogo',
+    requiredPermission: Permissions.productsRead,
+  ),
+  _TabDef(
     route: '/account',
     routePrefix: '/account',
     icon: Icons.settings_outlined,
     activeIcon: Icons.settings,
     label: 'Cuenta',
-    requiredPermission: null, // always visible
+    requiredPermission: null,
   ),
 ];
 

@@ -24,6 +24,9 @@ class RefreshResponse with _$RefreshResponse {
     required String accessToken,
     required String refreshToken,
     required int expiresIn,
+    UserInfo? user,
+    @Default([]) List<CompanyInfo> companies,
+    int? activeCompanyId,
   }) = _RefreshResponse;
 
   factory RefreshResponse.fromJson(Map<String, dynamic> json) =>

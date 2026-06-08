@@ -5,8 +5,6 @@ import '../api/endpoints.dart';
 import '../models/user.dart';
 import 'auth_state.dart';
 
-const _sessionDuration = Duration(hours: 8);
-const _keyLoginTimestamp = 'login_timestamp';
 const _keySavedEmail = 'saved_email';
 const _keySavedPassword = 'saved_password';
 
@@ -45,47 +43,52 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     _apiClient.configure(clientId);
-    await _apiClient.loadTenant(); // restaura el tenant elegido (para el refresh)
+    await _apiClient.loadTenant();
 
-    // Check session expiry
-    final loginTs = await _apiClient.storage.read(key: _keyLoginTimestamp);
-    if (loginTs != null) {
-      final loginTime = DateTime.tryParse(loginTs);
-      if (loginTime != null &&
-          DateTime.now().difference(loginTime) > _sessionDuration) {
-        await _apiClient.clearTokens();
-        await _apiClient.storage.delete(key: _keyLoginTimestamp);
-        state = AuthState.unauthenticated(
-          clientId: clientId,
-          error: 'Tu sesion ha expirado. Vuelve a iniciar sesion.',
-        );
+    final refreshToken = await _apiClient.getRefreshToken();
+    if (refreshToken != null) {
+      final authenticated = await _tryRefresh(clientId, refreshToken);
+      if (authenticated) return;
+    }
+
+    // Refresh token missing or expired — try silent re-login with saved credentials
+    final saved = await getSavedCredentials();
+    if (saved != null) {
+      try {
+        await login(saved['email']!, saved['password']!);
         return;
+      } catch (_) {
+        // saved credentials no longer valid — fall through to login screen
       }
     }
 
-    final refreshToken = await _apiClient.getRefreshToken();
-    if (refreshToken == null) {
-      state = AuthState.unauthenticated(clientId: clientId);
-      return;
-    }
+    state = AuthState.unauthenticated(clientId: clientId);
+  }
 
+  Future<bool> _tryRefresh(String clientId, String refreshToken) async {
     try {
       final res = await _endpoints.refresh(refreshToken);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
-      // Update login timestamp on successful refresh
-      await _apiClient.storage.write(
-        key: _keyLoginTimestamp,
-        value: DateTime.now().toIso8601String(),
-      );
 
-      final meRes = await _apiClient.get('/auth/me');
-      final data = meRes.data as Map<String, dynamic>;
-      final user = UserInfo.fromJson(data['user']);
-      final companies = (data['companies'] as List)
-          .map((c) => CompanyInfo.fromJson(c))
-          .toList();
-      final activeCompanyId = data['activeCompanyId'] as int;
+      UserInfo user;
+      List<CompanyInfo> companies;
+      int activeCompanyId;
+
+      if (res.user != null && res.activeCompanyId != null) {
+        user = res.user!;
+        companies = res.companies;
+        activeCompanyId = res.activeCompanyId!;
+      } else {
+        // fallback: backend antiguo sin datos de usuario en refresh
+        final meRes = await _apiClient.get('/auth/me');
+        final data = meRes.data as Map<String, dynamic>;
+        user = UserInfo.fromJson(data['user']);
+        companies = (data['companies'] as List)
+            .map((c) => CompanyInfo.fromJson(c))
+            .toList();
+        activeCompanyId = data['activeCompanyId'] as int;
+      }
 
       state = AuthState.authenticated(
         user: user,
@@ -93,9 +96,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         activeCompanyId: activeCompanyId,
         clientId: clientId,
       );
+      return true;
     } catch (_) {
       await _apiClient.clearTokens();
-      state = AuthState.unauthenticated(clientId: clientId);
+      return false;
     }
   }
 
@@ -109,6 +113,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       {bool rememberCredentials = false, String? tenant}) async {
     final clientId = _currentClientId;
     state = const AuthState.loading();
+    _apiClient.clearAccessToken();
     try {
       // tenant elegido (DB destino); por defecto el clientId
       await _apiClient.setTenant(
@@ -117,11 +122,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final res = await _endpoints.login(email, password);
       _apiClient.setAccessToken(res.accessToken);
       await _apiClient.saveRefreshToken(res.refreshToken);
-      // Save login timestamp for session expiry
-      await _apiClient.storage.write(
-        key: _keyLoginTimestamp,
-        value: DateTime.now().toIso8601String(),
-      );
       // Save or clear credentials
       if (rememberCredentials) {
         await _apiClient.storage.write(key: _keySavedEmail, value: email);
@@ -190,7 +190,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // best-effort
     }
     await _apiClient.clearTokens();
-    await _apiClient.storage.delete(key: _keyLoginTimestamp);
     state = AuthState.unauthenticated(clientId: clientId);
   }
 
@@ -202,7 +201,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> resetSetup() async {
     await _apiClient.clearAll();
-    await _apiClient.storage.delete(key: _keyLoginTimestamp);
     await _apiClient.storage.delete(key: _keySavedEmail);
     await _apiClient.storage.delete(key: _keySavedPassword);
     state = const AuthState.needsSetup();

@@ -323,6 +323,9 @@ mixin _$RefreshResponse {
   String get accessToken => throw _privateConstructorUsedError;
   String get refreshToken => throw _privateConstructorUsedError;
   int get expiresIn => throw _privateConstructorUsedError;
+  UserInfo? get user => throw _privateConstructorUsedError;
+  List<CompanyInfo> get companies => throw _privateConstructorUsedError;
+  int? get activeCompanyId => throw _privateConstructorUsedError;
 
   /// Serializes this RefreshResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -341,7 +344,16 @@ abstract class $RefreshResponseCopyWith<$Res> {
     $Res Function(RefreshResponse) then,
   ) = _$RefreshResponseCopyWithImpl<$Res, RefreshResponse>;
   @useResult
-  $Res call({String accessToken, String refreshToken, int expiresIn});
+  $Res call({
+    String accessToken,
+    String refreshToken,
+    int expiresIn,
+    UserInfo? user,
+    List<CompanyInfo> companies,
+    int? activeCompanyId,
+  });
+
+  $UserInfoCopyWith<$Res>? get user;
 }
 
 /// @nodoc
@@ -362,6 +374,9 @@ class _$RefreshResponseCopyWithImpl<$Res, $Val extends RefreshResponse>
     Object? accessToken = null,
     Object? refreshToken = null,
     Object? expiresIn = null,
+    Object? user = freezed,
+    Object? companies = null,
+    Object? activeCompanyId = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -377,9 +392,35 @@ class _$RefreshResponseCopyWithImpl<$Res, $Val extends RefreshResponse>
                 ? _value.expiresIn
                 : expiresIn // ignore: cast_nullable_to_non_nullable
                       as int,
+            user: freezed == user
+                ? _value.user
+                : user // ignore: cast_nullable_to_non_nullable
+                      as UserInfo?,
+            companies: null == companies
+                ? _value.companies
+                : companies // ignore: cast_nullable_to_non_nullable
+                      as List<CompanyInfo>,
+            activeCompanyId: freezed == activeCompanyId
+                ? _value.activeCompanyId
+                : activeCompanyId // ignore: cast_nullable_to_non_nullable
+                      as int?,
           )
           as $Val,
     );
+  }
+
+  /// Create a copy of RefreshResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserInfoCopyWith<$Res>? get user {
+    if (_value.user == null) {
+      return null;
+    }
+
+    return $UserInfoCopyWith<$Res>(_value.user!, (value) {
+      return _then(_value.copyWith(user: value) as $Val);
+    });
   }
 }
 
@@ -392,7 +433,17 @@ abstract class _$$RefreshResponseImplCopyWith<$Res>
   ) = __$$RefreshResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String accessToken, String refreshToken, int expiresIn});
+  $Res call({
+    String accessToken,
+    String refreshToken,
+    int expiresIn,
+    UserInfo? user,
+    List<CompanyInfo> companies,
+    int? activeCompanyId,
+  });
+
+  @override
+  $UserInfoCopyWith<$Res>? get user;
 }
 
 /// @nodoc
@@ -412,6 +463,9 @@ class __$$RefreshResponseImplCopyWithImpl<$Res>
     Object? accessToken = null,
     Object? refreshToken = null,
     Object? expiresIn = null,
+    Object? user = freezed,
+    Object? companies = null,
+    Object? activeCompanyId = freezed,
   }) {
     return _then(
       _$RefreshResponseImpl(
@@ -427,6 +481,18 @@ class __$$RefreshResponseImplCopyWithImpl<$Res>
             ? _value.expiresIn
             : expiresIn // ignore: cast_nullable_to_non_nullable
                   as int,
+        user: freezed == user
+            ? _value.user
+            : user // ignore: cast_nullable_to_non_nullable
+                  as UserInfo?,
+        companies: null == companies
+            ? _value._companies
+            : companies // ignore: cast_nullable_to_non_nullable
+                  as List<CompanyInfo>,
+        activeCompanyId: freezed == activeCompanyId
+            ? _value.activeCompanyId
+            : activeCompanyId // ignore: cast_nullable_to_non_nullable
+                  as int?,
       ),
     );
   }
@@ -439,7 +505,10 @@ class _$RefreshResponseImpl implements _RefreshResponse {
     required this.accessToken,
     required this.refreshToken,
     required this.expiresIn,
-  });
+    this.user,
+    final List<CompanyInfo> companies = const [],
+    this.activeCompanyId,
+  }) : _companies = companies;
 
   factory _$RefreshResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$RefreshResponseImplFromJson(json);
@@ -450,10 +519,23 @@ class _$RefreshResponseImpl implements _RefreshResponse {
   final String refreshToken;
   @override
   final int expiresIn;
+  @override
+  final UserInfo? user;
+  final List<CompanyInfo> _companies;
+  @override
+  @JsonKey()
+  List<CompanyInfo> get companies {
+    if (_companies is EqualUnmodifiableListView) return _companies;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_companies);
+  }
+
+  @override
+  final int? activeCompanyId;
 
   @override
   String toString() {
-    return 'RefreshResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn)';
+    return 'RefreshResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
   }
 
   @override
@@ -466,13 +548,27 @@ class _$RefreshResponseImpl implements _RefreshResponse {
             (identical(other.refreshToken, refreshToken) ||
                 other.refreshToken == refreshToken) &&
             (identical(other.expiresIn, expiresIn) ||
-                other.expiresIn == expiresIn));
+                other.expiresIn == expiresIn) &&
+            (identical(other.user, user) || other.user == user) &&
+            const DeepCollectionEquality().equals(
+              other._companies,
+              _companies,
+            ) &&
+            (identical(other.activeCompanyId, activeCompanyId) ||
+                other.activeCompanyId == activeCompanyId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, accessToken, refreshToken, expiresIn);
+  int get hashCode => Object.hash(
+    runtimeType,
+    accessToken,
+    refreshToken,
+    expiresIn,
+    user,
+    const DeepCollectionEquality().hash(_companies),
+    activeCompanyId,
+  );
 
   /// Create a copy of RefreshResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -496,6 +592,9 @@ abstract class _RefreshResponse implements RefreshResponse {
     required final String accessToken,
     required final String refreshToken,
     required final int expiresIn,
+    final UserInfo? user,
+    final List<CompanyInfo> companies,
+    final int? activeCompanyId,
   }) = _$RefreshResponseImpl;
 
   factory _RefreshResponse.fromJson(Map<String, dynamic> json) =
@@ -507,6 +606,12 @@ abstract class _RefreshResponse implements RefreshResponse {
   String get refreshToken;
   @override
   int get expiresIn;
+  @override
+  UserInfo? get user;
+  @override
+  List<CompanyInfo> get companies;
+  @override
+  int? get activeCompanyId;
 
   /// Create a copy of RefreshResponse
   /// with the given fields replaced by the non-null parameter values.

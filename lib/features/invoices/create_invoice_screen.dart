@@ -11,7 +11,6 @@ import '../../core/models/service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
-import '../clients/create_client_screen.dart';
 
 // ── Providers ────────────────────────────────────────────────────────────────
 
@@ -96,7 +95,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   double get _total => _lines.fold(0, (s, l) => s + l.total);
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
     if (_selectedClient == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -106,15 +104,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       );
       return;
     }
-    if (_lines.any((l) => l.description.trim().isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Rellena la descripción de todas las líneas.'),
-          backgroundColor: AppColors.warning,
-        ),
-      );
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _saving = true);
 
@@ -228,7 +218,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     color: AppColors.warningBg,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: AppColors.warning.withOpacity(0.4)),
+                        color: AppColors.warning.withValues(alpha: 0.4)),
                   ),
                   child: const Row(
                     children: [
@@ -495,61 +485,85 @@ class _ClientSelector extends ConsumerWidget {
       loading: () => const LinearProgressIndicator(),
       error: (e, _) => Text('Error cargando clientes: $e'),
       data: (clients) {
-        return Row(
+        final resolvedClient = clients.any((c) => c.id == selected?.id)
+            ? selected
+            : null;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Cliente *',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<Client>(
-                    value: clients.any((c) => c.id == selected?.id)
-                        ? selected
-                        : null,
-                    hint: Text('Selecciona cliente...',
-                        style: TextStyle(color: context.appTextMuted)),
-                    isExpanded: true,
-                    isDense: true,
-                    dropdownColor: context.appSurfaceRaised,
-                    items: clients
-                        .map((c) => DropdownMenuItem<Client>(
-                              value: c,
-                              child: Text(
-                                c.name,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: context.appText),
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: onChanged,
+            Row(
+              children: [
+                Expanded(
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Cliente *',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<Client>(
+                        value: resolvedClient,
+                        hint: Text('Selecciona cliente...',
+                            style: TextStyle(color: context.appTextMuted)),
+                        isExpanded: true,
+                        isDense: true,
+                        dropdownColor: context.appSurfaceRaised,
+                        items: clients
+                            .map((c) => DropdownMenuItem<Client>(
+                                  value: c,
+                                  child: Text(
+                                    c.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: context.appText),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: onChanged,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Tooltip(
-              message: 'Crear nuevo cliente',
-              child: InkWell(
-                onTap: onCreateNew,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 44,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: context.appPrimary),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: 'Crear nuevo cliente',
+                  child: InkWell(
+                    onTap: onCreateNew,
                     borderRadius: BorderRadius.circular(8),
-                    color: context.appPrimarySoft,
+                    child: Container(
+                      width: 44,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: context.appPrimary),
+                        borderRadius: BorderRadius.circular(8),
+                        color: context.appPrimarySoft,
+                      ),
+                      child: Icon(Icons.person_add,
+                          color: context.appPrimary, size: 20),
+                    ),
                   ),
-                  child: Icon(Icons.person_add,
-                      color: context.appPrimary, size: 20),
                 ),
-              ),
+              ],
             ),
+            if (resolvedClient != null) ...[
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  if (resolvedClient.taxId.isNotEmpty)
+                    _InfoChip(
+                        icon: Icons.badge_outlined,
+                        label: resolvedClient.taxId),
+                  if (resolvedClient.email != null &&
+                      resolvedClient.email!.isNotEmpty)
+                    _InfoChip(
+                        icon: Icons.email_outlined,
+                        label: resolvedClient.email!),
+                ],
+              ),
+            ],
           ],
         );
       },
@@ -719,7 +733,7 @@ class _LineCardState extends ConsumerState<_LineCard> {
                         color: context.appPrimarySoft,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: context.appPrimary.withOpacity(0.3)),
+                            color: context.appPrimary.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -760,6 +774,8 @@ class _LineCardState extends ConsumerState<_LineCard> {
                     horizontal: 12, vertical: 10),
                 isDense: true,
               ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Descripción requerida' : null,
               onChanged: (v) {
                 widget.line.description = v;
                 widget.onChanged();
@@ -786,6 +802,11 @@ class _LineCardState extends ConsumerState<_LineCard> {
                           horizontal: 12, vertical: 10),
                       isDense: true,
                     ),
+                    validator: (v) {
+                      final n = int.tryParse(v ?? '');
+                      if (n == null || n < 1) return 'Mín. 1';
+                      return null;
+                    },
                     onChanged: (v) {
                       widget.line.quantity = double.tryParse(v) ?? 1;
                       widget.onChanged();
@@ -800,7 +821,7 @@ class _LineCardState extends ConsumerState<_LineCard> {
                     keyboardType: const TextInputType.numberWithOptions(
                         decimal: true),
                     decoration: InputDecoration(
-                      labelText: 'Precio',
+                      labelText: 'Precio *',
                       suffixText: '€',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
@@ -808,6 +829,12 @@ class _LineCardState extends ConsumerState<_LineCard> {
                           horizontal: 12, vertical: 10),
                       isDense: true,
                     ),
+                    validator: (v) {
+                      final n = double.tryParse(
+                          (v ?? '').replaceAll(',', '.'));
+                      if (n == null || n < 0) return 'Precio no válido';
+                      return null;
+                    },
                     onChanged: (v) {
                       widget.line.unitPrice =
                           double.tryParse(v.replaceAll(',', '.')) ?? 0;
@@ -900,6 +927,34 @@ class _LineCardState extends ConsumerState<_LineCard> {
   }
 }
 
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _InfoChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: context.appSurfaceRaised,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.appBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: context.appTextMuted),
+          const SizedBox(width: 4),
+          Text(label,
+              style:
+                  TextStyle(fontSize: 11, color: context.appTextMuted)),
+        ],
+      ),
+    );
+  }
+}
+
 class _TotalsBox extends StatelessWidget {
   final double subtotal;
   final double totalTax;
@@ -922,7 +977,7 @@ class _TotalsBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appPrimarySoft,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.appPrimary.withOpacity(0.2)),
+        border: Border.all(color: context.appPrimary.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [

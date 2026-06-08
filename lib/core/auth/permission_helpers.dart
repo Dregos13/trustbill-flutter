@@ -15,7 +15,13 @@ abstract class Permissions {
 
   // Catalog
   static const productsRead = 'products.read';
+  static const productsWrite = 'products.write';
   static const servicesRead = 'services.read';
+  static const servicesWrite = 'services.write';
+
+  // Inventory
+  static const inventoryRead = 'inventory.read';
+  static const inventoryWrite = 'inventory.write';
 
   // Reports / dashboard
   static const reportsRead = 'reports.read';
@@ -56,7 +62,13 @@ const List<PermissionGroup> permissionCatalog = [
   ]),
   PermissionGroup('Catálogo', [
     PermissionDef(Permissions.productsRead, 'Ver productos'),
+    PermissionDef(Permissions.productsWrite, 'Crear y editar productos'),
     PermissionDef(Permissions.servicesRead, 'Ver servicios'),
+    PermissionDef(Permissions.servicesWrite, 'Crear y editar servicios'),
+  ]),
+  PermissionGroup('Inventario', [
+    PermissionDef(Permissions.inventoryRead, 'Ver movimientos de stock'),
+    PermissionDef(Permissions.inventoryWrite, 'Registrar entradas y ajustes'),
   ]),
   PermissionGroup('Informes', [
     PermissionDef(Permissions.reportsRead, 'Ver dashboard e informes'),
