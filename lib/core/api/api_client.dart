@@ -23,7 +23,6 @@ class ApiClient {
         _dio = Dio(BaseOptions(
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 15),
-          headers: {'Content-Type': 'application/json'},
         )) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
@@ -158,11 +157,13 @@ class ApiClient {
   Future<Response> get(String path, {Map<String, dynamic>? queryParams}) =>
       _dio.get(path, queryParameters: queryParams);
 
-  Future<Response> post(String path, {dynamic data}) =>
-      _dio.post(path, data: data);
+  Future<Response> post(String path, {dynamic data}) => _dio.post(path,
+      data: data,
+      options: Options(headers: {'Content-Type': 'application/json'}));
 
-  Future<Response> put(String path, {dynamic data}) =>
-      _dio.put(path, data: data);
+  Future<Response> put(String path, {dynamic data}) => _dio.put(path,
+      data: data,
+      options: Options(headers: {'Content-Type': 'application/json'}));
 
   Future<Response> delete(String path) => _dio.delete(path);
 
