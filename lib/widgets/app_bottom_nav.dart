@@ -66,14 +66,6 @@ const _allTabs = [
     label: 'Catálogo',
     requiredPermission: Permissions.productsRead,
   ),
-  _TabDef(
-    route: '/account',
-    routePrefix: '/account',
-    icon: Icons.settings_outlined,
-    activeIcon: Icons.settings,
-    label: 'Cuenta',
-    requiredPermission: null,
-  ),
 ];
 
 // ── Provider: visible tabs ─────────────────────────────────────────────────────

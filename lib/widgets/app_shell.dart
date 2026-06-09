@@ -85,7 +85,7 @@ class AppShell extends ConsumerWidget {
       child: Scaffold(
         body: Column(
           children: [
-            const AppHeader(),
+            AppHeader(currentLocation: currentLocation),
             Expanded(child: child),
           ],
         ),

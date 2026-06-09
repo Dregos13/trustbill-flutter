@@ -188,14 +188,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, _) => const CatalogScreen(),
           ),
           GoRoute(
+            path: '/catalog/products/new',
+            builder: (_, __) => const CreateEditProductScreen(),
+          ),
+          GoRoute(
             path: '/catalog/products/:id',
             builder: (_, state) => ProductDetailScreen(
               id: int.parse(state.pathParameters['id']!),
             ),
-          ),
-          GoRoute(
-            path: '/catalog/products/new',
-            builder: (_, __) => const CreateEditProductScreen(),
           ),
           GoRoute(
             path: '/catalog/products/:id/edit',

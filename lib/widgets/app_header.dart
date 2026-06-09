@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_theme.dart';
 import '../core/auth/auth_provider.dart';
 import '../core/auth/auth_state.dart';
 
 class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
-  const AppHeader({super.key});
+  final String currentLocation;
+
+  const AppHeader({super.key, required this.currentLocation});
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
@@ -26,6 +29,7 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isOnAccount = currentLocation.startsWith('/account');
 
     return Container(
       color: isDark ? darkHeader : AppColors.primary,
@@ -63,15 +67,71 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
                   )
                 else
                   const Spacer(),
-                Text(
-                  userName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                _AvatarButton(
+                  name: userName,
+                  isActive: isOnAccount,
+                  onTap: () => context.go('/account'),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarButton extends StatelessWidget {
+  final String name;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _AvatarButton({
+    required this.name,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isActive ? Colors.white : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+              ),
+              child: Center(
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
