@@ -303,7 +303,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                                           color: context.appText))),
                             ],
                             onChanged: (v) {
-                              if (v != null) setState(() => _taxKind = v);
+                              if (v != null) {
+                                setState(() {
+                                  _taxKind = v;
+                                  for (final line in _lines) {
+                                    line.taxRate = v == 'IVA' ? 21 : 10;
+                                  }
+                                });
+                              }
                             },
                           ),
                         ),
