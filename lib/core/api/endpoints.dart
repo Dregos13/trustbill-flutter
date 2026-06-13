@@ -122,6 +122,18 @@ class Endpoints {
     return res.data as Map<String, dynamic>;
   }
 
+  /// Draft -> confirmed (consumes stock server-side).
+  Future<Map<String, dynamic>> confirmInvoice(int id) async {
+    final res = await _api.post('/invoices/$id/confirm');
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// Confirmed -> final. Server assigns the legal series number and locks it.
+  Future<Map<String, dynamic>> finalizeInvoice(int id) async {
+    final res = await _api.post('/invoices/$id/finalize');
+    return res.data as Map<String, dynamic>;
+  }
+
   // ---- Budgets (Presupuestos) ----
 
   Future<PaginatedResponse<BudgetListItem>> getBudgets({
@@ -150,6 +162,18 @@ class Endpoints {
 
   Future<Map<String, dynamic>> createBudget(Map<String, dynamic> data) async {
     final res = await _api.post('/budgets', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// quoteStatus pending -> accepted (idempotent).
+  Future<Map<String, dynamic>> acceptBudget(int id) async {
+    final res = await _api.post('/budgets/$id/accept');
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// quoteStatus -> rejected (releases stock reservations).
+  Future<Map<String, dynamic>> rejectBudget(int id) async {
+    final res = await _api.post('/budgets/$id/reject');
     return res.data as Map<String, dynamic>;
   }
 

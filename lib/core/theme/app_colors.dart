@@ -15,6 +15,11 @@ class AppColors {
   static const danger = Color(0xFFDC2626);
   static const dangerBg = Color(0xFFFEE2E2);
 
+  // Indigo — reserved for "final/emitida" (legally locked) states; deliberately
+  // distinct from the primary blue used for "confirmed".
+  static const indigo = Color(0xFF4338CA);
+  static const indigoBg = Color(0xFFE0E7FF);
+
   static const gray50 = Color(0xFFF8FAFC);
   static const gray100 = Color(0xFFF1F5F9);
   static const gray200 = Color(0xFFE2E8F0);

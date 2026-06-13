@@ -7,8 +7,10 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/budget.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../../core/utils/error_messages.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/status_badge.dart';
 
 final budgetDetailProvider =
     FutureProvider.autoDispose.family<BudgetDetail, int>((ref, id) async {
@@ -16,13 +18,89 @@ final budgetDetailProvider =
   return endpoints.getBudget(id);
 });
 
-class BudgetDetailScreen extends ConsumerWidget {
+class BudgetDetailScreen extends ConsumerStatefulWidget {
   final int id;
   const BudgetDetailScreen({super.key, required this.id});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final budgetAsync = ref.watch(budgetDetailProvider(id));
+  ConsumerState<BudgetDetailScreen> createState() => _BudgetDetailScreenState();
+}
+
+class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
+  /// Which action is currently running ('accept' | 'reject'), or null when idle.
+  String? _busyAction;
+  bool get _actionInFlight => _busyAction != null;
+
+  Future<void> _accept() async {
+    setState(() => _busyAction = 'accept');
+    try {
+      await ref.read(endpointsProvider).acceptBudget(widget.id);
+      ref.invalidate(budgetDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Presupuesto aceptado')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  Future<void> _promptReject() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rechazar presupuesto'),
+        content: const Text(
+          'El presupuesto se marcará como rechazado y se liberarán las '
+          'reservas de stock. Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Rechazar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await _reject();
+  }
+
+  Future<void> _reject() async {
+    setState(() => _busyAction = 'reject');
+    try {
+      await ref.read(endpointsProvider).rejectBudget(widget.id);
+      ref.invalidate(budgetDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Presupuesto rechazado')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyAction = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final budgetAsync = ref.watch(budgetDetailProvider(widget.id));
     final fmt = NumberFormat.currency(locale: 'es_ES', symbol: '€');
 
     return Scaffold(
@@ -38,11 +116,17 @@ class BudgetDetailScreen extends ConsumerWidget {
               err is ApiError ? err.message : 'Error al cargar el presupuesto',
         ),
         data: (b) {
-          final canConvert = b.saleId == null && b.client != null;
+          final qs = b.quoteStatus;
+          final isPending = qs == 'pending';
+          final isRejected = qs == 'rejected';
+          final canConvert =
+              b.saleId == null && b.client != null && !isRejected;
+
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text('${b.series}-${b.number}',
                       style: TextStyle(
@@ -50,15 +134,27 @@ class BudgetDetailScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w800,
                           color: context.appText)),
                   const SizedBox(width: 10),
-                  if (b.saleId != null)
-                    _chip(context, 'Venta creada', AppColors.success)
-                  else
-                    _chip(
-                        context,
-                        b.status == 'confirmed' ? 'Confirmado' : 'Borrador',
-                        b.status == 'confirmed'
-                            ? AppColors.primary
-                            : AppColors.warning),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        if (qs != null)
+                          StatusBadge(status: qs)
+                        else
+                          _chip(
+                              context,
+                              b.status == 'confirmed'
+                                  ? 'Confirmado'
+                                  : 'Borrador',
+                              b.status == 'confirmed'
+                                  ? AppColors.primary
+                                  : AppColors.warning),
+                        if (b.saleId != null)
+                          _chip(context, 'Venta creada', AppColors.success),
+                      ],
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -114,14 +210,46 @@ class BudgetDetailScreen extends ConsumerWidget {
               ],
 
               const SizedBox(height: 24),
+
+              // pending -> [Aceptar] [Rechazar]
+              if (isPending) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _filledActionButton(
+                        label: 'Aceptar',
+                        busyLabel: 'Aceptando...',
+                        icon: Icons.check,
+                        color: AppColors.success,
+                        action: 'accept',
+                        onPressed: _accept,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _outlinedActionButton(
+                        label: 'Rechazar',
+                        icon: Icons.close,
+                        color: AppColors.danger,
+                        onPressed: _promptReject,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // convert (pending/accepted, not yet sold) -> [Convertir en venta]
               if (canConvert)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => context.push('/sales/new', extra: {
-                      'budgetId': b.id,
-                      'clientId': b.client!.id,
-                    }),
+                    onPressed: _actionInFlight
+                        ? null
+                        : () => context.push('/sales/new', extra: {
+                              'budgetId': b.id,
+                              'clientId': b.client!.id,
+                            }),
                     icon: const Icon(Icons.point_of_sale),
                     label: const Text('Convertir en venta'),
                     style: ElevatedButton.styleFrom(
@@ -142,10 +270,91 @@ class BudgetDetailScreen extends ConsumerWidget {
                     label: const Text('Ver venta asociada'),
                   ),
                 ),
+
+              // rejected -> locked notice (icon + label, never color alone)
+              if (isRejected) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.dangerBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.block, size: 18, color: AppColors.danger),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Presupuesto rechazado. Las reservas de stock se han liberado.',
+                          style: TextStyle(
+                              color: AppColors.danger,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _filledActionButton({
+    required String label,
+    required String busyLabel,
+    required IconData icon,
+    required Color color,
+    required String action,
+    required VoidCallback onPressed,
+  }) {
+    final busy = _busyAction == action;
+    return SizedBox(
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: _actionInFlight ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        icon: busy
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
+              )
+            : Icon(icon, size: 20),
+        label: Text(busy ? busyLabel : label),
+      ),
+    );
+  }
+
+  Widget _outlinedActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _actionInFlight ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: color,
+          side: BorderSide(color: color.withValues(alpha: 0.5)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        icon: Icon(icon, size: 20),
+        label: Text(label),
       ),
     );
   }

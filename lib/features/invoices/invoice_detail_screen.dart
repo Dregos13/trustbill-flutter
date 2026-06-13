@@ -12,6 +12,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/currency.dart';
 import '../../core/utils/date.dart';
+import '../../core/utils/error_messages.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
@@ -34,6 +35,74 @@ class InvoiceDetailScreen extends ConsumerStatefulWidget {
 
 class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   bool _downloadingPdf = false;
+  bool _actionInFlight = false;
+
+  Future<void> _confirmInvoice() async {
+    setState(() => _actionInFlight = true);
+    try {
+      await ref.read(endpointsProvider).confirmInvoice(widget.id);
+      ref.invalidate(invoiceDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Factura confirmada')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _actionInFlight = false);
+    }
+  }
+
+  Future<void> _promptFinalize() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Finalizar factura'),
+        content: const Text(
+          'Se asignará el número legal definitivo y la factura quedará '
+          'bloqueada. No se envía a la AEAT.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: context.appPrimary),
+            child: const Text('Finalizar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await _finalizeInvoice();
+  }
+
+  Future<void> _finalizeInvoice() async {
+    setState(() => _actionInFlight = true);
+    try {
+      await ref.read(endpointsProvider).finalizeInvoice(widget.id);
+      ref.invalidate(invoiceDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Factura emitida con número legal')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _actionInFlight = false);
+    }
+  }
 
   Future<void> _handlePdf() async {
     setState(() => _downloadingPdf = true);
@@ -236,6 +305,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           ...invoice.payments.map(_buildPayment),
         const SizedBox(height: 20),
 
+        // Status-driven lifecycle action (draft -> confirm -> finalize)
+        ..._buildStatusActions(invoice),
+
         // PDF button
         SizedBox(
           height: 48,
@@ -293,6 +365,66 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         ],
         const SizedBox(height: 20),
       ],
+    );
+  }
+
+  /// Lifecycle actions keyed off invoice status.
+  /// draft -> [Confirmar]; confirmed -> [Finalizar]; final/canceled -> locked.
+  List<Widget> _buildStatusActions(InvoiceDetail invoice) {
+    switch (invoice.status.toLowerCase()) {
+      case 'draft':
+        return [
+          _primaryActionButton(
+            label: 'Confirmar',
+            busyLabel: 'Confirmando...',
+            icon: Icons.check_circle_outline,
+            onPressed: _confirmInvoice,
+          ),
+          const SizedBox(height: 12),
+        ];
+      case 'confirmed':
+        return [
+          _primaryActionButton(
+            label: 'Finalizar / Emitir',
+            busyLabel: 'Emitiendo...',
+            icon: Icons.lock_outline,
+            onPressed: _promptFinalize,
+          ),
+          const SizedBox(height: 12),
+        ];
+      default:
+        return const [];
+    }
+  }
+
+  Widget _primaryActionButton({
+    required String label,
+    required String busyLabel,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: _actionInFlight ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: context.appPrimary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+        ),
+        icon: _actionInFlight
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(icon, size: 20),
+        label: Text(_actionInFlight ? busyLabel : label),
+      ),
     );
   }
 

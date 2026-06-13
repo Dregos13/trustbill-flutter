@@ -71,6 +71,7 @@ class InvoicesScreen extends ConsumerWidget {
                       value: 'draft', child: Text('Borrador')),
                   DropdownMenuItem(
                       value: 'confirmed', child: Text('Confirmada')),
+                  DropdownMenuItem(value: 'final', child: Text('Emitida')),
                   DropdownMenuItem(value: 'paid', child: Text('Pagada')),
                   DropdownMenuItem(
                       value: 'cancelled', child: Text('Anulada')),

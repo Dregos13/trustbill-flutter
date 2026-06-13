@@ -30,14 +30,37 @@ class StatusBadge extends StatelessWidget {
 
   static _StatusConfig _getConfig(BuildContext context, String status) {
     switch (status.toLowerCase()) {
+      // ---- Invoice status ----
       case 'draft':
         return _StatusConfig('BORRADOR', context.appSurfaceRaised, context.appTextMuted);
       case 'confirmed':
         return _StatusConfig('CONFIRMADA', AppColors.primaryBg, AppColors.primary);
+      case 'final':
+        return _StatusConfig('EMITIDA', AppColors.indigoBg, AppColors.indigo);
       case 'paid':
         return _StatusConfig('PAGADA', AppColors.successBg, AppColors.success);
+      case 'canceled':
       case 'cancelled':
         return _StatusConfig('ANULADA', AppColors.dangerBg, AppColors.danger);
+
+      // ---- Budget quoteStatus ----
+      case 'pending':
+        return _StatusConfig('PENDIENTE', AppColors.warningBg, AppColors.warning);
+      case 'accepted':
+        return _StatusConfig('ACEPTADO', AppColors.successBg, AppColors.success);
+      case 'rejected':
+        return _StatusConfig('RECHAZADO', AppColors.dangerBg, AppColors.danger);
+
+      // ---- Sale status ----
+      case 'open':
+        return _StatusConfig('ABIERTA', AppColors.primaryBg, AppColors.primary);
+      case 'partially_invoiced':
+        return _StatusConfig('PARCIAL', AppColors.warningBg, AppColors.warning);
+      case 'closed':
+        return _StatusConfig('CERRADA', AppColors.successBg, AppColors.success);
+      case 'lost':
+        return _StatusConfig('PERDIDA', AppColors.dangerBg, AppColors.danger);
+
       default:
         return _StatusConfig(
             status.toUpperCase(), context.appSurfaceRaised, context.appTextMuted);
