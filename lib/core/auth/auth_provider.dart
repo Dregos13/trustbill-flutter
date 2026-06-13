@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../api/api_error.dart';
 import '../api/endpoints.dart';
 import '../models/user.dart';
+import '../utils/error_messages.dart';
 import 'auth_state.dart';
 
 const _keySavedEmail = 'saved_email';
@@ -97,10 +99,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
         clientId: clientId,
       );
       return true;
+    } on DioException catch (e) {
+      // Solo limpiamos si el SERVER rechazó el token (respondió 401). Un error
+      // de red (sin respuesta) deja el token intacto: sigue siendo válido y no
+      // queremos perder la sesión por un fallo de conectividad transitorio.
+      if (_isAuthRejection(e)) {
+        await _apiClient.clearTokens();
+      }
+      return false;
+    } on ApiError catch (e) {
+      if (e.isUnauthorized) {
+        await _apiClient.clearTokens();
+      }
+      return false;
     } catch (_) {
-      await _apiClient.clearTokens();
+      // Desconocido/transitorio: preservar el token.
       return false;
     }
+  }
+
+  /// True solo si el server respondió rechazando el token (401), no si fue un
+  /// fallo de red. El interceptor envuelve el ApiError dentro de DioException.error.
+  bool _isAuthRejection(DioException e) {
+    if (e.response?.statusCode == 401) return true;
+    final inner = e.error;
+    return inner is ApiError && inner.isUnauthorized;
+  }
+
+  /// Extrae el ApiError de lo que se haya lanzado: puede venir directo o
+  /// envuelto por el interceptor dentro de DioException.error.
+  ApiError? _asApiError(Object e) {
+    if (e is ApiError) return e;
+    if (e is DioException && e.error is ApiError) return e.error as ApiError;
+    return null;
   }
 
   Future<void> setClientId(String clientId) async {
@@ -137,12 +168,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
         activeCompanyId: res.activeCompanyId,
         clientId: clientId,
       );
-    } on ApiError catch (e) {
-      state = AuthState.unauthenticated(clientId: clientId, error: e.message);
     } catch (e) {
+      // El interceptor envuelve el ApiError dentro de DioException.error, así
+      // que desempaquetamos para mostrar el mensaje real del server (p.ej.
+      // "Credenciales invalidas") en vez de un genérico de conexión.
+      final apiErr = _asApiError(e);
       state = AuthState.unauthenticated(
         clientId: clientId,
-        error: 'Error de conexion: $e',
+        error: apiErr != null ? apiErr.message : friendlyError(e),
       );
     }
   }
@@ -172,9 +205,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
           clientId: currentState.clientId,
         );
       }
-    } on ApiError catch (e) {
-      if (e.isUnauthorized) {
-        forceLogout();
+    } catch (e) {
+      // El 401 normalmente lo resuelve el interceptor (refresh + reintento); si
+      // la sesión ya está muerta, cerramos. Capturamos cualquier error para no
+      // propagar excepciones sin manejar a la UI.
+      final apiErr = _asApiError(e);
+      if (apiErr?.isUnauthorized ?? false) {
+        await forceLogout();
       }
     }
   }
@@ -193,9 +230,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.unauthenticated(clientId: clientId);
   }
 
-  void forceLogout() {
+  Future<void> forceLogout() async {
     final clientId = _currentClientId;
-    _apiClient.clearTokens();
+    await _apiClient.clearTokens();
     state = AuthState.unauthenticated(clientId: clientId);
   }
 

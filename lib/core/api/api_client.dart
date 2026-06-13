@@ -6,24 +6,42 @@ import 'api_error.dart';
 String buildBaseUrl(String clientId) =>
     'https://app.$clientId.trustinfacts.com/api';
 
+enum _RefreshOutcome { success, authFailure, networkFailure }
+
 class ApiClient {
   final Dio _dio;
+  // Cliente Dio dedicado al refresh: SIN el interceptor de auth, para no
+  // entrar en recursión (un 401 del refresh no debe disparar otro refresh).
+  final Dio _refreshDio;
   final FlutterSecureStorage _storage;
+  // Base del backoff entre reintentos de refresh (inyectable para tests).
+  final Duration _retryBaseDelay;
   String? _accessToken;
   String _baseUrl = '';
   // Slug de tenant (multi-DB) = clientId. Se envía en login/refresh para que
   // la API apunte a la base de datos de este cliente.
   String _tenant = '';
-  Future<bool>? _refreshFuture;
+  Future<_RefreshOutcome>? _refreshFuture;
 
   void Function()? onAuthError;
 
-  ApiClient({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage(),
-        _dio = Dio(BaseOptions(
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 15),
-        )) {
+  ApiClient({
+    FlutterSecureStorage? storage,
+    Dio? dio,
+    Dio? refreshDio,
+    Duration retryBaseDelay = const Duration(milliseconds: 500),
+  })  : _storage = storage ?? const FlutterSecureStorage(),
+        _retryBaseDelay = retryBaseDelay,
+        _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 15),
+            )),
+        _refreshDio = refreshDio ??
+            Dio(BaseOptions(
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+            )) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         if (_accessToken != null) {
@@ -33,12 +51,21 @@ class ApiClient {
       },
       onError: (error, handler) async {
         if (error.response?.statusCode == 401 && _accessToken != null) {
+          // Guarda anti-bucle: una request solo puede disparar UN ciclo de
+          // refresh+retry. Si tras refrescar vuelve a dar 401, es un 401 real
+          // (no de token caducado) → no refrescamos en bucle.
+          if (error.requestOptions.extra['__retried'] == true) {
+            onAuthError?.call();
+            return handler.next(error);
+          }
+
           _refreshFuture ??= _attemptRefresh().whenComplete(() {
             _refreshFuture = null;
           });
 
-          final success = await _refreshFuture!;
-          if (success) {
+          final outcome = await _refreshFuture!;
+          if (outcome == _RefreshOutcome.success) {
+            error.requestOptions.extra['__retried'] = true;
             error.requestOptions.headers['Authorization'] =
                 'Bearer $_accessToken';
             try {
@@ -49,10 +76,12 @@ class ApiClient {
                 return handler.next(retryError);
               }
             }
-          } else {
+          } else if (outcome == _RefreshOutcome.authFailure) {
             onAuthError?.call();
             return handler.next(error);
           }
+          // networkFailure: pass error through without logging out — transient issue
+          return handler.next(error);
         }
 
         final data = error.response?.data;
@@ -84,6 +113,7 @@ class ApiClient {
   void configure(String clientId) {
     _baseUrl = buildBaseUrl(clientId);
     _dio.options.baseUrl = _baseUrl;
+    _refreshDio.options.baseUrl = _baseUrl;
     _tenant = clientId; // por defecto el tenant = clientId (se puede override)
   }
 
@@ -128,6 +158,7 @@ class ApiClient {
     _baseUrl = '';
     _tenant = '';
     _dio.options.baseUrl = '';
+    _refreshDio.options.baseUrl = '';
   }
 
   Future<void> clearTokens() async {
@@ -135,23 +166,56 @@ class ApiClient {
     await _storage.delete(key: 'refresh_token');
   }
 
-  Future<bool> _attemptRefresh() async {
+  Future<_RefreshOutcome> _attemptRefresh() async {
     final rt = await getRefreshToken();
-    if (rt == null) return false;
-    try {
-      final res = await Dio(BaseOptions(baseUrl: _baseUrl)).post(
-        '/auth/refresh',
-        data: {'refreshToken': rt, 'tenant': _tenant},
-      );
-      if (res.statusCode == 200) {
-        _accessToken = res.data['accessToken'];
-        await saveRefreshToken(res.data['refreshToken']);
-        return true;
+    if (rt == null) return _RefreshOutcome.authFailure;
+
+    // Solo reintentamos en errores donde la petición NO llegó a tocar el server
+    // (no se estableció conexión). Si el server pudo haber procesado el refresh
+    // (receiveTimeout/sendTimeout) NO reintentamos con el mismo token: el server
+    // ya pudo haberlo rotado y un reintento dispararía la deteccion de robo.
+    const maxAttempts = 3;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        final res = await _refreshDio.post(
+          '/auth/refresh',
+          data: {'refreshToken': rt, 'tenant': _tenant},
+        );
+        if (res.statusCode == 200) {
+          _accessToken = res.data['accessToken'] as String;
+          await saveRefreshToken(res.data['refreshToken'] as String);
+          return _RefreshOutcome.success;
+        }
+        // Server respondió pero no 200 (4xx/5xx) — no reintentar
+        return _RefreshOutcome.authFailure;
+      } on DioException catch (e) {
+        // El server respondió con un status de error (p.ej. 401 token invalido)
+        if (e.response != null) {
+          return _RefreshOutcome.authFailure;
+        }
+
+        // Solo seguro reintentar si NO se estableció conexión con el server.
+        final safeToRetry = e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.connectionError;
+        if (safeToRetry && attempt < maxAttempts - 1) {
+          await Future.delayed(_retryBaseDelay * (attempt + 1));
+          continue;
+        }
+
+        // Cualquier fallo de red (incluido receiveTimeout, donde el server pudo
+        // haber rotado el token): tratar como transitorio, NO cerrar sesion.
+        final isNetworkError = e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.connectionError;
+        return isNetworkError
+            ? _RefreshOutcome.networkFailure
+            : _RefreshOutcome.authFailure;
+      } catch (_) {
+        return _RefreshOutcome.networkFailure;
       }
-      return false;
-    } catch (_) {
-      return false;
     }
+    return _RefreshOutcome.networkFailure;
   }
 
   Future<Response> get(String path, {Map<String, dynamic>? queryParams}) =>

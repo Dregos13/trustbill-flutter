@@ -6,16 +6,13 @@ part of 'catalog.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-double _$parseDouble(dynamic v) =>
-    v == null ? 0.0 : v is num ? v.toDouble() : double.parse(v.toString());
-
 _$CatalogProductImpl _$$CatalogProductImplFromJson(Map<String, dynamic> json) =>
     _$CatalogProductImpl(
       id: (json['id'] as num).toInt(),
       sku: json['sku'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
-      price: _$parseDouble(json['price']),
+      price: (json['price'] as num).toDouble(),
       stockQty: (json['stockQty'] as num?)?.toInt() ?? 0,
     );
 
@@ -35,8 +32,8 @@ _$CatalogServiceImpl _$$CatalogServiceImplFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       description: json['description'] as String?,
-      unitPrice: _$parseDouble(json['unitPrice']),
-      taxRate: _$parseDouble(json['taxRate'] ?? 21.0),
+      unitPrice: (json['unitPrice'] as num).toDouble(),
+      taxRate: (json['taxRate'] as num?)?.toDouble() ?? 21.0,
       active: json['active'] as bool? ?? true,
     );
 

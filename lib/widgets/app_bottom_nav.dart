@@ -94,10 +94,15 @@ class AppBottomNav extends ConsumerWidget {
   });
 
   int _currentIndex(List<_TabDef> tabs) {
+    // Presupuestos y Ventas viven dentro de la sección "Facturas" (no en Inicio).
+    var loc = currentLocation;
+    if (loc.startsWith('/budgets') || loc.startsWith('/sales')) {
+      loc = '/invoices';
+    }
     for (int i = 0; i < tabs.length; i++) {
       final tab = tabs[i];
-      if (tab.route == '/' && currentLocation == '/') return i;
-      if (tab.route != '/' && currentLocation.startsWith(tab.routePrefix)) return i;
+      if (tab.route == '/' && loc == '/') return i;
+      if (tab.route != '/' && loc.startsWith(tab.routePrefix)) return i;
     }
     return 0;
   }

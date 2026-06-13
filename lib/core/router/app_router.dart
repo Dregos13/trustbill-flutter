@@ -18,6 +18,12 @@ import '../../features/purchases/purchases_screen.dart';
 import '../../features/tax/tax_returns_screen.dart';
 import '../../features/clients/create_client_screen.dart';
 import '../../features/invoices/create_invoice_screen.dart';
+import '../../features/budgets/budgets_screen.dart';
+import '../../features/budgets/create_budget_screen.dart';
+import '../../features/budgets/budget_detail_screen.dart';
+import '../../features/sales/sales_screen.dart';
+import '../../features/sales/create_sale_screen.dart';
+import '../../features/sales/sale_detail_screen.dart';
 import '../../features/permissions/permissions_screen.dart';
 import '../../features/catalog/catalog_screen.dart';
 import '../../features/catalog/product_detail_screen.dart';
@@ -34,6 +40,8 @@ const _routePermissions = <String, String>{
   '/clients/new': Permissions.clientsWrite,
   '/clients/': Permissions.clientsWrite,
   '/invoices/new': Permissions.documentsWrite,
+  '/budgets/new': Permissions.documentsWrite,
+  '/sales/new': Permissions.documentsWrite,
   '/scan': Permissions.expensesWrite,
   '/tax': Permissions.reportsRead,
   '/catalog/products/new': Permissions.productsWrite,
@@ -156,6 +164,40 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/invoices/:id',
             builder: (_, state) => InvoiceDetailScreen(
+              id: int.parse(state.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(
+            path: '/budgets',
+            builder: (context, _) => const BudgetsScreen(),
+          ),
+          GoRoute(
+            path: '/budgets/new',
+            builder: (context, _) => const CreateBudgetScreen(),
+          ),
+          GoRoute(
+            path: '/budgets/:id',
+            builder: (_, state) => BudgetDetailScreen(
+              id: int.parse(state.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(
+            path: '/sales',
+            builder: (context, _) => const SalesScreen(),
+          ),
+          GoRoute(
+            path: '/sales/new',
+            builder: (_, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              return CreateSaleScreen(
+                initialBudgetId: extra?['budgetId'] as int?,
+                initialClientId: extra?['clientId'] as int?,
+              );
+            },
+          ),
+          GoRoute(
+            path: '/sales/:id',
+            builder: (_, state) => SaleDetailScreen(
               id: int.parse(state.pathParameters['id']!),
             ),
           ),

@@ -14,6 +14,8 @@ import '../models/product.dart';
 import '../models/service.dart';
 import '../models/tax_return.dart';
 import '../models/catalog.dart';
+import '../models/budget.dart';
+import '../models/sale.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -117,6 +119,85 @@ class Endpoints {
 
   Future<Map<String, dynamic>> createInvoice(Map<String, dynamic> data) async {
     final res = await _api.post('/invoices', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ---- Budgets (Presupuestos) ----
+
+  Future<PaginatedResponse<BudgetListItem>> getBudgets({
+    int limit = 50,
+    int offset = 0,
+    String? status,
+    int? clientId,
+    String? from,
+    String? to,
+  }) async {
+    final res = await _api.get('/budgets', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (status != null && status.isNotEmpty) 'status': status,
+      if (clientId != null) 'clientId': clientId,
+      if (from != null) 'from': from,
+      if (to != null) 'to': to,
+    });
+    return PaginatedResponse.fromJson(res.data, BudgetListItem.fromJson);
+  }
+
+  Future<BudgetDetail> getBudget(int id) async {
+    final res = await _api.get('/budgets/$id');
+    return BudgetDetail.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> createBudget(Map<String, dynamic> data) async {
+    final res = await _api.post('/budgets', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ---- Sales (Ventas) ----
+
+  Future<PaginatedResponse<SaleListItem>> getSales({
+    int limit = 50,
+    int offset = 0,
+    String? status,
+    int? clientId,
+    String? from,
+    String? to,
+  }) async {
+    final res = await _api.get('/sales', queryParams: {
+      'limit': limit,
+      'offset': offset,
+      if (status != null && status.isNotEmpty) 'status': status,
+      if (clientId != null) 'clientId': clientId,
+      if (from != null) 'from': from,
+      if (to != null) 'to': to,
+    });
+    return PaginatedResponse.fromJson(res.data, SaleListItem.fromJson);
+  }
+
+  Future<SaleDetail> getSale(int id) async {
+    final res = await _api.get('/sales/$id');
+    return SaleDetail.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<List<AvailableBudget>> getAvailableBudgets(int clientId) async {
+    final res = await _api.get('/sales/available-budgets', queryParams: {
+      'clientId': clientId,
+    });
+    final raw = (res.data as Map<String, dynamic>)['items'] as List;
+    return raw
+        .map((e) => AvailableBudget.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<SaleDetail> createSale(Map<String, dynamic> data) async {
+    final res = await _api.post('/sales', data: data);
+    return SaleDetail.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  /// Returns { invoice: {...}, sale: SaleDetail }.
+  Future<Map<String, dynamic>> createInvoiceFromSale(
+      int saleId, Map<String, dynamic> data) async {
+    final res = await _api.post('/sales/$saleId/invoice', data: data);
     return res.data as Map<String, dynamic>;
   }
 

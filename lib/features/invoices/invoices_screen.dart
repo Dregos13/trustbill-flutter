@@ -11,6 +11,7 @@ import '../../widgets/invoice_card.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_controls.dart';
+import '../../widgets/doc_type_switcher.dart';
 
 final _invoicesStatusProvider =
     StateProvider.autoDispose<String?>((ref) => null);
@@ -38,6 +39,8 @@ class InvoicesScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const DocTypeSwitcher(active: 'invoices'),
+          const SizedBox(height: 16),
           Text(
             'Facturas',
             style: TextStyle(

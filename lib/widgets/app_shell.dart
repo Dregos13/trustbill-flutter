@@ -48,6 +48,32 @@ class AppShell extends ConsumerWidget {
       );
     }
 
+    // ── /budgets → "Nuevo presupuesto" (requires documents.write) ────────────
+    if (currentLocation == '/budgets') {
+      final can = ref.watch(hasPermissionProvider(Permissions.documentsWrite));
+      if (!can) return null;
+      return FloatingActionButton.extended(
+        onPressed: () => context.push('/budgets/new'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo presupuesto'),
+      );
+    }
+
+    // ── /sales → "Nueva venta" (requires documents.write) ────────────────────
+    if (currentLocation == '/sales') {
+      final can = ref.watch(hasPermissionProvider(Permissions.documentsWrite));
+      if (!can) return null;
+      return FloatingActionButton.extended(
+        onPressed: () => context.push('/sales/new'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Nueva venta'),
+      );
+    }
+
     // ── default → scanner FAB (requires expenses.write) ──────────────────────
     final canScan = ref.watch(hasPermissionProvider(Permissions.expensesWrite));
     if (!canScan) return null;
