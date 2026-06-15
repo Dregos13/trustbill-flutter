@@ -229,6 +229,10 @@ class ApiClient {
       data: data,
       options: Options(headers: {'Content-Type': 'application/json'}));
 
+  Future<Response> patch(String path, {dynamic data}) => _dio.patch(path,
+      data: data,
+      options: Options(headers: {'Content-Type': 'application/json'}));
+
   Future<Response> delete(String path) => _dio.delete(path);
 
   Future<Response> postMultipart(

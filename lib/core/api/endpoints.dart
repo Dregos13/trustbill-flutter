@@ -134,6 +134,30 @@ class Endpoints {
     return res.data as Map<String, dynamic>;
   }
 
+  /// Draft/confirmed -> canceled. Restores consumed stock server-side. A final
+  /// (issued) invoice cannot be canceled here (the API returns 409 — cancel it on
+  /// desktop so the AEAT annulment is declared).
+  Future<Map<String, dynamic>> cancelInvoice(int id) async {
+    final res = await _api.post('/invoices/$id/cancel');
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// Edit DRAFT content (lines/issuedAt/notes/taxKind). Returns invoice detail.
+  /// 409 if final/confirmed/canceled, paid, or sale-linked.
+  Future<Map<String, dynamic>> updateInvoiceContent(
+      int id, Map<String, dynamic> body) async {
+    final res = await _api.patch('/invoices/$id', data: body);
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// Edit the private internal notes (allowed in any status).
+  Future<Map<String, dynamic>> updateInvoiceInternalNotes(int id,
+      {String? internalNotes}) async {
+    final res = await _api.patch('/invoices/$id/internal-notes',
+        data: {'internalNotes': internalNotes});
+    return res.data as Map<String, dynamic>;
+  }
+
   // ---- Budgets (Presupuestos) ----
 
   Future<PaginatedResponse<BudgetListItem>> getBudgets({

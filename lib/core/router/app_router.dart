@@ -18,6 +18,7 @@ import '../../features/purchases/purchases_screen.dart';
 import '../../features/tax/tax_returns_screen.dart';
 import '../../features/clients/create_client_screen.dart';
 import '../../features/invoices/create_invoice_screen.dart';
+import '../../features/invoices/edit_invoice_screen.dart';
 import '../../features/budgets/budgets_screen.dart';
 import '../../features/budgets/create_budget_screen.dart';
 import '../../features/budgets/budget_detail_screen.dart';
@@ -160,6 +161,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/invoices/new',
             builder: (context, _) => const CreateInvoiceScreen(),
+          ),
+          GoRoute(
+            path: '/invoices/:id/edit',
+            builder: (_, state) => EditInvoiceScreen(
+              id: int.parse(state.pathParameters['id']!),
+            ),
           ),
           GoRoute(
             path: '/invoices/:id',

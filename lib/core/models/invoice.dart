@@ -48,6 +48,7 @@ class InvoiceDetail with _$InvoiceDetail {
     @JsonKey(fromJson: toDouble) required double total,
     required String invoiceType,
     String? taxKind,
+    String? internalNotes,
     String? publicNotes,
     String? invoiceNote,
     InvoiceDetailClient? client,

@@ -63,6 +63,7 @@ _$InvoiceDetailImpl _$$InvoiceDetailImplFromJson(Map<String, dynamic> json) =>
       total: toDouble(json['total']),
       invoiceType: json['invoiceType'] as String,
       taxKind: json['taxKind'] as String?,
+      internalNotes: json['internalNotes'] as String?,
       publicNotes: json['publicNotes'] as String?,
       invoiceNote: json['invoiceNote'] as String?,
       client: json['client'] == null
@@ -92,6 +93,7 @@ Map<String, dynamic> _$$InvoiceDetailImplToJson(_$InvoiceDetailImpl instance) =>
       'total': instance.total,
       'invoiceType': instance.invoiceType,
       'taxKind': instance.taxKind,
+      'internalNotes': instance.internalNotes,
       'publicNotes': instance.publicNotes,
       'invoiceNote': instance.invoiceNote,
       'client': instance.client,

@@ -600,6 +600,7 @@ mixin _$InvoiceDetail {
   double get total => throw _privateConstructorUsedError;
   String get invoiceType => throw _privateConstructorUsedError;
   String? get taxKind => throw _privateConstructorUsedError;
+  String? get internalNotes => throw _privateConstructorUsedError;
   String? get publicNotes => throw _privateConstructorUsedError;
   String? get invoiceNote => throw _privateConstructorUsedError;
   InvoiceDetailClient? get client => throw _privateConstructorUsedError;
@@ -634,6 +635,7 @@ abstract class $InvoiceDetailCopyWith<$Res> {
     @JsonKey(fromJson: toDouble) double total,
     String invoiceType,
     String? taxKind,
+    String? internalNotes,
     String? publicNotes,
     String? invoiceNote,
     InvoiceDetailClient? client,
@@ -670,6 +672,7 @@ class _$InvoiceDetailCopyWithImpl<$Res, $Val extends InvoiceDetail>
     Object? total = null,
     Object? invoiceType = null,
     Object? taxKind = freezed,
+    Object? internalNotes = freezed,
     Object? publicNotes = freezed,
     Object? invoiceNote = freezed,
     Object? client = freezed,
@@ -714,6 +717,10 @@ class _$InvoiceDetailCopyWithImpl<$Res, $Val extends InvoiceDetail>
             taxKind: freezed == taxKind
                 ? _value.taxKind
                 : taxKind // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            internalNotes: freezed == internalNotes
+                ? _value.internalNotes
+                : internalNotes // ignore: cast_nullable_to_non_nullable
                       as String?,
             publicNotes: freezed == publicNotes
                 ? _value.publicNotes
@@ -792,6 +799,7 @@ abstract class _$$InvoiceDetailImplCopyWith<$Res>
     @JsonKey(fromJson: toDouble) double total,
     String invoiceType,
     String? taxKind,
+    String? internalNotes,
     String? publicNotes,
     String? invoiceNote,
     InvoiceDetailClient? client,
@@ -829,6 +837,7 @@ class __$$InvoiceDetailImplCopyWithImpl<$Res>
     Object? total = null,
     Object? invoiceType = null,
     Object? taxKind = freezed,
+    Object? internalNotes = freezed,
     Object? publicNotes = freezed,
     Object? invoiceNote = freezed,
     Object? client = freezed,
@@ -874,6 +883,10 @@ class __$$InvoiceDetailImplCopyWithImpl<$Res>
             ? _value.taxKind
             : taxKind // ignore: cast_nullable_to_non_nullable
                   as String?,
+        internalNotes: freezed == internalNotes
+            ? _value.internalNotes
+            : internalNotes // ignore: cast_nullable_to_non_nullable
+                  as String?,
         publicNotes: freezed == publicNotes
             ? _value.publicNotes
             : publicNotes // ignore: cast_nullable_to_non_nullable
@@ -916,6 +929,7 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
     @JsonKey(fromJson: toDouble) required this.total,
     required this.invoiceType,
     this.taxKind,
+    this.internalNotes,
     this.publicNotes,
     this.invoiceNote,
     this.client,
@@ -948,6 +962,8 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
   @override
   final String? taxKind;
   @override
+  final String? internalNotes;
+  @override
   final String? publicNotes;
   @override
   final String? invoiceNote;
@@ -973,7 +989,7 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
 
   @override
   String toString() {
-    return 'InvoiceDetail(id: $id, type: $type, status: $status, series: $series, number: $number, issuedAt: $issuedAt, total: $total, invoiceType: $invoiceType, taxKind: $taxKind, publicNotes: $publicNotes, invoiceNote: $invoiceNote, client: $client, createdBy: $createdBy, lines: $lines, payments: $payments)';
+    return 'InvoiceDetail(id: $id, type: $type, status: $status, series: $series, number: $number, issuedAt: $issuedAt, total: $total, invoiceType: $invoiceType, taxKind: $taxKind, internalNotes: $internalNotes, publicNotes: $publicNotes, invoiceNote: $invoiceNote, client: $client, createdBy: $createdBy, lines: $lines, payments: $payments)';
   }
 
   @override
@@ -992,6 +1008,8 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
             (identical(other.invoiceType, invoiceType) ||
                 other.invoiceType == invoiceType) &&
             (identical(other.taxKind, taxKind) || other.taxKind == taxKind) &&
+            (identical(other.internalNotes, internalNotes) ||
+                other.internalNotes == internalNotes) &&
             (identical(other.publicNotes, publicNotes) ||
                 other.publicNotes == publicNotes) &&
             (identical(other.invoiceNote, invoiceNote) ||
@@ -1016,6 +1034,7 @@ class _$InvoiceDetailImpl implements _InvoiceDetail {
     total,
     invoiceType,
     taxKind,
+    internalNotes,
     publicNotes,
     invoiceNote,
     client,
@@ -1049,6 +1068,7 @@ abstract class _InvoiceDetail implements InvoiceDetail {
     @JsonKey(fromJson: toDouble) required final double total,
     required final String invoiceType,
     final String? taxKind,
+    final String? internalNotes,
     final String? publicNotes,
     final String? invoiceNote,
     final InvoiceDetailClient? client,
@@ -1079,6 +1099,8 @@ abstract class _InvoiceDetail implements InvoiceDetail {
   String get invoiceType;
   @override
   String? get taxKind;
+  @override
+  String? get internalNotes;
   @override
   String? get publicNotes;
   @override

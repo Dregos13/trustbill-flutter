@@ -36,6 +36,7 @@ class InvoiceDetailScreen extends ConsumerStatefulWidget {
 class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   bool _downloadingPdf = false;
   bool _actionInFlight = false;
+  bool _savingNotes = false;
 
   Future<void> _confirmInvoice() async {
     setState(() => _actionInFlight = true);
@@ -101,6 +102,113 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _actionInFlight = false);
+    }
+  }
+
+  Future<void> _promptCancel() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Anular factura'),
+        content: const Text(
+          'La factura quedará anulada y se restaurará el inventario consumido. '
+          'Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Anular'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await _cancelInvoice();
+  }
+
+  Future<void> _cancelInvoice() async {
+    setState(() => _actionInFlight = true);
+    try {
+      await ref.read(endpointsProvider).cancelInvoice(widget.id);
+      ref.invalidate(invoiceDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Factura anulada')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _actionInFlight = false);
+    }
+  }
+
+  Future<void> _promptEditInternalNotes(String? current) async {
+    final controller = TextEditingController(text: current ?? '');
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Notas internas'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          minLines: 3,
+          maxLines: 6,
+          maxLength: 2000,
+          keyboardType: TextInputType.multiline,
+          decoration: const InputDecoration(
+            hintText: 'Notas privadas para tu equipo...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: context.appPrimary),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    if (saved == true) {
+      final text = controller.text.trim();
+      await _saveInternalNotes(text.isEmpty ? null : text);
+    }
+    controller.dispose();
+  }
+
+  Future<void> _saveInternalNotes(String? value) async {
+    setState(() => _savingNotes = true);
+    try {
+      await ref
+          .read(endpointsProvider)
+          .updateInvoiceInternalNotes(widget.id, internalNotes: value);
+      ref.invalidate(invoiceDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notas internas guardadas')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingNotes = false);
     }
   }
 
@@ -363,13 +471,85 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             ),
           ),
         ],
+
+        // Internal (private) notes — editable in any status, never on the PDF
+        const SizedBox(height: 12),
+        _buildInternalNotesCard(invoice),
+
         const SizedBox(height: 20),
       ],
     );
   }
 
+  Widget _buildInternalNotesCard(InvoiceDetail invoice) {
+    final notes = invoice.internalNotes;
+    final hasNotes = notes != null && notes.trim().isNotEmpty;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.appSurfaceRaised,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.appBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lock_outline, size: 13, color: context.appTextSubtle),
+              const SizedBox(width: 6),
+              Text(
+                'NOTAS INTERNAS',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: context.appTextSubtle,
+                  letterSpacing: 0.05 * 11,
+                ),
+              ),
+              const Spacer(),
+              if (_savingNotes)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                TextButton.icon(
+                  onPressed: () => _promptEditInternalNotes(notes),
+                  icon: Icon(hasNotes ? Icons.edit_outlined : Icons.add,
+                      size: 16),
+                  label: Text(hasNotes ? 'Editar' : 'Añadir'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: context.appPrimary,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            hasNotes ? notes.trim() : 'Sin notas internas',
+            style: TextStyle(
+              fontSize: 13,
+              color: hasNotes ? context.appTextMuted : context.appTextSubtle,
+              fontStyle: hasNotes ? FontStyle.normal : FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Solo visible para tu equipo. No aparece en el PDF.',
+            style: TextStyle(fontSize: 11, color: context.appTextSubtle),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Lifecycle actions keyed off invoice status.
-  /// draft -> [Confirmar]; confirmed -> [Finalizar]; final/canceled -> locked.
+  /// draft -> [Confirmar] + [Anular]; confirmed -> [Finalizar] + [Anular];
+  /// final/canceled -> locked (a final invoice is only annulled on desktop).
   List<Widget> _buildStatusActions(InvoiceDetail invoice) {
     switch (invoice.status.toLowerCase()) {
       case 'draft':
@@ -379,6 +559,18 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             busyLabel: 'Confirmando...',
             icon: Icons.check_circle_outline,
             onPressed: _confirmInvoice,
+          ),
+          const SizedBox(height: 12),
+          _secondaryActionButton(
+            label: 'Editar',
+            icon: Icons.edit_outlined,
+            onPressed: () => context.push('/invoices/${invoice.id}/edit'),
+          ),
+          const SizedBox(height: 12),
+          _dangerActionButton(
+            label: 'Anular',
+            icon: Icons.cancel_outlined,
+            onPressed: _promptCancel,
           ),
           const SizedBox(height: 12),
         ];
@@ -391,10 +583,58 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             onPressed: _promptFinalize,
           ),
           const SizedBox(height: 12),
+          _dangerActionButton(
+            label: 'Anular',
+            icon: Icons.cancel_outlined,
+            onPressed: _promptCancel,
+          ),
+          const SizedBox(height: 12),
         ];
       default:
         return const [];
     }
+  }
+
+  Widget _secondaryActionButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _actionInFlight ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: context.appPrimary,
+          side: BorderSide(color: context.appPrimary),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        icon: Icon(icon, size: 20),
+        label: Text(label),
+      ),
+    );
+  }
+
+  Widget _dangerActionButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _actionInFlight ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.danger,
+          side: const BorderSide(color: AppColors.danger),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        icon: Icon(icon, size: 20),
+        label: Text(label),
+      ),
+    );
   }
 
   Widget _primaryActionButton({
