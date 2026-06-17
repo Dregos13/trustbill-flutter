@@ -18,72 +18,81 @@ class AppShell extends ConsumerWidget {
     required this.child,
   });
 
+  /// The shell FAB is reserved for **primary list/landing destinations** only.
+  /// Create / edit / detail screens own their submit actions in-body, so the
+  /// floating button is hidden there to avoid overlapping their buttons.
   Widget? _buildFab(BuildContext context, WidgetRef ref) {
-    // ── /catalog → tabs manage their own FABs ─────────────────────────────────
-    if (currentLocation.startsWith('/catalog')) return null;
+    switch (currentLocation) {
+      // ── /clients → "Nuevo cliente" (requires clients.write) ────────────────
+      case '/clients':
+        if (!ref.watch(hasPermissionProvider(Permissions.clientsWrite))) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () => context.push('/clients/new'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.person_add),
+          label: const Text('Nuevo cliente'),
+        );
 
-    // ── /clients → "Nuevo cliente" (requires clients.write) ──────────────────
-    if (currentLocation == '/clients') {
-      final can = ref.watch(hasPermissionProvider(Permissions.clientsWrite));
-      if (!can) return null;
-      return FloatingActionButton.extended(
-        onPressed: () => context.push('/clients/new'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.person_add),
-        label: const Text('Nuevo cliente'),
-      );
+      // ── /invoices → "Nueva factura" (requires documents.write) ─────────────
+      case '/invoices':
+        if (!ref.watch(hasPermissionProvider(Permissions.documentsWrite))) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () => context.push('/invoices/new'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add),
+          label: const Text('Nueva factura'),
+        );
+
+      // ── /budgets → "Nuevo presupuesto" (requires documents.write) ──────────
+      case '/budgets':
+        if (!ref.watch(hasPermissionProvider(Permissions.documentsWrite))) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () => context.push('/budgets/new'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add),
+          label: const Text('Nuevo presupuesto'),
+        );
+
+      // ── /sales → "Nueva venta" (requires documents.write) ──────────────────
+      case '/sales':
+        if (!ref.watch(hasPermissionProvider(Permissions.documentsWrite))) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () => context.push('/sales/new'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add),
+          label: const Text('Nueva venta'),
+        );
+
+      // ── Inicio + Compras → scanner FAB (requires expenses.write) ───────────
+      case '/':
+      case '/purchases':
+        if (!ref.watch(hasPermissionProvider(Permissions.expensesWrite))) {
+          return null;
+        }
+        return FloatingActionButton(
+          onPressed: () => _showScanTypeSheet(context, ref),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          child: const Icon(Icons.document_scanner),
+        );
+
+      // ── Everything else (forms, detail, catalog, tax, account…) → no FAB ───
+      default:
+        return null;
     }
-
-    // ── /invoices → "Nueva factura" (requires documents.write) ───────────────
-    if (currentLocation == '/invoices') {
-      final can = ref.watch(hasPermissionProvider(Permissions.documentsWrite));
-      if (!can) return null;
-      return FloatingActionButton.extended(
-        onPressed: () => context.push('/invoices/new'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva factura'),
-      );
-    }
-
-    // ── /budgets → "Nuevo presupuesto" (requires documents.write) ────────────
-    if (currentLocation == '/budgets') {
-      final can = ref.watch(hasPermissionProvider(Permissions.documentsWrite));
-      if (!can) return null;
-      return FloatingActionButton.extended(
-        onPressed: () => context.push('/budgets/new'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Nuevo presupuesto'),
-      );
-    }
-
-    // ── /sales → "Nueva venta" (requires documents.write) ────────────────────
-    if (currentLocation == '/sales') {
-      final can = ref.watch(hasPermissionProvider(Permissions.documentsWrite));
-      if (!can) return null;
-      return FloatingActionButton.extended(
-        onPressed: () => context.push('/sales/new'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva venta'),
-      );
-    }
-
-    // ── default → scanner FAB (requires expenses.write) ──────────────────────
-    final canScan = ref.watch(hasPermissionProvider(Permissions.expensesWrite));
-    if (!canScan) return null;
-    return FloatingActionButton(
-      onPressed: () => _showScanTypeSheet(context, ref),
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      elevation: 4,
-      child: const Icon(Icons.document_scanner),
-    );
   }
 
   void _showScanTypeSheet(BuildContext context, WidgetRef ref) {

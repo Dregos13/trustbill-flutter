@@ -158,6 +158,14 @@ class Endpoints {
     return res.data as Map<String, dynamic>;
   }
 
+  /// Register a payment against an invoice. Server-validated: only on a
+  /// confirmed/final invoice and never above the pending amount.
+  Future<Map<String, dynamic>> createPayment(
+      int invoiceId, Map<String, dynamic> data) async {
+    final res = await _api.post('/invoices/$invoiceId/payments', data: data);
+    return res.data as Map<String, dynamic>;
+  }
+
   // ---- Budgets (Presupuestos) ----
 
   Future<PaginatedResponse<BudgetListItem>> getBudgets({

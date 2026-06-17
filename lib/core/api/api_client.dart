@@ -223,7 +223,12 @@ class ApiClient {
 
   Future<Response> post(String path, {dynamic data}) => _dio.post(path,
       data: data,
-      options: Options(headers: {'Content-Type': 'application/json'}));
+      // Only declare a JSON body when we actually send one. Forcing
+      // application/json on a body-less POST (confirm/finalize/cancel, budget
+      // accept/reject) makes Fastify reject it with "Body cannot be empty".
+      options: Options(
+        headers: data == null ? null : {'Content-Type': 'application/json'},
+      ));
 
   Future<Response> put(String path, {dynamic data}) => _dio.put(path,
       data: data,

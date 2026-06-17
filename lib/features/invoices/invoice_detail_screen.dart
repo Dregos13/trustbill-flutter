@@ -37,6 +37,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   bool _downloadingPdf = false;
   bool _actionInFlight = false;
   bool _savingNotes = false;
+  bool _savingPayment = false;
 
   Future<void> _confirmInvoice() async {
     setState(() => _actionInFlight = true);
@@ -152,41 +153,17 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   }
 
   Future<void> _promptEditInternalNotes(String? current) async {
-    final controller = TextEditingController(text: current ?? '');
-    final saved = await showDialog<bool>(
+    // The dialog owns its TextEditingController (see _InternalNotesDialog) so it
+    // is disposed in State.dispose(), after the exit animation. Disposing here
+    // right after the await would tear it down while the route still animates.
+    // Returns the trimmed text on save, null on cancel/dismiss.
+    final text = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Notas internas'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          minLines: 3,
-          maxLines: 6,
-          maxLength: 2000,
-          keyboardType: TextInputType.multiline,
-          decoration: const InputDecoration(
-            hintText: 'Notas privadas para tu equipo...',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: context.appPrimary),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
+      builder: (_) => _InternalNotesDialog(initial: current ?? ''),
     );
-    if (saved == true) {
-      final text = controller.text.trim();
+    if (text != null) {
       await _saveInternalNotes(text.isEmpty ? null : text);
     }
-    controller.dispose();
   }
 
   Future<void> _saveInternalNotes(String? value) async {
@@ -209,6 +186,50 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _savingNotes = false);
+    }
+  }
+
+  /// Payments are only valid on a confirmed/final invoice with an outstanding
+  /// balance. The server enforces this too (400 otherwise); this just hides the
+  /// button when it can't succeed.
+  bool _canRegisterPayment(InvoiceDetail invoice, double pending) {
+    final s = invoice.status.toLowerCase();
+    return (s == 'confirmed' || s == 'final') && pending > 0.01;
+  }
+
+  Future<void> _promptRegisterPayment(double pending) async {
+    // The sheet owns its controllers (see _PaymentSheet) so they are disposed in
+    // State.dispose() — after the sheet's exit animation — instead of
+    // synchronously here. The old code disposed them right after the await,
+    // which crashed when the closing sheet rebuilt its TextFields against an
+    // already-disposed controller (use-after-dispose → cascading framework
+    // assertions, the red screen).
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _PaymentSheet(pending: pending),
+    );
+    if (result != null) await _registerPayment(result);
+  }
+
+  Future<void> _registerPayment(Map<String, dynamic> data) async {
+    setState(() => _savingPayment = true);
+    try {
+      await ref.read(endpointsProvider).createPayment(widget.id, data);
+      ref.invalidate(invoiceDetailProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pago registrado')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingPayment = false);
     }
   }
 
@@ -411,6 +432,25 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           const EmptyState(message: 'Sin pagos registrados')
         else
           ...invoice.payments.map(_buildPayment),
+        if (_canRegisterPayment(invoice, pendingAmount)) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 44,
+            child: OutlinedButton.icon(
+              onPressed: _savingPayment
+                  ? null
+                  : () => _promptRegisterPayment(pendingAmount),
+              icon: _savingPayment
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.add, size: 18),
+              label: Text(_savingPayment ? 'Guardando...' : 'Registrar pago'),
+            ),
+          ),
+        ],
         const SizedBox(height: 20),
 
         // Status-driven lifecycle action (draft -> confirm -> finalize)
@@ -904,5 +944,220 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       default:
         return method;
     }
+  }
+}
+
+// ── Internal notes dialog ──────────────────────────────────────────────────────
+// Owns its controller so it lives until the dialog's exit animation finishes.
+// Pops the trimmed text on save, null on cancel/dismiss.
+class _InternalNotesDialog extends StatefulWidget {
+  final String initial;
+  const _InternalNotesDialog({required this.initial});
+
+  @override
+  State<_InternalNotesDialog> createState() => _InternalNotesDialogState();
+}
+
+class _InternalNotesDialogState extends State<_InternalNotesDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initial);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Notas internas'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        minLines: 3,
+        maxLines: 6,
+        maxLength: 2000,
+        keyboardType: TextInputType.multiline,
+        decoration: const InputDecoration(
+          hintText: 'Notas privadas para tu equipo...',
+          border: OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          style: FilledButton.styleFrom(backgroundColor: context.appPrimary),
+          child: const Text('Guardar'),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Register-payment bottom sheet ───────────────────────────────────────────────
+// Owns its controllers so they outlive the sheet's exit animation. Pops a
+// payload map on submit, null on dismiss.
+class _PaymentSheet extends StatefulWidget {
+  final double pending;
+  const _PaymentSheet({required this.pending});
+
+  @override
+  State<_PaymentSheet> createState() => _PaymentSheetState();
+}
+
+class _PaymentSheetState extends State<_PaymentSheet> {
+  static const _methods = <String, String>{
+    'CASH': 'Efectivo',
+    'BANK': 'Transferencia',
+    'CREDIT': 'Tarjeta',
+    'OTHER': 'Otro',
+  };
+
+  late final TextEditingController _amountCtrl;
+  late final TextEditingController _refCtrl;
+  String _method = 'CASH';
+  DateTime _date = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _amountCtrl = TextEditingController(
+      text: widget.pending > 0 ? widget.pending.toStringAsFixed(2) : '',
+    );
+    _refCtrl = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    _refCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    // Anchor to local noon so converting to UTC for the API can't roll the
+    // calendar date back/forward a day.
+    if (picked != null) {
+      setState(
+          () => _date = DateTime(picked.year, picked.month, picked.day, 12));
+    }
+  }
+
+  void _submit() {
+    final amount =
+        double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.'));
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Importe no válido')),
+      );
+      return;
+    }
+    Navigator.pop(context, {
+      'amount': amount,
+      // UTC with 'Z' — the API's paidAt is a strict z.datetime().
+      'paidAt': _date.toUtc().toIso8601String(),
+      'method': _method,
+      if (_refCtrl.text.trim().isNotEmpty) 'reference': _refCtrl.text.trim(),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Registrar pago',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: context.appText,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _amountCtrl,
+              autofocus: true,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Importe',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _method,
+              decoration: const InputDecoration(
+                labelText: 'Método',
+                border: OutlineInputBorder(),
+              ),
+              items: _methods.entries
+                  .map((e) => DropdownMenuItem(
+                        value: e.key,
+                        child: Text(e.value),
+                      ))
+                  .toList(),
+              onChanged: (v) => setState(() => _method = v ?? 'CASH'),
+            ),
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: _pickDate,
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Fecha',
+                  border: OutlineInputBorder(),
+                ),
+                child: Text(formatDate(_date.toIso8601String())),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _refCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Referencia (opcional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton(
+                style:
+                    FilledButton.styleFrom(backgroundColor: context.appPrimary),
+                onPressed: _submit,
+                child: const Text('Registrar'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

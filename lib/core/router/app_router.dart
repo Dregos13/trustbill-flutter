@@ -123,9 +123,107 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/no-permission',
         builder: (context, _) => const NoPermissionScreen(),
       ),
+
+      // ── Full-screen routes (outside the bottom-nav shell) ──────────────────
+      // These screens build their own Scaffold + AppBar. Keeping them out of the
+      // ShellRoute means no duplicate brand header, no bottom nav, and no
+      // floating button overlapping their in-form actions.
+      // Declared BEFORE the ShellRoute so static paths (…/new) win over the
+      // shell's parametric detail routes (…/:id).
+      GoRoute(
+        path: '/clients/new',
+        builder: (context, _) => const CreateClientScreen(),
+      ),
+      GoRoute(
+        path: '/clients/:id/edit',
+        builder: (_, state) {
+          final client = state.extra as dynamic;
+          return CreateClientScreen(existingClient: client);
+        },
+      ),
+      GoRoute(
+        path: '/invoices/new',
+        builder: (context, _) => const CreateInvoiceScreen(),
+      ),
+      GoRoute(
+        path: '/invoices/:id/edit',
+        builder: (_, state) => EditInvoiceScreen(
+          id: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/budgets/new',
+        builder: (context, _) => const CreateBudgetScreen(),
+      ),
+      GoRoute(
+        path: '/budgets/:id',
+        builder: (_, state) => BudgetDetailScreen(
+          id: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/sales/new',
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CreateSaleScreen(
+            initialBudgetId: extra?['budgetId'] as int?,
+            initialClientId: extra?['clientId'] as int?,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/sales/:id',
+        builder: (_, state) => SaleDetailScreen(
+          id: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/catalog/products/new',
+        builder: (_, _) => const CreateEditProductScreen(),
+      ),
+      GoRoute(
+        path: '/catalog/products/:id/edit',
+        builder: (_, state) {
+          final product = state.extra as dynamic;
+          return CreateEditProductScreen(existing: product);
+        },
+      ),
+      GoRoute(
+        path: '/catalog/products/:id',
+        builder: (_, state) => ProductDetailScreen(
+          id: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/catalog/services/new',
+        builder: (_, _) => const CreateEditServiceScreen(),
+      ),
+      GoRoute(
+        path: '/catalog/services/:id/edit',
+        builder: (_, state) {
+          final service = state.extra as dynamic;
+          return CreateEditServiceScreen(existing: service);
+        },
+      ),
+      GoRoute(
+        path: '/scan',
+        builder: (context, _) => const ScanScreen(),
+      ),
+      GoRoute(
+        path: '/scan/review',
+        builder: (context, _) => const ScanReviewScreen(),
+      ),
+      GoRoute(
+        path: '/permissions',
+        builder: (context, _) => const PermissionsScreen(),
+      ),
+
+      // ── Bottom-nav shell (list + landing destinations) ─────────────────────
       ShellRoute(
         builder: (_, state, child) => AppShell(
-          currentLocation: state.matchedLocation,
+          // Full request path (not matchedLocation, which collapses sub-routes
+          // to their section) so chrome/FAB logic matches the exact screen.
+          currentLocation: state.uri.path,
           child: child,
         ),
         routes: [
@@ -138,35 +236,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, _) => const ClientsScreen(),
           ),
           GoRoute(
-            path: '/clients/new',
-            builder: (context, _) => const CreateClientScreen(),
-          ),
-          GoRoute(
             path: '/clients/:id',
             builder: (_, state) => ClientDetailScreen(
               id: int.parse(state.pathParameters['id']!),
             ),
           ),
           GoRoute(
-            path: '/clients/:id/edit',
-            builder: (_, state) {
-              final client = state.extra as dynamic;
-              return CreateClientScreen(existingClient: client);
-            },
-          ),
-          GoRoute(
             path: '/invoices',
             builder: (context, _) => const InvoicesScreen(),
-          ),
-          GoRoute(
-            path: '/invoices/new',
-            builder: (context, _) => const CreateInvoiceScreen(),
-          ),
-          GoRoute(
-            path: '/invoices/:id/edit',
-            builder: (_, state) => EditInvoiceScreen(
-              id: int.parse(state.pathParameters['id']!),
-            ),
           ),
           GoRoute(
             path: '/invoices/:id',
@@ -179,42 +256,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, _) => const BudgetsScreen(),
           ),
           GoRoute(
-            path: '/budgets/new',
-            builder: (context, _) => const CreateBudgetScreen(),
-          ),
-          GoRoute(
-            path: '/budgets/:id',
-            builder: (_, state) => BudgetDetailScreen(
-              id: int.parse(state.pathParameters['id']!),
-            ),
-          ),
-          GoRoute(
             path: '/sales',
             builder: (context, _) => const SalesScreen(),
-          ),
-          GoRoute(
-            path: '/sales/new',
-            builder: (_, state) {
-              final extra = state.extra as Map<String, dynamic>?;
-              return CreateSaleScreen(
-                initialBudgetId: extra?['budgetId'] as int?,
-                initialClientId: extra?['clientId'] as int?,
-              );
-            },
-          ),
-          GoRoute(
-            path: '/sales/:id',
-            builder: (_, state) => SaleDetailScreen(
-              id: int.parse(state.pathParameters['id']!),
-            ),
-          ),
-          GoRoute(
-            path: '/scan',
-            builder: (context, _) => const ScanScreen(),
-          ),
-          GoRoute(
-            path: '/scan/review',
-            builder: (context, _) => const ScanReviewScreen(),
           ),
           GoRoute(
             path: '/purchases',
@@ -229,40 +272,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, _) => const AccountScreen(),
           ),
           GoRoute(
-            path: '/permissions',
-            builder: (context, _) => const PermissionsScreen(),
-          ),
-          GoRoute(
             path: '/catalog',
             builder: (context, _) => const CatalogScreen(),
-          ),
-          GoRoute(
-            path: '/catalog/products/new',
-            builder: (_, __) => const CreateEditProductScreen(),
-          ),
-          GoRoute(
-            path: '/catalog/products/:id',
-            builder: (_, state) => ProductDetailScreen(
-              id: int.parse(state.pathParameters['id']!),
-            ),
-          ),
-          GoRoute(
-            path: '/catalog/products/:id/edit',
-            builder: (_, state) {
-              final product = state.extra as dynamic;
-              return CreateEditProductScreen(existing: product);
-            },
-          ),
-          GoRoute(
-            path: '/catalog/services/new',
-            builder: (_, __) => const CreateEditServiceScreen(),
-          ),
-          GoRoute(
-            path: '/catalog/services/:id/edit',
-            builder: (_, state) {
-              final service = state.extra as dynamic;
-              return CreateEditServiceScreen(existing: service);
-            },
           ),
         ],
       ),
