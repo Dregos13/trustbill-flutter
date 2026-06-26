@@ -32,7 +32,7 @@ import '../../features/catalog/create_edit_product_screen.dart';
 import '../../features/catalog/create_edit_service_screen.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/no_permission_screen.dart';
-import '../../features/tasks/tasks_screen.dart';
+import '../../features/taskmap/agenda/agenda_screen.dart';
 
 // ── Route permission requirements ──────────────────────────────────────────────
 
@@ -284,7 +284,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/tasks',
-            builder: (context, _) => const TasksScreen(),
+            builder: (context, _) => const AgendaScreen(),
           ),
         ],
       ),

@@ -7,6 +7,7 @@ import '../core/auth/permission_helpers.dart';
 import '../core/auth/permission_provider.dart';
 import '../core/theme/app_colors.dart';
 import '../features/scan/scan_provider.dart';
+import '../features/taskmap/shared/tm_colors.dart';
 
 class AppShell extends ConsumerWidget {
   final String currentLocation;
@@ -87,6 +88,19 @@ class AppShell extends ConsumerWidget {
           foregroundColor: Colors.white,
           elevation: 4,
           child: const Icon(Icons.document_scanner),
+        );
+
+      // ── /tasks → "Nueva tarea" (requires tasks.write) ─────────────────────
+      case '/tasks':
+        if (!ref.watch(hasPermissionProvider(Permissions.tasksWrite))) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () => context.push('/task/new'),
+          backgroundColor: TmColors.accent,
+          foregroundColor: const Color(0xFF06212E),
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Nueva tarea'),
         );
 
       // ── Everything else (forms, detail, catalog, tax, account…) → no FAB ───

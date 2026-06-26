@@ -5,6 +5,13 @@ import 'tm_colors.dart';
 abstract final class TmType {
   static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
 
+  static const TextStyle display = TextStyle(
+    fontSize: 26,
+    height: 1.15,
+    fontWeight: FontWeight.w800,
+    color: TmColors.textPrimary,
+  );
+
   static const TextStyle h2 = TextStyle(
     fontSize: 18,
     height: 1.2,
