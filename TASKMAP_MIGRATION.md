@@ -142,57 +142,55 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 
 ### Order (safest → most complex)
 
-#### 4A — Shared Widgets
-- [ ] **4A.1** Read all files in taskmap's `shared/widgets/`
-- [ ] **4A.2** Port to `lib/features/taskmap/shared/`:
-  - `glass_card.dart`
-  - `skeleton.dart`
-  - `status_chip.dart`
-  - `info_pane.dart`
-  - `money_text.dart`
-  - `state_views.dart`
-  - `app_background.dart`
-  - `brand_mark.dart`
-  - `company_switcher.dart`
-- [ ] **4A.3** Check for conflicts with existing `lib/widgets/` — if widget is identical, use existing one instead of duplicating
-- [ ] **4A.4** `flutter analyze` — zero errors
+#### 4A — Shared Widgets ✅
+- [x] **4A.1** Read all files in taskmap's `shared/widgets/`
+- [x] **4A.2** Port to `lib/features/taskmap/shared/`:
+  - `glass_card.dart`, `skeleton.dart`, `status_chip.dart`, `info_pane.dart`
+  - `money_text.dart`, `state_views.dart`
+  - Skipped: `app_background.dart`, `brand_mark.dart`, `company_switcher.dart` (unused in ported screens)
+  - Created: `tm_colors.dart`, `tm_spacing.dart`, `tm_type.dart` (taskmap design tokens)
+- [x] **4A.3** Added 4 status colors to main `AppColors`; "Más" overflow bottom nav (max 4 pinned + sheet)
+- [x] **4A.4** `flutter analyze` → 0 issues | device test ✅ | commit: `phase-4A`
 
-#### 4B — Task List Item + Status Chip
-- [ ] **4B.1** Port `features/task/widgets/task_list_item.dart`
-- [ ] **4B.2** Port `features/task/widgets/advance_button.dart`
-- [ ] **4B.3** Port `features/task/widgets/set_location.dart`
+#### 4B — Task Widgets ✅
+- [x] **4B.1** Port `task_list_item.dart` → uses `?trailing` null-aware Dart 3.7 spread
+- [x] **4B.2** Port `advance_button.dart` → FilledButton.icon with nextStatus color
+- [x] **4B.3** Port `set_location.dart` → GPS + drop-pin picker; userAgent → `com.trustinfacts.mobile`
+- [x] Added `format.dart` (formatDay/formatDayTime), TmColors.bg/surface, TmRadii.xl/brXl
+- [x] `flutter analyze` → 0 issues | build ✅ | commit: `phase-4B` | version `1.1.4+20`
 
-#### 4C — Agenda Screen (simplest screen)
-- [ ] **4C.1** Read `features/agenda/agenda_screen.dart` from taskmap
-- [ ] **4C.2** Port to `lib/features/taskmap/agenda/agenda_screen.dart`
-- [ ] **4C.3** Wire Riverpod providers (adapt Notifier style to match main app patterns)
-- [ ] **4C.4** Add route `/agenda` to `app_router.dart` inside ShellRoute
-- [ ] **4C.5** Test on device: agenda loads, tasks show
+#### 4C — Agenda Screen ✅
+- [x] **4C.1** Read `features/agenda/agenda_screen.dart` from taskmap
+- [x] **4C.2** Port to `lib/features/taskmap/agenda/agenda_screen.dart`
+  - Dark gradient background (DecoratedBox); CompanySwitcher removed
+  - Date buckets: Vencidas/Hoy/Mañana/Esta semana/Más adelante/Sin programar/Anteriores
+  - Abiertas/Todas segmented toggle
+- [x] **4C.3** Riverpod: `agendaTasksProvider(bool)` — already wired in data layer
+- [x] **4C.4** Router: `/tasks` → `AgendaScreen` (was stub `TasksScreen`); stub deleted
+- [x] **4C.5** FAB "Nueva tarea" added to `AppShell._buildFab` for `/tasks` route
+- [x] Added `TmType.display` (26px w800); device test ✅ | commit: `phase-4C` | version `1.1.4+21`
 
-#### 4D — Task Detail + Form
-- [ ] **4D.1** Read `features/task/task_detail_screen.dart`
-- [ ] **4D.2** Port to `lib/features/taskmap/task/task_detail_screen.dart`
-- [ ] **4D.3** Read `features/task/task_form_screen.dart`
-- [ ] **4D.4** Port to `lib/features/taskmap/task/task_form_screen.dart`
-- [ ] **4D.5** Add routes outside ShellRoute (full-screen, like existing form screens):
-  - `/task/new`
-  - `/task/:id`
-  - `/task/:id/edit`
-- [ ] **4D.6** Test: create task, view, edit, advance status
+#### 4D — Task Detail + Form ✅
+- [x] **4D.1–2** Port `task_detail_screen.dart` → own dark Scaffold; `canWrite` via `hasPermissionProvider`
+- [x] **4D.3–4** Port `task_form_screen.dart` → `Theme(_tmDark())` wrapper; status chips; client picker sheet; location warning
+- [x] **4D.5** Routes added outside ShellRoute: `/task/new`, `/task/:id/edit`, `/task/:id`
+  - Module gate widened: `loc.startsWith('/task')` (covers all taskmap routes)
+- [x] **4D.6** Device test: create/view/edit/advance/delete all ✅
+- [x] Added TmColors: hairline/statusPending/statusInProgress; TmType.moneyLg
+- [x] `flutter analyze` → 0 issues | build ✅ | commit: `phase-4D` | version `1.1.4+22`
 
 #### 4E — Map Screen (most complex — flutter_map + clustering)
 - [ ] **4E.1** Read `features/map/map_screen.dart` + `client_tasks_sheet.dart` + `widgets/task_pin.dart`
 - [ ] **4E.2** Port `task_pin.dart` → `lib/features/taskmap/map/widgets/task_pin.dart`
 - [ ] **4E.3** Port `client_tasks_sheet.dart` → `lib/features/taskmap/map/client_tasks_sheet.dart`
 - [ ] **4E.4** Port `map_screen.dart` → `lib/features/taskmap/map/map_screen.dart`
-  - Use `/impeccable` skill for UI polish
-  - Verify OpenStreetMap tile URL in flutter_map config
+  - Verify CartoDB dark tile URL (already used in set_location.dart)
   - Verify geolocator permission request flow
-- [ ] **4E.5** `flutter build apk --debug` → must succeed
-- [ ] **4E.6** Install + test: map loads tiles, pins appear, tap pin → client sheet, tap task → detail
+- [ ] **4E.5** Add `/map` route in ShellRoute; update "Tareas" tab to point to `/map` as landing
+- [ ] **4E.6** `flutter build apk --debug` → must succeed
+- [ ] **4E.7** Install + test: map loads tiles, pins appear, tap pin → client sheet, tap task → detail
 
-**Skills**: `/graphify`, `/impeccable` for map UI, `/diagnose` if map tiles fail to load.  
-**Commit**: `feat(taskmap): phase-4 — all screens ported (agenda, task CRUD, map)`
+**Commit**: `feat(taskmap): phase-4E — map screen + clustering`
 
 ---
 
@@ -293,6 +291,7 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 | 1 — Foundation | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-1 |
 | 2 — Module Gate | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-2 |
 | 3 — Data Layer | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-3 |
-| 4 — UI Screens | ⬜ TODO | ⬜ | ⬜ | — |
+| 4A–D — UI (partial) | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4A…4D |
+| 4E — Map Screen | ⬜ TODO | ⬜ | ⬜ | — |
 | 5 — Router | ⬜ TODO | ⬜ | ⬜ | — |
 | 6 — QA | ⬜ TODO | ⬜ | ⬜ | — |
