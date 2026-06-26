@@ -27,6 +27,13 @@ final isSuperadminProvider = Provider<bool>((ref) {
   return false;
 });
 
+/// Returns true if the authenticated user's modules list contains [moduleName].
+final hasModuleProvider = Provider.family<bool, String>((ref, moduleName) {
+  final auth = ref.watch(authProvider);
+  if (auth is AuthAuthenticated) return auth.user.modules.contains(moduleName);
+  return false;
+});
+
 /// Returns true if the user has the 'admin' or 'superadmin' role.
 final isAdminOrAboveProvider = Provider<bool>((ref) {
   final auth = ref.watch(authProvider);

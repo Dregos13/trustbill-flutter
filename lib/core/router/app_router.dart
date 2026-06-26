@@ -32,6 +32,7 @@ import '../../features/catalog/create_edit_product_screen.dart';
 import '../../features/catalog/create_edit_service_screen.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/no_permission_screen.dart';
+import '../../features/tasks/tasks_screen.dart';
 
 // ── Route permission requirements ──────────────────────────────────────────────
 
@@ -95,6 +96,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 
         // Superadmin-only routes
         if (_isSuperadminRoute(loc) && user.role != 'superadmin') {
+          return '/no-permission';
+        }
+
+        // Module-gated routes
+        if (loc.startsWith('/tasks') &&
+            !user.modules.contains('taskmap')) {
           return '/no-permission';
         }
 
@@ -274,6 +281,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/catalog',
             builder: (context, _) => const CatalogScreen(),
+          ),
+          GoRoute(
+            path: '/tasks',
+            builder: (context, _) => const TasksScreen(),
           ),
         ],
       ),

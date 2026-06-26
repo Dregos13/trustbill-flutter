@@ -625,7 +625,7 @@ $UserInfoCopyWith<$Res>? get user {
 /// @nodoc
 mixin _$UserInfo {
 
- int get id; String get name; String get email; String get role; List<String> get permissions;
+ int get id; String get name; String get email; String get role; List<String> get permissions; List<String> get modules;
 /// Create a copy of UserInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -638,16 +638,16 @@ $UserInfoCopyWith<UserInfo> get copyWith => _$UserInfoCopyWithImpl<UserInfo>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other.permissions, permissions));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other.permissions, permissions)&&const DeepCollectionEquality().equals(other.modules, modules));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,email,role,const DeepCollectionEquality().hash(permissions));
+int get hashCode => Object.hash(runtimeType,id,name,email,role,const DeepCollectionEquality().hash(permissions),const DeepCollectionEquality().hash(modules));
 
 @override
 String toString() {
-  return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions)';
+  return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions, modules: $modules)';
 }
 
 
@@ -658,7 +658,7 @@ abstract mixin class $UserInfoCopyWith<$Res>  {
   factory $UserInfoCopyWith(UserInfo value, $Res Function(UserInfo) _then) = _$UserInfoCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String email, String role, List<String> permissions
+ int id, String name, String email, String role, List<String> permissions, List<String> modules
 });
 
 
@@ -675,13 +675,14 @@ class _$UserInfoCopyWithImpl<$Res>
 
 /// Create a copy of UserInfo
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? role = null,Object? permissions = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? role = null,Object? permissions = null,Object? modules = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,permissions: null == permissions ? _self.permissions : permissions // ignore: cast_nullable_to_non_nullable
+as List<String>,modules: null == modules ? _self.modules : modules // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }
@@ -767,10 +768,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String role,  List<String> permissions)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String role,  List<String> permissions,  List<String> modules)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserInfo() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);case _:
+return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions,_that.modules);case _:
   return orElse();
 
 }
@@ -788,10 +789,10 @@ return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String role,  List<String> permissions)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String role,  List<String> permissions,  List<String> modules)  $default,) {final _that = this;
 switch (_that) {
 case _UserInfo():
-return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);case _:
+return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions,_that.modules);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -808,10 +809,10 @@ return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String email,  String role,  List<String> permissions)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String email,  String role,  List<String> permissions,  List<String> modules)?  $default,) {final _that = this;
 switch (_that) {
 case _UserInfo() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);case _:
+return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions,_that.modules);case _:
   return null;
 
 }
@@ -823,7 +824,7 @@ return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);ca
 @JsonSerializable()
 
 class _UserInfo implements UserInfo {
-  const _UserInfo({required this.id, required this.name, required this.email, this.role = '', final  List<String> permissions = const []}): _permissions = permissions;
+  const _UserInfo({required this.id, required this.name, required this.email, this.role = '', final  List<String> permissions = const [], final  List<String> modules = const []}): _permissions = permissions,_modules = modules;
   factory _UserInfo.fromJson(Map<String, dynamic> json) => _$UserInfoFromJson(json);
 
 @override final  int id;
@@ -835,6 +836,13 @@ class _UserInfo implements UserInfo {
   if (_permissions is EqualUnmodifiableListView) return _permissions;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_permissions);
+}
+
+ final  List<String> _modules;
+@override@JsonKey() List<String> get modules {
+  if (_modules is EqualUnmodifiableListView) return _modules;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_modules);
 }
 
 
@@ -851,16 +859,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other._permissions, _permissions));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other._permissions, _permissions)&&const DeepCollectionEquality().equals(other._modules, _modules));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,email,role,const DeepCollectionEquality().hash(_permissions));
+int get hashCode => Object.hash(runtimeType,id,name,email,role,const DeepCollectionEquality().hash(_permissions),const DeepCollectionEquality().hash(_modules));
 
 @override
 String toString() {
-  return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions)';
+  return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions, modules: $modules)';
 }
 
 
@@ -871,7 +879,7 @@ abstract mixin class _$UserInfoCopyWith<$Res> implements $UserInfoCopyWith<$Res>
   factory _$UserInfoCopyWith(_UserInfo value, $Res Function(_UserInfo) _then) = __$UserInfoCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String email, String role, List<String> permissions
+ int id, String name, String email, String role, List<String> permissions, List<String> modules
 });
 
 
@@ -888,13 +896,14 @@ class __$UserInfoCopyWithImpl<$Res>
 
 /// Create a copy of UserInfo
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? role = null,Object? permissions = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? role = null,Object? permissions = null,Object? modules = null,}) {
   return _then(_UserInfo(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,permissions: null == permissions ? _self._permissions : permissions // ignore: cast_nullable_to_non_nullable
+as List<String>,modules: null == modules ? _self._modules : modules // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }

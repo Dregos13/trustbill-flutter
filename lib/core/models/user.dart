@@ -41,6 +41,7 @@ abstract class UserInfo with _$UserInfo {
     required String email,
     @Default('') String role,
     @Default([]) List<String> permissions,
+    @Default([]) List<String> modules,
   }) = _UserInfo;
 
   factory UserInfo.fromJson(Map<String, dynamic> json) =>

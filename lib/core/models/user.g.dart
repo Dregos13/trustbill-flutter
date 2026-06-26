@@ -64,6 +64,9 @@ _UserInfo _$UserInfoFromJson(Map<String, dynamic> json) => _UserInfo(
           ?.map((e) => e as String)
           .toList() ??
       const [],
+  modules:
+      (json['modules'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$UserInfoToJson(_UserInfo instance) => <String, dynamic>{
@@ -72,6 +75,7 @@ Map<String, dynamic> _$UserInfoToJson(_UserInfo instance) => <String, dynamic>{
   'email': instance.email,
   'role': instance.role,
   'permissions': instance.permissions,
+  'modules': instance.modules,
 };
 
 _CompanyInfo _$CompanyInfoFromJson(Map<String, dynamic> json) => _CompanyInfo(

@@ -14,6 +14,8 @@ class _TabDef {
   final String label;
   /// null = always visible (no permission required)
   final String? requiredPermission;
+  /// null = no module gate; non-null = module must be in user.modules
+  final String? requiredModule;
 
   const _TabDef({
     required this.route,
@@ -22,6 +24,7 @@ class _TabDef {
     required this.activeIcon,
     required this.label,
     this.requiredPermission,
+    this.requiredModule,
   });
 }
 
@@ -66,14 +69,27 @@ const _allTabs = [
     label: 'Catálogo',
     requiredPermission: Permissions.productsRead,
   ),
+  _TabDef(
+    route: '/tasks',
+    routePrefix: '/tasks',
+    icon: Icons.map_outlined,
+    activeIcon: Icons.map,
+    label: 'Tareas',
+    requiredPermission: Permissions.tasksRead,
+    requiredModule: 'taskmap',
+  ),
 ];
 
 // ── Provider: visible tabs ─────────────────────────────────────────────────────
 
-/// List of tabs visible to the current user based on their permissions.
+/// List of tabs visible to the current user based on their permissions and enabled modules.
 final visibleTabsProvider = Provider<List<_TabDef>>((ref) {
   final perms = ref.watch(permissionsProvider);
   return _allTabs.where((tab) {
+    if (tab.requiredModule != null &&
+        !ref.read(hasModuleProvider(tab.requiredModule!))) {
+      return false;
+    }
     if (tab.requiredPermission == null) return true;
     final key = tab.requiredPermission!;
     final category = key.split('.').first;

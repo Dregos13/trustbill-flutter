@@ -29,6 +29,10 @@ abstract class Permissions {
   // Expenses / purchases / scanner
   static const expensesRead = 'expenses.read';
   static const expensesWrite = 'expenses.write';
+
+  // Tasks (taskmap module)
+  static const tasksRead = 'tasks.read';
+  static const tasksWrite = 'tasks.write';
 }
 
 // ── Permission catalog for the management UI ───────────────────────────────────

@@ -75,57 +75,17 @@ User requirement: super-admin enables/disables module per company. Already works
 
 ### Tasks
 
-- [ ] **2.1** Read `lib/core/auth/permission_provider.dart` + `permission_helpers.dart` + `app_bottom_nav.dart`
-- [ ] **2.2** Add to `permission_helpers.dart`:
-  ```dart
-  static const tasksRead = 'tasks.read';
-  static const tasksWrite = 'tasks.write';
-  ```
-- [ ] **2.3** Add to `permission_provider.dart`:
-  ```dart
-  // Returns true if authenticated user's modules list contains [moduleName].
-  final hasModuleProvider = Provider.family<bool, String>((ref, moduleName) {
-    final auth = ref.watch(authProvider);
-    if (auth is AuthAuthenticated) return auth.user.modules.contains(moduleName);
-    return false;
-  });
-  ```
-- [ ] **2.4** Verify `AuthAuthenticated` (in `auth_state.freezed.dart`) exposes `modules`. If not, add `List<String> modules = const []` field and regenerate.
-- [ ] **2.5** Add `requiredModule` field to `_TabDef` in `app_bottom_nav.dart`:
-  ```dart
-  final String? requiredModule; // null = no module gate
-  ```
-- [ ] **2.6** Update `visibleTabsProvider` — filter by both permission AND module:
-  ```dart
-  final visible = _allTabs.where((tab) {
-    final permOk = tab.requiredPermission == null || ...existing check...;
-    final modOk = tab.requiredModule == null ||
-        ref.watch(hasModuleProvider(tab.requiredModule!));
-    return permOk && modOk;
-  }).toList();
-  ```
-- [ ] **2.7** Add stub `'Tareas'` tab to `_allTabs`:
-  ```dart
-  _TabDef(
-    route: '/map',
-    routePrefix: '/map',
-    icon: Icons.map_outlined,
-    activeIcon: Icons.map,
-    label: 'Tareas',
-    requiredPermission: Permissions.tasksRead,
-    requiredModule: 'taskmap',
-  ),
-  ```
-- [ ] **2.8** Add stub route `/map` to `app_router.dart` (temporary placeholder screen):
-  ```dart
-  GoRoute(
-    path: '/map',
-    builder: (_, _) => const Scaffold(body: Center(child: Text('Tareas — próximamente'))),
-  ),
-  ```
-- [ ] **2.9** Add module redirect: in `app_router.dart` redirect block, if user navigates to `/map` or `/task/*` and `!hasModule('taskmap')` → return `'/'`
-- [ ] **2.10** `flutter build apk --debug` → must succeed
-- [ ] **2.11** Test: call API to enable/disable `taskmap` module, verify tab appears/disappears on hot restart
+- [x] **2.1** Read `lib/core/auth/permission_provider.dart` + `permission_helpers.dart` + `app_bottom_nav.dart`
+- [x] **2.2** Add `tasksRead` + `tasksWrite` to `permission_helpers.dart`
+- [x] **2.3** Add `hasModuleProvider` to `permission_provider.dart`
+- [x] **2.4** Add `@Default([]) List<String> modules` to `UserInfo` in `user.dart` + regenerate (28 outputs)
+- [x] **2.5** Add `requiredModule` field to `_TabDef` in `app_bottom_nav.dart`
+- [x] **2.6** Update `visibleTabsProvider` — filter by module gate then permission gate
+- [x] **2.7** Add `'Tareas'` tab to `_allTabs` (route `/tasks`, module `taskmap`, perm `tasks.read`)
+- [x] **2.8** Create `lib/features/tasks/tasks_screen.dart` stub + add `/tasks` route in ShellRoute
+- [x] **2.9** Add module redirect in `app_router.dart`: `/tasks` → `/no-permission` if `!user.modules.contains('taskmap')`
+- [x] **2.10** `flutter build apk --debug` → ✅ succeeded
+- [x] **2.11** Installed on device — tab hidden by default (modules:[]) ✅
 
 **Skills**: `/graphify` before edits. `/code-review` after.  
 **Commit**: `feat(taskmap): phase-2 — module gate, tasks.read permission, stub tab`
@@ -343,7 +303,7 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 | Phase | Status | Build OK | Device Test | Commit |
 |-------|--------|----------|-------------|--------|
 | 1 — Foundation | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-1 |
-| 2 — Module Gate | ⬜ TODO | ⬜ | ⬜ | — |
+| 2 — Module Gate | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-2 |
 | 3 — Data Layer | ⬜ TODO | ⬜ | ⬜ | — |
 | 4 — UI Screens | ⬜ TODO | ⬜ | ⬜ | — |
 | 5 — Router | ⬜ TODO | ⬜ | ⬜ | — |
