@@ -179,16 +179,18 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 - [x] Added TmColors: hairline/statusPending/statusInProgress; TmType.moneyLg
 - [x] `flutter analyze` → 0 issues | build ✅ | commit: `phase-4D` | version `1.1.4+22`
 
-#### 4E — Map Screen (most complex — flutter_map + clustering)
-- [ ] **4E.1** Read `features/map/map_screen.dart` + `client_tasks_sheet.dart` + `widgets/task_pin.dart`
-- [ ] **4E.2** Port `task_pin.dart` → `lib/features/taskmap/map/widgets/task_pin.dart`
-- [ ] **4E.3** Port `client_tasks_sheet.dart` → `lib/features/taskmap/map/client_tasks_sheet.dart`
-- [ ] **4E.4** Port `map_screen.dart` → `lib/features/taskmap/map/map_screen.dart`
-  - Verify CartoDB dark tile URL (already used in set_location.dart)
-  - Verify geolocator permission request flow
-- [ ] **4E.5** Add `/map` route in ShellRoute; update "Tareas" tab to point to `/map` as landing
-- [ ] **4E.6** `flutter build apk --debug` → must succeed
-- [ ] **4E.7** Install + test: map loads tiles, pins appear, tap pin → client sheet, tap task → detail
+#### 4E — Map Screen ✅
+- [x] **4E.1** Read `features/map/map_screen.dart` + `client_tasks_sheet.dart` + `widgets/task_pin.dart`
+- [x] **4E.2** Port `task_pin.dart` → `lib/features/taskmap/map/widgets/task_pin.dart`
+- [x] **4E.3** Port `client_tasks_sheet.dart` → `lib/features/taskmap/map/client_tasks_sheet.dart`
+- [x] **4E.4** Port `map_screen.dart` → `lib/features/taskmap/map/map_screen.dart`
+  - FAB stripped from MapScreen (AppShell handles it) — consistent with all other screens
+  - CompanySwitcher removed (decided in 4C)
+  - GPS "Mi ubicación" button added to header overlay
+  - userAgentPackageName: com.trustinfacts.mobile
+- [x] **4E.5** `/map` route added in ShellRoute; "Mapa" added as separate entry in "Más" overflow sheet; "Tareas" icon changed to checklist; module gate extended to cover `/map`
+- [x] **4E.6** `flutter build apk --debug` → ✅
+- [x] **4E.7** Device test: map loads tiles, GPS button centers map, pins appear, tap pin → client sheet, tap task → detail ✅ | version `1.1.4+23`
 
 **Commit**: `feat(taskmap): phase-4E — map screen + clustering`
 
@@ -292,6 +294,6 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 | 2 — Module Gate | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-2 |
 | 3 — Data Layer | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-3 |
 | 4A–D — UI (partial) | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4A…4D |
-| 4E — Map Screen | ⬜ TODO | ⬜ | ⬜ | — |
+| 4E — Map Screen | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4E |
 | 5 — Router | ⬜ TODO | ⬜ | ⬜ | — |
 | 6 — QA | ⬜ TODO | ⬜ | ⬜ | — |

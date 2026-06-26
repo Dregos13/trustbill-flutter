@@ -33,6 +33,7 @@ import '../../features/catalog/create_edit_service_screen.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/no_permission_screen.dart';
 import '../../features/taskmap/agenda/agenda_screen.dart';
+import '../../features/taskmap/map/map_screen.dart';
 import '../../features/taskmap/task/task_detail_screen.dart';
 import '../../features/taskmap/task/task_form_screen.dart';
 
@@ -102,7 +103,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
 
         // Module-gated routes
-        if (loc.startsWith('/task') &&
+        if ((loc.startsWith('/task') || loc.startsWith('/map')) &&
             !user.modules.contains('taskmap')) {
           return '/no-permission';
         }
@@ -305,6 +306,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/tasks',
             builder: (context, _) => const AgendaScreen(),
+          ),
+          GoRoute(
+            path: '/map',
+            builder: (context, _) => const MapScreen(),
           ),
         ],
       ),

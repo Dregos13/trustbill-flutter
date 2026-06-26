@@ -90,8 +90,9 @@ class AppShell extends ConsumerWidget {
           child: const Icon(Icons.document_scanner),
         );
 
-      // ── /tasks → "Nueva tarea" (requires tasks.write) ─────────────────────
+      // ── /tasks + /map → "Nueva tarea" (requires tasks.write) ──────────────
       case '/tasks':
+      case '/map':
         if (!ref.watch(hasPermissionProvider(Permissions.tasksWrite))) {
           return null;
         }
