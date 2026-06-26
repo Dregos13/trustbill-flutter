@@ -52,10 +52,9 @@ class ScanState {
   }
 }
 
-class ScanNotifier extends StateNotifier<ScanState> {
-  final Ref _ref;
-
-  ScanNotifier(this._ref) : super(const ScanState());
+class ScanNotifier extends Notifier<ScanState> {
+  @override
+  ScanState build() => const ScanState();
 
   void setScanType(ScanType type) {
     state = ScanState(scanType: type);
@@ -70,7 +69,7 @@ class ScanNotifier extends StateNotifier<ScanState> {
     );
 
     try {
-      final endpoints = _ref.read(endpointsProvider);
+      final endpoints = ref.read(endpointsProvider);
       final result = await endpoints.scanReceipt(
         imageBytes: bytes,
         fileName: 'receipt.${mimeType == 'image/png' ? 'png' : 'jpg'}',
@@ -89,7 +88,7 @@ class ScanNotifier extends StateNotifier<ScanState> {
     state = state.copyWith(isConfirming: true, error: null);
 
     try {
-      final endpoints = _ref.read(endpointsProvider);
+      final endpoints = ref.read(endpointsProvider);
       final response = await endpoints.confirmScan(payload);
       state = state.copyWith(isConfirming: false, confirmed: response);
     } catch (e) {
@@ -105,6 +104,4 @@ class ScanNotifier extends StateNotifier<ScanState> {
   }
 }
 
-final scanProvider = StateNotifierProvider<ScanNotifier, ScanState>((ref) {
-  return ScanNotifier(ref);
-});
+final scanProvider = NotifierProvider<ScanNotifier, ScanState>(ScanNotifier.new);

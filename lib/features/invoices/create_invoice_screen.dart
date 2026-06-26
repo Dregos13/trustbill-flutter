@@ -680,19 +680,19 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       final type = parts[0];
                       final id = int.parse(parts[1]);
                       if (type == 'p') {
-                        final products = productsAsync.valueOrNull ?? [];
+                        final products = productsAsync.asData?.value ?? [];
                         final p = products.firstWhere((x) => x.id == id);
                         _applyProduct(p);
                       } else {
-                        final services = servicesAsync.valueOrNull ?? [];
+                        final services = servicesAsync.asData?.value ?? [];
                         final s = services.firstWhere((x) => x.id == id);
                         _applyService(s);
                       }
                     },
                     itemBuilder: (_) {
                       final items = <PopupMenuEntry<String>>[];
-                      final products = productsAsync.valueOrNull ?? [];
-                      final services = servicesAsync.valueOrNull ?? [];
+                      final products = productsAsync.asData?.value ?? [];
+                      final services = servicesAsync.asData?.value ?? [];
                       if (products.isNotEmpty) {
                         items.add(PopupMenuItem(
                           enabled: false,

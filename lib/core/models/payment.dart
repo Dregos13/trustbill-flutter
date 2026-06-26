@@ -5,7 +5,7 @@ part 'payment.freezed.dart';
 part 'payment.g.dart';
 
 @freezed
-class Payment with _$Payment {
+abstract class Payment with _$Payment {
   const factory Payment({
     required int id,
     @JsonKey(fromJson: toDouble) required double amount,

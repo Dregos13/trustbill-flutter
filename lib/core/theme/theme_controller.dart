@@ -5,16 +5,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 const _themeStorageKey = 'app_theme_mode';
 
 final themeControllerProvider =
-    StateNotifierProvider<ThemeController, ThemeMode>((ref) {
-  return ThemeController();
-});
+    NotifierProvider<ThemeController, ThemeMode>(ThemeController.new);
 
-class ThemeController extends StateNotifier<ThemeMode> {
-  final FlutterSecureStorage _storage;
+class ThemeController extends Notifier<ThemeMode> {
+  late final FlutterSecureStorage _storage;
 
-  ThemeController({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage(),
-        super(ThemeMode.system);
+  @override
+  ThemeMode build() {
+    _storage = const FlutterSecureStorage();
+    return ThemeMode.system;
+  }
 
   Future<void> initialize() async {
     final value = await _storage.read(key: _themeStorageKey);

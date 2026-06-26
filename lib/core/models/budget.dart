@@ -5,7 +5,7 @@ part 'budget.freezed.dart';
 part 'budget.g.dart';
 
 @freezed
-class BudgetListItem with _$BudgetListItem {
+abstract class BudgetListItem with _$BudgetListItem {
   const factory BudgetListItem({
     required int id,
     required String series,
@@ -24,7 +24,7 @@ class BudgetListItem with _$BudgetListItem {
 }
 
 @freezed
-class BudgetClient with _$BudgetClient {
+abstract class BudgetClient with _$BudgetClient {
   const factory BudgetClient({
     required int id,
     required String name,
@@ -36,7 +36,7 @@ class BudgetClient with _$BudgetClient {
 }
 
 @freezed
-class BudgetDetail with _$BudgetDetail {
+abstract class BudgetDetail with _$BudgetDetail {
   const factory BudgetDetail({
     required int id,
     required String series,
@@ -59,7 +59,7 @@ class BudgetDetail with _$BudgetDetail {
 }
 
 @freezed
-class BudgetLine with _$BudgetLine {
+abstract class BudgetLine with _$BudgetLine {
   const factory BudgetLine({
     required int id,
     int? productId,

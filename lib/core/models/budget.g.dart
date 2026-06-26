@@ -6,8 +6,8 @@ part of 'budget.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$BudgetListItemImpl _$$BudgetListItemImplFromJson(Map<String, dynamic> json) =>
-    _$BudgetListItemImpl(
+_BudgetListItem _$BudgetListItemFromJson(Map<String, dynamic> json) =>
+    _BudgetListItem(
       id: (json['id'] as num).toInt(),
       series: json['series'] as String,
       number: (json['number'] as num).toInt(),
@@ -22,37 +22,36 @@ _$BudgetListItemImpl _$$BudgetListItemImplFromJson(Map<String, dynamic> json) =>
           : BudgetClient.fromJson(json['client'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$BudgetListItemImplToJson(
-  _$BudgetListItemImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'series': instance.series,
-  'number': instance.number,
-  'status': instance.status,
-  'quoteStatus': instance.quoteStatus,
-  'issuedAt': instance.issuedAt,
-  'total': instance.total,
-  'taxKind': instance.taxKind,
-  'saleId': instance.saleId,
-  'client': instance.client,
-};
+Map<String, dynamic> _$BudgetListItemToJson(_BudgetListItem instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'series': instance.series,
+      'number': instance.number,
+      'status': instance.status,
+      'quoteStatus': instance.quoteStatus,
+      'issuedAt': instance.issuedAt,
+      'total': instance.total,
+      'taxKind': instance.taxKind,
+      'saleId': instance.saleId,
+      'client': instance.client,
+    };
 
-_$BudgetClientImpl _$$BudgetClientImplFromJson(Map<String, dynamic> json) =>
-    _$BudgetClientImpl(
+_BudgetClient _$BudgetClientFromJson(Map<String, dynamic> json) =>
+    _BudgetClient(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       taxId: json['taxId'] as String?,
     );
 
-Map<String, dynamic> _$$BudgetClientImplToJson(_$BudgetClientImpl instance) =>
+Map<String, dynamic> _$BudgetClientToJson(_BudgetClient instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
       'taxId': instance.taxId,
     };
 
-_$BudgetDetailImpl _$$BudgetDetailImplFromJson(Map<String, dynamic> json) =>
-    _$BudgetDetailImpl(
+_BudgetDetail _$BudgetDetailFromJson(Map<String, dynamic> json) =>
+    _BudgetDetail(
       id: (json['id'] as num).toInt(),
       series: json['series'] as String,
       number: (json['number'] as num).toInt(),
@@ -75,7 +74,7 @@ _$BudgetDetailImpl _$$BudgetDetailImplFromJson(Map<String, dynamic> json) =>
           const [],
     );
 
-Map<String, dynamic> _$$BudgetDetailImplToJson(_$BudgetDetailImpl instance) =>
+Map<String, dynamic> _$BudgetDetailToJson(_BudgetDetail instance) =>
     <String, dynamic>{
       'id': instance.id,
       'series': instance.series,
@@ -93,21 +92,20 @@ Map<String, dynamic> _$$BudgetDetailImplToJson(_$BudgetDetailImpl instance) =>
       'lines': instance.lines,
     };
 
-_$BudgetLineImpl _$$BudgetLineImplFromJson(Map<String, dynamic> json) =>
-    _$BudgetLineImpl(
-      id: (json['id'] as num).toInt(),
-      productId: (json['productId'] as num?)?.toInt(),
-      serviceId: (json['serviceId'] as num?)?.toInt(),
-      description: json['description'] as String,
-      quantity: toDouble(json['quantity']),
-      unitPrice: toDouble(json['unitPrice']),
-      discountRate: toDouble(json['discountRate']),
-      taxRate: toDouble(json['taxRate']),
-      taxAmount: toDouble(json['taxAmount']),
-      total: toDouble(json['total']),
-    );
+_BudgetLine _$BudgetLineFromJson(Map<String, dynamic> json) => _BudgetLine(
+  id: (json['id'] as num).toInt(),
+  productId: (json['productId'] as num?)?.toInt(),
+  serviceId: (json['serviceId'] as num?)?.toInt(),
+  description: json['description'] as String,
+  quantity: toDouble(json['quantity']),
+  unitPrice: toDouble(json['unitPrice']),
+  discountRate: toDouble(json['discountRate']),
+  taxRate: toDouble(json['taxRate']),
+  taxAmount: toDouble(json['taxAmount']),
+  total: toDouble(json['total']),
+);
 
-Map<String, dynamic> _$$BudgetLineImplToJson(_$BudgetLineImpl instance) =>
+Map<String, dynamic> _$BudgetLineToJson(_BudgetLine instance) =>
     <String, dynamic>{
       'id': instance.id,
       'productId': instance.productId,

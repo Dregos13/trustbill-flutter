@@ -20,8 +20,27 @@ const saleStatusLabels = <String, String>{
   'LOST': 'Perdida',
 };
 
-final _salesStatusProvider = StateProvider.autoDispose<String?>((ref) => null);
-final _salesOffsetProvider = StateProvider.autoDispose<int>((ref) => 0);
+class _SalesStatusNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? v) => state = v;
+}
+
+final _salesStatusProvider =
+    NotifierProvider.autoDispose<_SalesStatusNotifier, String?>(
+  _SalesStatusNotifier.new,
+);
+
+class _SalesOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void set(int v) => state = v;
+}
+
+final _salesOffsetProvider =
+    NotifierProvider.autoDispose<_SalesOffsetNotifier, int>(
+  _SalesOffsetNotifier.new,
+);
 
 final salesProvider =
     FutureProvider.autoDispose<PaginatedResponse<SaleListItem>>((ref) async {
@@ -79,8 +98,8 @@ class SalesScreen extends ConsumerWidget {
                   DropdownMenuItem(value: 'LOST', child: Text('Perdida')),
                 ],
                 onChanged: (value) {
-                  ref.read(_salesOffsetProvider.notifier).state = 0;
-                  ref.read(_salesStatusProvider.notifier).state = value;
+                  ref.read(_salesOffsetProvider.notifier).set(0);
+                  ref.read(_salesStatusProvider.notifier).set(value);
                 },
               ),
             ),
@@ -104,12 +123,12 @@ class SalesScreen extends ConsumerWidget {
                     hasPrevious: response.hasPrevious,
                     hasNext: response.hasNext,
                     onPrevious: () {
-                      ref.read(_salesOffsetProvider.notifier).state =
-                          ref.read(_salesOffsetProvider) - 50;
+                      ref.read(_salesOffsetProvider.notifier).set(
+                          ref.read(_salesOffsetProvider) - 50);
                     },
                     onNext: () {
-                      ref.read(_salesOffsetProvider.notifier).state =
-                          ref.read(_salesOffsetProvider) + 50;
+                      ref.read(_salesOffsetProvider.notifier).set(
+                          ref.read(_salesOffsetProvider) + 50);
                     },
                   ),
                 ],

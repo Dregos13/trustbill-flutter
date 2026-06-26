@@ -6,8 +6,8 @@ part of 'user.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LoginResponseImpl _$$LoginResponseImplFromJson(Map<String, dynamic> json) =>
-    _$LoginResponseImpl(
+_LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
+    _LoginResponse(
       accessToken: json['accessToken'] as String,
       refreshToken: json['refreshToken'] as String,
       expiresIn: (json['expiresIn'] as num).toInt(),
@@ -18,7 +18,7 @@ _$LoginResponseImpl _$$LoginResponseImplFromJson(Map<String, dynamic> json) =>
       activeCompanyId: (json['activeCompanyId'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$LoginResponseImplToJson(_$LoginResponseImpl instance) =>
+Map<String, dynamic> _$LoginResponseToJson(_LoginResponse instance) =>
     <String, dynamic>{
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
@@ -28,81 +28,76 @@ Map<String, dynamic> _$$LoginResponseImplToJson(_$LoginResponseImpl instance) =>
       'activeCompanyId': instance.activeCompanyId,
     };
 
-_$RefreshResponseImpl _$$RefreshResponseImplFromJson(
-  Map<String, dynamic> json,
-) => _$RefreshResponseImpl(
-  accessToken: json['accessToken'] as String,
-  refreshToken: json['refreshToken'] as String,
-  expiresIn: (json['expiresIn'] as num).toInt(),
-  user: json['user'] == null
-      ? null
-      : UserInfo.fromJson(json['user'] as Map<String, dynamic>),
-  companies:
-      (json['companies'] as List<dynamic>?)
-          ?.map((e) => CompanyInfo.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      const [],
-  activeCompanyId: (json['activeCompanyId'] as num?)?.toInt(),
-);
-
-Map<String, dynamic> _$$RefreshResponseImplToJson(
-  _$RefreshResponseImpl instance,
-) => <String, dynamic>{
-  'accessToken': instance.accessToken,
-  'refreshToken': instance.refreshToken,
-  'expiresIn': instance.expiresIn,
-  'user': instance.user,
-  'companies': instance.companies,
-  'activeCompanyId': instance.activeCompanyId,
-};
-
-_$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>
-    _$UserInfoImpl(
-      id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      email: json['email'] as String,
-      role: json['role'] as String? ?? '',
-      permissions:
-          (json['permissions'] as List<dynamic>?)
-              ?.map((e) => e as String)
+_RefreshResponse _$RefreshResponseFromJson(Map<String, dynamic> json) =>
+    _RefreshResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+      expiresIn: (json['expiresIn'] as num).toInt(),
+      user: json['user'] == null
+          ? null
+          : UserInfo.fromJson(json['user'] as Map<String, dynamic>),
+      companies:
+          (json['companies'] as List<dynamic>?)
+              ?.map((e) => CompanyInfo.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      activeCompanyId: (json['activeCompanyId'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
+Map<String, dynamic> _$RefreshResponseToJson(_RefreshResponse instance) =>
+    <String, dynamic>{
+      'accessToken': instance.accessToken,
+      'refreshToken': instance.refreshToken,
+      'expiresIn': instance.expiresIn,
+      'user': instance.user,
+      'companies': instance.companies,
+      'activeCompanyId': instance.activeCompanyId,
+    };
+
+_UserInfo _$UserInfoFromJson(Map<String, dynamic> json) => _UserInfo(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  email: json['email'] as String,
+  role: json['role'] as String? ?? '',
+  permissions:
+      (json['permissions'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$UserInfoToJson(_UserInfo instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'email': instance.email,
+  'role': instance.role,
+  'permissions': instance.permissions,
+};
+
+_CompanyInfo _$CompanyInfoFromJson(Map<String, dynamic> json) => _CompanyInfo(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  role: json['role'] as String? ?? '',
+);
+
+Map<String, dynamic> _$CompanyInfoToJson(_CompanyInfo instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'email': instance.email,
-      'role': instance.role,
-      'permissions': instance.permissions,
-    };
-
-_$CompanyInfoImpl _$$CompanyInfoImplFromJson(Map<String, dynamic> json) =>
-    _$CompanyInfoImpl(
-      id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      role: json['role'] as String? ?? '',
-    );
-
-Map<String, dynamic> _$$CompanyInfoImplToJson(_$CompanyInfoImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
       'role': instance.role,
     };
 
-_$SwitchCompanyResponseImpl _$$SwitchCompanyResponseImplFromJson(
+_SwitchCompanyResponse _$SwitchCompanyResponseFromJson(
   Map<String, dynamic> json,
-) => _$SwitchCompanyResponseImpl(
+) => _SwitchCompanyResponse(
   accessToken: json['accessToken'] as String,
   refreshToken: json['refreshToken'] as String,
   expiresIn: (json['expiresIn'] as num).toInt(),
   activeCompanyId: (json['activeCompanyId'] as num).toInt(),
 );
 
-Map<String, dynamic> _$$SwitchCompanyResponseImplToJson(
-  _$SwitchCompanyResponseImpl instance,
+Map<String, dynamic> _$SwitchCompanyResponseToJson(
+  _SwitchCompanyResponse instance,
 ) => <String, dynamic>{
   'accessToken': instance.accessToken,
   'refreshToken': instance.refreshToken,

@@ -9,9 +9,27 @@ import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/pagination_controls.dart';
 
+class _PurchasesStatusNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? v) => state = v;
+}
+
 final _purchasesStatusProvider =
-    StateProvider.autoDispose<String?>((ref) => null);
-final _purchasesOffsetProvider = StateProvider.autoDispose<int>((ref) => 0);
+    NotifierProvider.autoDispose<_PurchasesStatusNotifier, String?>(
+  _PurchasesStatusNotifier.new,
+);
+
+class _PurchasesOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void set(int v) => state = v;
+}
+
+final _purchasesOffsetProvider =
+    NotifierProvider.autoDispose<_PurchasesOffsetNotifier, int>(
+  _PurchasesOffsetNotifier.new,
+);
 
 final purchasesProvider =
     FutureProvider.autoDispose<PaginatedResponse<PurchaseListItem>>((ref) async {
@@ -66,8 +84,8 @@ class PurchasesScreen extends ConsumerWidget {
                   DropdownMenuItem(value: 'PAID', child: Text('Pagada')),
                 ],
                 onChanged: (value) {
-                  ref.read(_purchasesOffsetProvider.notifier).state = 0;
-                  ref.read(_purchasesStatusProvider.notifier).state = value;
+                  ref.read(_purchasesOffsetProvider.notifier).set(0);
+                  ref.read(_purchasesStatusProvider.notifier).set(value);
                 },
               ),
             ),
@@ -133,12 +151,12 @@ class PurchasesScreen extends ConsumerWidget {
                     hasPrevious: response.hasPrevious,
                     hasNext: response.hasNext,
                     onPrevious: () {
-                      ref.read(_purchasesOffsetProvider.notifier).state =
-                          ref.read(_purchasesOffsetProvider) - 50;
+                      ref.read(_purchasesOffsetProvider.notifier).set(
+                          ref.read(_purchasesOffsetProvider) - 50);
                     },
                     onNext: () {
-                      ref.read(_purchasesOffsetProvider.notifier).state =
-                          ref.read(_purchasesOffsetProvider) + 50;
+                      ref.read(_purchasesOffsetProvider.notifier).set(
+                          ref.read(_purchasesOffsetProvider) + 50);
                     },
                   ),
                 ],

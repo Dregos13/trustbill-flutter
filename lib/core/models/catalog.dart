@@ -6,7 +6,7 @@ part 'catalog.g.dart';
 // ── Product ───────────────────────────────────────────────────────────────────
 
 @freezed
-class CatalogProduct with _$CatalogProduct {
+abstract class CatalogProduct with _$CatalogProduct {
   const factory CatalogProduct({
     required int id,
     required String sku,
@@ -23,7 +23,7 @@ class CatalogProduct with _$CatalogProduct {
 // ── Service ───────────────────────────────────────────────────────────────────
 
 @freezed
-class CatalogService with _$CatalogService {
+abstract class CatalogService with _$CatalogService {
   const factory CatalogService({
     required int id,
     required String name,
@@ -40,7 +40,7 @@ class CatalogService with _$CatalogService {
 // ── Inventory movement ────────────────────────────────────────────────────────
 
 @freezed
-class InventoryMovement with _$InventoryMovement {
+abstract class InventoryMovement with _$InventoryMovement {
   const factory InventoryMovement({
     required int id,
     required String type,

@@ -6,16 +6,15 @@ part of 'scan_result.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$OcrLineItemImpl _$$OcrLineItemImplFromJson(Map<String, dynamic> json) =>
-    _$OcrLineItemImpl(
-      description: json['description'] as String,
-      quantity: (json['quantity'] as num).toDouble(),
-      unitPrice: (json['unitPrice'] as num).toDouble(),
-      taxRate: (json['taxRate'] as num).toDouble(),
-      total: (json['total'] as num).toDouble(),
-    );
+_OcrLineItem _$OcrLineItemFromJson(Map<String, dynamic> json) => _OcrLineItem(
+  description: json['description'] as String,
+  quantity: (json['quantity'] as num).toDouble(),
+  unitPrice: (json['unitPrice'] as num).toDouble(),
+  taxRate: (json['taxRate'] as num).toDouble(),
+  total: (json['total'] as num).toDouble(),
+);
 
-Map<String, dynamic> _$$OcrLineItemImplToJson(_$OcrLineItemImpl instance) =>
+Map<String, dynamic> _$OcrLineItemToJson(_OcrLineItem instance) =>
     <String, dynamic>{
       'description': instance.description,
       'quantity': instance.quantity,
@@ -24,28 +23,27 @@ Map<String, dynamic> _$$OcrLineItemImplToJson(_$OcrLineItemImpl instance) =>
       'total': instance.total,
     };
 
-_$ScanResultImpl _$$ScanResultImplFromJson(Map<String, dynamic> json) =>
-    _$ScanResultImpl(
-      supplierName: json['supplierName'] as String?,
-      supplierCif: json['supplierCif'] as String?,
-      supplierAddress: json['supplierAddress'] as String?,
-      supplierPhone: json['supplierPhone'] as String?,
-      invoiceNumber: json['invoiceNumber'] as String?,
-      date: json['date'] as String?,
-      dueDate: json['dueDate'] as String?,
-      currency: json['currency'] as String? ?? 'EUR',
-      lines:
-          (json['lines'] as List<dynamic>?)
-              ?.map((e) => OcrLineItem.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      taxAmount: (json['taxAmount'] as num?)?.toDouble() ?? 0,
-      total: (json['total'] as num?)?.toDouble() ?? 0,
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
-    );
+_ScanResult _$ScanResultFromJson(Map<String, dynamic> json) => _ScanResult(
+  supplierName: json['supplierName'] as String?,
+  supplierCif: json['supplierCif'] as String?,
+  supplierAddress: json['supplierAddress'] as String?,
+  supplierPhone: json['supplierPhone'] as String?,
+  invoiceNumber: json['invoiceNumber'] as String?,
+  date: json['date'] as String?,
+  dueDate: json['dueDate'] as String?,
+  currency: json['currency'] as String? ?? 'EUR',
+  lines:
+      (json['lines'] as List<dynamic>?)
+          ?.map((e) => OcrLineItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
+  taxAmount: (json['taxAmount'] as num?)?.toDouble() ?? 0,
+  total: (json['total'] as num?)?.toDouble() ?? 0,
+  confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+);
 
-Map<String, dynamic> _$$ScanResultImplToJson(_$ScanResultImpl instance) =>
+Map<String, dynamic> _$ScanResultToJson(_ScanResult instance) =>
     <String, dynamic>{
       'supplierName': instance.supplierName,
       'supplierCif': instance.supplierCif,

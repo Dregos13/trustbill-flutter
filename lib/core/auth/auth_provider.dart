@@ -18,22 +18,19 @@ final endpointsProvider = Provider<Endpoints>((ref) {
   return Endpoints(ref.read(apiClientProvider));
 });
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final apiClient = ref.read(apiClientProvider);
-  final endpoints = ref.read(endpointsProvider);
-  final notifier = AuthNotifier(apiClient, endpoints);
-  apiClient.onAuthError = () {
-    notifier.forceLogout();
-  };
-  return notifier;
-});
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final ApiClient _apiClient;
-  final Endpoints _endpoints;
+class AuthNotifier extends Notifier<AuthState> {
+  late final ApiClient _apiClient;
+  late final Endpoints _endpoints;
 
-  AuthNotifier(this._apiClient, this._endpoints)
-      : super(const AuthState.initial());
+  @override
+  AuthState build() {
+    _apiClient = ref.read(apiClientProvider);
+    _endpoints = ref.read(endpointsProvider);
+    _apiClient.onAuthError = () { forceLogout(); };
+    return const AuthState.initial();
+  }
 
   Future<void> initialize() async {
     state = const AuthState.loading();

@@ -5,7 +5,7 @@ part 'sale.freezed.dart';
 part 'sale.g.dart';
 
 @freezed
-class SaleListItem with _$SaleListItem {
+abstract class SaleListItem with _$SaleListItem {
   const factory SaleListItem({
     required int id,
     required String code,
@@ -25,7 +25,7 @@ class SaleListItem with _$SaleListItem {
 }
 
 @freezed
-class SaleParty with _$SaleParty {
+abstract class SaleParty with _$SaleParty {
   const factory SaleParty({
     required int id,
     String? name,
@@ -38,7 +38,7 @@ class SaleParty with _$SaleParty {
 }
 
 @freezed
-class AvailableBudget with _$AvailableBudget {
+abstract class AvailableBudget with _$AvailableBudget {
   const factory AvailableBudget({
     required int id,
     required String series,
@@ -55,7 +55,7 @@ class AvailableBudget with _$AvailableBudget {
 }
 
 @freezed
-class SaleDetail with _$SaleDetail {
+abstract class SaleDetail with _$SaleDetail {
   const factory SaleDetail({
     required int id,
     required String code,
@@ -79,7 +79,7 @@ class SaleDetail with _$SaleDetail {
 }
 
 @freezed
-class SaleBudgetRef with _$SaleBudgetRef {
+abstract class SaleBudgetRef with _$SaleBudgetRef {
   const factory SaleBudgetRef({
     required int id,
     required String series,
@@ -95,7 +95,7 @@ class SaleBudgetRef with _$SaleBudgetRef {
 }
 
 @freezed
-class SaleDetailLine with _$SaleDetailLine {
+abstract class SaleDetailLine with _$SaleDetailLine {
   const factory SaleDetailLine({
     required int id,
     int? productId,
@@ -118,7 +118,7 @@ class SaleDetailLine with _$SaleDetailLine {
 }
 
 @freezed
-class SaleInstallment with _$SaleInstallment {
+abstract class SaleInstallment with _$SaleInstallment {
   const factory SaleInstallment({
     required int id,
     required int index,
@@ -132,7 +132,7 @@ class SaleInstallment with _$SaleInstallment {
 }
 
 @freezed
-class SaleInvoiceRef with _$SaleInvoiceRef {
+abstract class SaleInvoiceRef with _$SaleInvoiceRef {
   const factory SaleInvoiceRef({
     required int id,
     required String series,

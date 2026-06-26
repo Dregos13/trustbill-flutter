@@ -6,54 +6,52 @@ part of 'invoice.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$InvoiceListItemImpl _$$InvoiceListItemImplFromJson(
-  Map<String, dynamic> json,
-) => _$InvoiceListItemImpl(
-  id: (json['id'] as num).toInt(),
-  type: json['type'] as String,
-  status: json['status'] as String,
-  series: json['series'] as String,
-  number: (json['number'] as num).toInt(),
-  issuedAt: json['issuedAt'] as String,
-  total: toDouble(json['total']),
-  invoiceType: json['invoiceType'] as String,
-  taxKind: json['taxKind'] as String?,
-  client: json['client'] == null
-      ? null
-      : InvoiceClient.fromJson(json['client'] as Map<String, dynamic>),
-);
+_InvoiceListItem _$InvoiceListItemFromJson(Map<String, dynamic> json) =>
+    _InvoiceListItem(
+      id: (json['id'] as num).toInt(),
+      type: json['type'] as String,
+      status: json['status'] as String,
+      series: json['series'] as String,
+      number: (json['number'] as num).toInt(),
+      issuedAt: json['issuedAt'] as String,
+      total: toDouble(json['total']),
+      invoiceType: json['invoiceType'] as String,
+      taxKind: json['taxKind'] as String?,
+      client: json['client'] == null
+          ? null
+          : InvoiceClient.fromJson(json['client'] as Map<String, dynamic>),
+    );
 
-Map<String, dynamic> _$$InvoiceListItemImplToJson(
-  _$InvoiceListItemImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'type': instance.type,
-  'status': instance.status,
-  'series': instance.series,
-  'number': instance.number,
-  'issuedAt': instance.issuedAt,
-  'total': instance.total,
-  'invoiceType': instance.invoiceType,
-  'taxKind': instance.taxKind,
-  'client': instance.client,
-};
+Map<String, dynamic> _$InvoiceListItemToJson(_InvoiceListItem instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'type': instance.type,
+      'status': instance.status,
+      'series': instance.series,
+      'number': instance.number,
+      'issuedAt': instance.issuedAt,
+      'total': instance.total,
+      'invoiceType': instance.invoiceType,
+      'taxKind': instance.taxKind,
+      'client': instance.client,
+    };
 
-_$InvoiceClientImpl _$$InvoiceClientImplFromJson(Map<String, dynamic> json) =>
-    _$InvoiceClientImpl(
+_InvoiceClient _$InvoiceClientFromJson(Map<String, dynamic> json) =>
+    _InvoiceClient(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       taxId: json['taxId'] as String,
     );
 
-Map<String, dynamic> _$$InvoiceClientImplToJson(_$InvoiceClientImpl instance) =>
+Map<String, dynamic> _$InvoiceClientToJson(_InvoiceClient instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
       'taxId': instance.taxId,
     };
 
-_$InvoiceDetailImpl _$$InvoiceDetailImplFromJson(Map<String, dynamic> json) =>
-    _$InvoiceDetailImpl(
+_InvoiceDetail _$InvoiceDetailFromJson(Map<String, dynamic> json) =>
+    _InvoiceDetail(
       id: (json['id'] as num).toInt(),
       type: json['type'] as String,
       status: json['status'] as String,
@@ -82,7 +80,7 @@ _$InvoiceDetailImpl _$$InvoiceDetailImplFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$$InvoiceDetailImplToJson(_$InvoiceDetailImpl instance) =>
+Map<String, dynamic> _$InvoiceDetailToJson(_InvoiceDetail instance) =>
     <String, dynamic>{
       'id': instance.id,
       'type': instance.type,
@@ -102,20 +100,19 @@ Map<String, dynamic> _$$InvoiceDetailImplToJson(_$InvoiceDetailImpl instance) =>
       'payments': instance.payments,
     };
 
-_$InvoiceDetailClientImpl _$$InvoiceDetailClientImplFromJson(
-  Map<String, dynamic> json,
-) => _$InvoiceDetailClientImpl(
-  id: (json['id'] as num).toInt(),
-  name: json['name'] as String,
-  taxId: json['taxId'] as String,
-  email: json['email'] as String?,
-  phone: json['phone'] as String?,
-  address: json['address'] as String?,
-  city: json['city'] as String?,
-);
+_InvoiceDetailClient _$InvoiceDetailClientFromJson(Map<String, dynamic> json) =>
+    _InvoiceDetailClient(
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String,
+      taxId: json['taxId'] as String,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      address: json['address'] as String?,
+      city: json['city'] as String?,
+    );
 
-Map<String, dynamic> _$$InvoiceDetailClientImplToJson(
-  _$InvoiceDetailClientImpl instance,
+Map<String, dynamic> _$InvoiceDetailClientToJson(
+  _InvoiceDetailClient instance,
 ) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
@@ -126,28 +123,24 @@ Map<String, dynamic> _$$InvoiceDetailClientImplToJson(
   'city': instance.city,
 };
 
-_$CreatedByImpl _$$CreatedByImplFromJson(Map<String, dynamic> json) =>
-    _$CreatedByImpl(
-      id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-    );
+_CreatedBy _$CreatedByFromJson(Map<String, dynamic> json) =>
+    _CreatedBy(id: (json['id'] as num).toInt(), name: json['name'] as String);
 
-Map<String, dynamic> _$$CreatedByImplToJson(_$CreatedByImpl instance) =>
+Map<String, dynamic> _$CreatedByToJson(_CreatedBy instance) =>
     <String, dynamic>{'id': instance.id, 'name': instance.name};
 
-_$InvoiceLineImpl _$$InvoiceLineImplFromJson(Map<String, dynamic> json) =>
-    _$InvoiceLineImpl(
-      id: (json['id'] as num).toInt(),
-      description: json['description'] as String,
-      quantity: toDouble(json['quantity']),
-      unitPrice: toDouble(json['unitPrice']),
-      discountRate: toDouble(json['discountRate']),
-      taxRate: toDouble(json['taxRate']),
-      taxAmount: toDouble(json['taxAmount']),
-      total: toDouble(json['total']),
-    );
+_InvoiceLine _$InvoiceLineFromJson(Map<String, dynamic> json) => _InvoiceLine(
+  id: (json['id'] as num).toInt(),
+  description: json['description'] as String,
+  quantity: toDouble(json['quantity']),
+  unitPrice: toDouble(json['unitPrice']),
+  discountRate: toDouble(json['discountRate']),
+  taxRate: toDouble(json['taxRate']),
+  taxAmount: toDouble(json['taxAmount']),
+  total: toDouble(json['total']),
+);
 
-Map<String, dynamic> _$$InvoiceLineImplToJson(_$InvoiceLineImpl instance) =>
+Map<String, dynamic> _$InvoiceLineToJson(_InvoiceLine instance) =>
     <String, dynamic>{
       'id': instance.id,
       'description': instance.description,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trustinfacts_mobile/core/api/api_client.dart';
 import 'package:trustinfacts_mobile/core/api/endpoints.dart';
@@ -65,13 +66,15 @@ void main() {
         .setMockMethodCallHandler(storageChannel, null);
   });
 
-  AuthNotifier buildNotifier(
+  ProviderContainer buildContainer(
       Future<ResponseBody> Function(RequestOptions) onRefresh) {
     final dio = Dio()..httpClientAdapter = _FakeAdapter(onRefresh);
     final client = ApiClient(dio: dio, refreshDio: Dio());
-    final notifier = AuthNotifier(client, Endpoints(client));
-    client.onAuthError = notifier.forceLogout;
-    return notifier;
+    final endpoints = Endpoints(client);
+    return ProviderContainer(overrides: [
+      apiClientProvider.overrideWithValue(client),
+      endpointsProvider.overrideWithValue(endpoints),
+    ]);
   }
 
   test('startup con fallo de red → conserva el refresh token (no logout)',
@@ -79,36 +82,38 @@ void main() {
     store['client_id'] = 'test';
     store['refresh_token'] = 'rt-valido';
 
-    final notifier = buildNotifier((o) async {
+    final container = buildContainer((o) async {
       // El server no responde (sin conexión).
       throw DioException(
           requestOptions: o, type: DioExceptionType.connectionError);
     });
+    addTearDown(container.dispose);
 
-    await notifier.initialize();
+    await container.read(authProvider.notifier).initialize();
 
     expect(store['refresh_token'], 'rt-valido',
         reason:
             'un fallo de red al abrir la app NO debe destruir el token válido');
-    expect(notifier.state, isA<AuthUnauthenticated>());
+    expect(container.read(authProvider), isA<AuthUnauthenticated>());
   });
 
   test('startup con token rechazado (401) → limpia el refresh token', () async {
     store['client_id'] = 'test';
     store['refresh_token'] = 'rt-muerto';
 
-    final notifier = buildNotifier((o) async => ResponseBody.fromString(
+    final container = buildContainer((o) async => ResponseBody.fromString(
           jsonEncode({'error': 'UNAUTHORIZED', 'message': 'Refresh invalido'}),
           401,
           headers: {
             Headers.contentTypeHeader: [Headers.jsonContentType],
           },
         ));
+    addTearDown(container.dispose);
 
-    await notifier.initialize();
+    await container.read(authProvider.notifier).initialize();
 
     expect(store.containsKey('refresh_token'), isFalse,
         reason: 'un token rechazado por el server sí debe limpiarse');
-    expect(notifier.state, isA<AuthUnauthenticated>());
+    expect(container.read(authProvider), isA<AuthUnauthenticated>());
   });
 }

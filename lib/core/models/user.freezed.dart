@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,1303 +9,1438 @@ part of 'user.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) {
-  return _LoginResponse.fromJson(json);
-}
 
 /// @nodoc
 mixin _$LoginResponse {
-  String get accessToken => throw _privateConstructorUsedError;
-  String get refreshToken => throw _privateConstructorUsedError;
-  int get expiresIn => throw _privateConstructorUsedError;
-  UserInfo get user => throw _privateConstructorUsedError;
-  List<CompanyInfo> get companies => throw _privateConstructorUsedError;
-  int get activeCompanyId => throw _privateConstructorUsedError;
+
+ String get accessToken; String get refreshToken; int get expiresIn; UserInfo get user; List<CompanyInfo> get companies; int get activeCompanyId;
+/// Create a copy of LoginResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LoginResponseCopyWith<LoginResponse> get copyWith => _$LoginResponseCopyWithImpl<LoginResponse>(this as LoginResponse, _$identity);
 
   /// Serializes this LoginResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of LoginResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $LoginResponseCopyWith<LoginResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LoginResponse&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other.companies, companies)&&(identical(other.activeCompanyId, activeCompanyId) || other.activeCompanyId == activeCompanyId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,expiresIn,user,const DeepCollectionEquality().hash(companies),activeCompanyId);
+
+@override
+String toString() {
+  return 'LoginResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $LoginResponseCopyWith<$Res> {
-  factory $LoginResponseCopyWith(
-    LoginResponse value,
-    $Res Function(LoginResponse) then,
-  ) = _$LoginResponseCopyWithImpl<$Res, LoginResponse>;
-  @useResult
-  $Res call({
-    String accessToken,
-    String refreshToken,
-    int expiresIn,
-    UserInfo user,
-    List<CompanyInfo> companies,
-    int activeCompanyId,
-  });
+abstract mixin class $LoginResponseCopyWith<$Res>  {
+  factory $LoginResponseCopyWith(LoginResponse value, $Res Function(LoginResponse) _then) = _$LoginResponseCopyWithImpl;
+@useResult
+$Res call({
+ String accessToken, String refreshToken, int expiresIn, UserInfo user, List<CompanyInfo> companies, int activeCompanyId
+});
 
-  $UserInfoCopyWith<$Res> get user;
+
+$UserInfoCopyWith<$Res> get user;
+
 }
-
 /// @nodoc
-class _$LoginResponseCopyWithImpl<$Res, $Val extends LoginResponse>
+class _$LoginResponseCopyWithImpl<$Res>
     implements $LoginResponseCopyWith<$Res> {
-  _$LoginResponseCopyWithImpl(this._value, this._then);
+  _$LoginResponseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final LoginResponse _self;
+  final $Res Function(LoginResponse) _then;
 
-  /// Create a copy of LoginResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accessToken = null,
-    Object? refreshToken = null,
-    Object? expiresIn = null,
-    Object? user = null,
-    Object? companies = null,
-    Object? activeCompanyId = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            accessToken: null == accessToken
-                ? _value.accessToken
-                : accessToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-            refreshToken: null == refreshToken
-                ? _value.refreshToken
-                : refreshToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-            expiresIn: null == expiresIn
-                ? _value.expiresIn
-                : expiresIn // ignore: cast_nullable_to_non_nullable
-                      as int,
-            user: null == user
-                ? _value.user
-                : user // ignore: cast_nullable_to_non_nullable
-                      as UserInfo,
-            companies: null == companies
-                ? _value.companies
-                : companies // ignore: cast_nullable_to_non_nullable
-                      as List<CompanyInfo>,
-            activeCompanyId: null == activeCompanyId
-                ? _value.activeCompanyId
-                : activeCompanyId // ignore: cast_nullable_to_non_nullable
-                      as int,
-          )
-          as $Val,
-    );
-  }
-
-  /// Create a copy of LoginResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserInfoCopyWith<$Res> get user {
-    return $UserInfoCopyWith<$Res>(_value.user, (value) {
-      return _then(_value.copyWith(user: value) as $Val);
-    });
-  }
+/// Create a copy of LoginResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = null,Object? refreshToken = null,Object? expiresIn = null,Object? user = null,Object? companies = null,Object? activeCompanyId = null,}) {
+  return _then(_self.copyWith(
+accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
+as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
+as int,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as UserInfo,companies: null == companies ? _self.companies : companies // ignore: cast_nullable_to_non_nullable
+as List<CompanyInfo>,activeCompanyId: null == activeCompanyId ? _self.activeCompanyId : activeCompanyId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
-
-/// @nodoc
-abstract class _$$LoginResponseImplCopyWith<$Res>
-    implements $LoginResponseCopyWith<$Res> {
-  factory _$$LoginResponseImplCopyWith(
-    _$LoginResponseImpl value,
-    $Res Function(_$LoginResponseImpl) then,
-  ) = __$$LoginResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String accessToken,
-    String refreshToken,
-    int expiresIn,
-    UserInfo user,
-    List<CompanyInfo> companies,
-    int activeCompanyId,
+/// Create a copy of LoginResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserInfoCopyWith<$Res> get user {
+  
+  return $UserInfoCopyWith<$Res>(_self.user, (value) {
+    return _then(_self.copyWith(user: value));
   });
-
-  @override
-  $UserInfoCopyWith<$Res> get user;
+}
 }
 
-/// @nodoc
-class __$$LoginResponseImplCopyWithImpl<$Res>
-    extends _$LoginResponseCopyWithImpl<$Res, _$LoginResponseImpl>
-    implements _$$LoginResponseImplCopyWith<$Res> {
-  __$$LoginResponseImplCopyWithImpl(
-    _$LoginResponseImpl _value,
-    $Res Function(_$LoginResponseImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of LoginResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accessToken = null,
-    Object? refreshToken = null,
-    Object? expiresIn = null,
-    Object? user = null,
-    Object? companies = null,
-    Object? activeCompanyId = null,
-  }) {
-    return _then(
-      _$LoginResponseImpl(
-        accessToken: null == accessToken
-            ? _value.accessToken
-            : accessToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-        refreshToken: null == refreshToken
-            ? _value.refreshToken
-            : refreshToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-        expiresIn: null == expiresIn
-            ? _value.expiresIn
-            : expiresIn // ignore: cast_nullable_to_non_nullable
-                  as int,
-        user: null == user
-            ? _value.user
-            : user // ignore: cast_nullable_to_non_nullable
-                  as UserInfo,
-        companies: null == companies
-            ? _value._companies
-            : companies // ignore: cast_nullable_to_non_nullable
-                  as List<CompanyInfo>,
-        activeCompanyId: null == activeCompanyId
-            ? _value.activeCompanyId
-            : activeCompanyId // ignore: cast_nullable_to_non_nullable
-                  as int,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [LoginResponse].
+extension LoginResponsePatterns on LoginResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _LoginResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _LoginResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _LoginResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _LoginResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _LoginResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _LoginResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresIn,  UserInfo user,  List<CompanyInfo> companies,  int activeCompanyId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _LoginResponse() when $default != null:
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.user,_that.companies,_that.activeCompanyId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresIn,  UserInfo user,  List<CompanyInfo> companies,  int activeCompanyId)  $default,) {final _that = this;
+switch (_that) {
+case _LoginResponse():
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.user,_that.companies,_that.activeCompanyId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String accessToken,  String refreshToken,  int expiresIn,  UserInfo user,  List<CompanyInfo> companies,  int activeCompanyId)?  $default,) {final _that = this;
+switch (_that) {
+case _LoginResponse() when $default != null:
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.user,_that.companies,_that.activeCompanyId);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$LoginResponseImpl implements _LoginResponse {
-  const _$LoginResponseImpl({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.expiresIn,
-    required this.user,
-    required final List<CompanyInfo> companies,
-    required this.activeCompanyId,
-  }) : _companies = companies;
 
-  factory _$LoginResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$LoginResponseImplFromJson(json);
+class _LoginResponse implements LoginResponse {
+  const _LoginResponse({required this.accessToken, required this.refreshToken, required this.expiresIn, required this.user, required final  List<CompanyInfo> companies, required this.activeCompanyId}): _companies = companies;
+  factory _LoginResponse.fromJson(Map<String, dynamic> json) => _$LoginResponseFromJson(json);
 
-  @override
-  final String accessToken;
-  @override
-  final String refreshToken;
-  @override
-  final int expiresIn;
-  @override
-  final UserInfo user;
-  final List<CompanyInfo> _companies;
-  @override
-  List<CompanyInfo> get companies {
-    if (_companies is EqualUnmodifiableListView) return _companies;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_companies);
-  }
-
-  @override
-  final int activeCompanyId;
-
-  @override
-  String toString() {
-    return 'LoginResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$LoginResponseImpl &&
-            (identical(other.accessToken, accessToken) ||
-                other.accessToken == accessToken) &&
-            (identical(other.refreshToken, refreshToken) ||
-                other.refreshToken == refreshToken) &&
-            (identical(other.expiresIn, expiresIn) ||
-                other.expiresIn == expiresIn) &&
-            (identical(other.user, user) || other.user == user) &&
-            const DeepCollectionEquality().equals(
-              other._companies,
-              _companies,
-            ) &&
-            (identical(other.activeCompanyId, activeCompanyId) ||
-                other.activeCompanyId == activeCompanyId));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    accessToken,
-    refreshToken,
-    expiresIn,
-    user,
-    const DeepCollectionEquality().hash(_companies),
-    activeCompanyId,
-  );
-
-  /// Create a copy of LoginResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$LoginResponseImplCopyWith<_$LoginResponseImpl> get copyWith =>
-      __$$LoginResponseImplCopyWithImpl<_$LoginResponseImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$LoginResponseImplToJson(this);
-  }
+@override final  String accessToken;
+@override final  String refreshToken;
+@override final  int expiresIn;
+@override final  UserInfo user;
+ final  List<CompanyInfo> _companies;
+@override List<CompanyInfo> get companies {
+  if (_companies is EqualUnmodifiableListView) return _companies;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_companies);
 }
 
-abstract class _LoginResponse implements LoginResponse {
-  const factory _LoginResponse({
-    required final String accessToken,
-    required final String refreshToken,
-    required final int expiresIn,
-    required final UserInfo user,
-    required final List<CompanyInfo> companies,
-    required final int activeCompanyId,
-  }) = _$LoginResponseImpl;
+@override final  int activeCompanyId;
 
-  factory _LoginResponse.fromJson(Map<String, dynamic> json) =
-      _$LoginResponseImpl.fromJson;
+/// Create a copy of LoginResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoginResponseCopyWith<_LoginResponse> get copyWith => __$LoginResponseCopyWithImpl<_LoginResponse>(this, _$identity);
 
-  @override
-  String get accessToken;
-  @override
-  String get refreshToken;
-  @override
-  int get expiresIn;
-  @override
-  UserInfo get user;
-  @override
-  List<CompanyInfo> get companies;
-  @override
-  int get activeCompanyId;
-
-  /// Create a copy of LoginResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$LoginResponseImplCopyWith<_$LoginResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+Map<String, dynamic> toJson() {
+  return _$LoginResponseToJson(this, );
 }
 
-RefreshResponse _$RefreshResponseFromJson(Map<String, dynamic> json) {
-  return _RefreshResponse.fromJson(json);
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LoginResponse&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other._companies, _companies)&&(identical(other.activeCompanyId, activeCompanyId) || other.activeCompanyId == activeCompanyId));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,expiresIn,user,const DeepCollectionEquality().hash(_companies),activeCompanyId);
+
+@override
+String toString() {
+  return 'LoginResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LoginResponseCopyWith<$Res> implements $LoginResponseCopyWith<$Res> {
+  factory _$LoginResponseCopyWith(_LoginResponse value, $Res Function(_LoginResponse) _then) = __$LoginResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String accessToken, String refreshToken, int expiresIn, UserInfo user, List<CompanyInfo> companies, int activeCompanyId
+});
+
+
+@override $UserInfoCopyWith<$Res> get user;
+
+}
+/// @nodoc
+class __$LoginResponseCopyWithImpl<$Res>
+    implements _$LoginResponseCopyWith<$Res> {
+  __$LoginResponseCopyWithImpl(this._self, this._then);
+
+  final _LoginResponse _self;
+  final $Res Function(_LoginResponse) _then;
+
+/// Create a copy of LoginResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = null,Object? refreshToken = null,Object? expiresIn = null,Object? user = null,Object? companies = null,Object? activeCompanyId = null,}) {
+  return _then(_LoginResponse(
+accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
+as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
+as int,user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as UserInfo,companies: null == companies ? _self._companies : companies // ignore: cast_nullable_to_non_nullable
+as List<CompanyInfo>,activeCompanyId: null == activeCompanyId ? _self.activeCompanyId : activeCompanyId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+/// Create a copy of LoginResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserInfoCopyWith<$Res> get user {
+  
+  return $UserInfoCopyWith<$Res>(_self.user, (value) {
+    return _then(_self.copyWith(user: value));
+  });
+}
+}
+
 
 /// @nodoc
 mixin _$RefreshResponse {
-  String get accessToken => throw _privateConstructorUsedError;
-  String get refreshToken => throw _privateConstructorUsedError;
-  int get expiresIn => throw _privateConstructorUsedError;
-  UserInfo? get user => throw _privateConstructorUsedError;
-  List<CompanyInfo> get companies => throw _privateConstructorUsedError;
-  int? get activeCompanyId => throw _privateConstructorUsedError;
+
+ String get accessToken; String get refreshToken; int get expiresIn; UserInfo? get user; List<CompanyInfo> get companies; int? get activeCompanyId;
+/// Create a copy of RefreshResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RefreshResponseCopyWith<RefreshResponse> get copyWith => _$RefreshResponseCopyWithImpl<RefreshResponse>(this as RefreshResponse, _$identity);
 
   /// Serializes this RefreshResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of RefreshResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $RefreshResponseCopyWith<RefreshResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshResponse&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other.companies, companies)&&(identical(other.activeCompanyId, activeCompanyId) || other.activeCompanyId == activeCompanyId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,expiresIn,user,const DeepCollectionEquality().hash(companies),activeCompanyId);
+
+@override
+String toString() {
+  return 'RefreshResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $RefreshResponseCopyWith<$Res> {
-  factory $RefreshResponseCopyWith(
-    RefreshResponse value,
-    $Res Function(RefreshResponse) then,
-  ) = _$RefreshResponseCopyWithImpl<$Res, RefreshResponse>;
-  @useResult
-  $Res call({
-    String accessToken,
-    String refreshToken,
-    int expiresIn,
-    UserInfo? user,
-    List<CompanyInfo> companies,
-    int? activeCompanyId,
-  });
+abstract mixin class $RefreshResponseCopyWith<$Res>  {
+  factory $RefreshResponseCopyWith(RefreshResponse value, $Res Function(RefreshResponse) _then) = _$RefreshResponseCopyWithImpl;
+@useResult
+$Res call({
+ String accessToken, String refreshToken, int expiresIn, UserInfo? user, List<CompanyInfo> companies, int? activeCompanyId
+});
 
-  $UserInfoCopyWith<$Res>? get user;
+
+$UserInfoCopyWith<$Res>? get user;
+
 }
-
 /// @nodoc
-class _$RefreshResponseCopyWithImpl<$Res, $Val extends RefreshResponse>
+class _$RefreshResponseCopyWithImpl<$Res>
     implements $RefreshResponseCopyWith<$Res> {
-  _$RefreshResponseCopyWithImpl(this._value, this._then);
+  _$RefreshResponseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final RefreshResponse _self;
+  final $Res Function(RefreshResponse) _then;
 
-  /// Create a copy of RefreshResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accessToken = null,
-    Object? refreshToken = null,
-    Object? expiresIn = null,
-    Object? user = freezed,
-    Object? companies = null,
-    Object? activeCompanyId = freezed,
-  }) {
-    return _then(
-      _value.copyWith(
-            accessToken: null == accessToken
-                ? _value.accessToken
-                : accessToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-            refreshToken: null == refreshToken
-                ? _value.refreshToken
-                : refreshToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-            expiresIn: null == expiresIn
-                ? _value.expiresIn
-                : expiresIn // ignore: cast_nullable_to_non_nullable
-                      as int,
-            user: freezed == user
-                ? _value.user
-                : user // ignore: cast_nullable_to_non_nullable
-                      as UserInfo?,
-            companies: null == companies
-                ? _value.companies
-                : companies // ignore: cast_nullable_to_non_nullable
-                      as List<CompanyInfo>,
-            activeCompanyId: freezed == activeCompanyId
-                ? _value.activeCompanyId
-                : activeCompanyId // ignore: cast_nullable_to_non_nullable
-                      as int?,
-          )
-          as $Val,
-    );
-  }
-
-  /// Create a copy of RefreshResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserInfoCopyWith<$Res>? get user {
-    if (_value.user == null) {
-      return null;
-    }
-
-    return $UserInfoCopyWith<$Res>(_value.user!, (value) {
-      return _then(_value.copyWith(user: value) as $Val);
-    });
-  }
+/// Create a copy of RefreshResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = null,Object? refreshToken = null,Object? expiresIn = null,Object? user = freezed,Object? companies = null,Object? activeCompanyId = freezed,}) {
+  return _then(_self.copyWith(
+accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
+as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
+as int,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as UserInfo?,companies: null == companies ? _self.companies : companies // ignore: cast_nullable_to_non_nullable
+as List<CompanyInfo>,activeCompanyId: freezed == activeCompanyId ? _self.activeCompanyId : activeCompanyId // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
 }
+/// Create a copy of RefreshResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserInfoCopyWith<$Res>? get user {
+    if (_self.user == null) {
+    return null;
+  }
 
-/// @nodoc
-abstract class _$$RefreshResponseImplCopyWith<$Res>
-    implements $RefreshResponseCopyWith<$Res> {
-  factory _$$RefreshResponseImplCopyWith(
-    _$RefreshResponseImpl value,
-    $Res Function(_$RefreshResponseImpl) then,
-  ) = __$$RefreshResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String accessToken,
-    String refreshToken,
-    int expiresIn,
-    UserInfo? user,
-    List<CompanyInfo> companies,
-    int? activeCompanyId,
+  return $UserInfoCopyWith<$Res>(_self.user!, (value) {
+    return _then(_self.copyWith(user: value));
   });
-
-  @override
-  $UserInfoCopyWith<$Res>? get user;
+}
 }
 
-/// @nodoc
-class __$$RefreshResponseImplCopyWithImpl<$Res>
-    extends _$RefreshResponseCopyWithImpl<$Res, _$RefreshResponseImpl>
-    implements _$$RefreshResponseImplCopyWith<$Res> {
-  __$$RefreshResponseImplCopyWithImpl(
-    _$RefreshResponseImpl _value,
-    $Res Function(_$RefreshResponseImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of RefreshResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accessToken = null,
-    Object? refreshToken = null,
-    Object? expiresIn = null,
-    Object? user = freezed,
-    Object? companies = null,
-    Object? activeCompanyId = freezed,
-  }) {
-    return _then(
-      _$RefreshResponseImpl(
-        accessToken: null == accessToken
-            ? _value.accessToken
-            : accessToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-        refreshToken: null == refreshToken
-            ? _value.refreshToken
-            : refreshToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-        expiresIn: null == expiresIn
-            ? _value.expiresIn
-            : expiresIn // ignore: cast_nullable_to_non_nullable
-                  as int,
-        user: freezed == user
-            ? _value.user
-            : user // ignore: cast_nullable_to_non_nullable
-                  as UserInfo?,
-        companies: null == companies
-            ? _value._companies
-            : companies // ignore: cast_nullable_to_non_nullable
-                  as List<CompanyInfo>,
-        activeCompanyId: freezed == activeCompanyId
-            ? _value.activeCompanyId
-            : activeCompanyId // ignore: cast_nullable_to_non_nullable
-                  as int?,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [RefreshResponse].
+extension RefreshResponsePatterns on RefreshResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RefreshResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RefreshResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RefreshResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _RefreshResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RefreshResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RefreshResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresIn,  UserInfo? user,  List<CompanyInfo> companies,  int? activeCompanyId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RefreshResponse() when $default != null:
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.user,_that.companies,_that.activeCompanyId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresIn,  UserInfo? user,  List<CompanyInfo> companies,  int? activeCompanyId)  $default,) {final _that = this;
+switch (_that) {
+case _RefreshResponse():
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.user,_that.companies,_that.activeCompanyId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String accessToken,  String refreshToken,  int expiresIn,  UserInfo? user,  List<CompanyInfo> companies,  int? activeCompanyId)?  $default,) {final _that = this;
+switch (_that) {
+case _RefreshResponse() when $default != null:
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.user,_that.companies,_that.activeCompanyId);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$RefreshResponseImpl implements _RefreshResponse {
-  const _$RefreshResponseImpl({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.expiresIn,
-    this.user,
-    final List<CompanyInfo> companies = const [],
-    this.activeCompanyId,
-  }) : _companies = companies;
 
-  factory _$RefreshResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RefreshResponseImplFromJson(json);
+class _RefreshResponse implements RefreshResponse {
+  const _RefreshResponse({required this.accessToken, required this.refreshToken, required this.expiresIn, this.user, final  List<CompanyInfo> companies = const [], this.activeCompanyId}): _companies = companies;
+  factory _RefreshResponse.fromJson(Map<String, dynamic> json) => _$RefreshResponseFromJson(json);
 
-  @override
-  final String accessToken;
-  @override
-  final String refreshToken;
-  @override
-  final int expiresIn;
-  @override
-  final UserInfo? user;
-  final List<CompanyInfo> _companies;
-  @override
-  @JsonKey()
-  List<CompanyInfo> get companies {
-    if (_companies is EqualUnmodifiableListView) return _companies;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_companies);
-  }
-
-  @override
-  final int? activeCompanyId;
-
-  @override
-  String toString() {
-    return 'RefreshResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$RefreshResponseImpl &&
-            (identical(other.accessToken, accessToken) ||
-                other.accessToken == accessToken) &&
-            (identical(other.refreshToken, refreshToken) ||
-                other.refreshToken == refreshToken) &&
-            (identical(other.expiresIn, expiresIn) ||
-                other.expiresIn == expiresIn) &&
-            (identical(other.user, user) || other.user == user) &&
-            const DeepCollectionEquality().equals(
-              other._companies,
-              _companies,
-            ) &&
-            (identical(other.activeCompanyId, activeCompanyId) ||
-                other.activeCompanyId == activeCompanyId));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    accessToken,
-    refreshToken,
-    expiresIn,
-    user,
-    const DeepCollectionEquality().hash(_companies),
-    activeCompanyId,
-  );
-
-  /// Create a copy of RefreshResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$RefreshResponseImplCopyWith<_$RefreshResponseImpl> get copyWith =>
-      __$$RefreshResponseImplCopyWithImpl<_$RefreshResponseImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$RefreshResponseImplToJson(this);
-  }
+@override final  String accessToken;
+@override final  String refreshToken;
+@override final  int expiresIn;
+@override final  UserInfo? user;
+ final  List<CompanyInfo> _companies;
+@override@JsonKey() List<CompanyInfo> get companies {
+  if (_companies is EqualUnmodifiableListView) return _companies;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_companies);
 }
 
-abstract class _RefreshResponse implements RefreshResponse {
-  const factory _RefreshResponse({
-    required final String accessToken,
-    required final String refreshToken,
-    required final int expiresIn,
-    final UserInfo? user,
-    final List<CompanyInfo> companies,
-    final int? activeCompanyId,
-  }) = _$RefreshResponseImpl;
+@override final  int? activeCompanyId;
 
-  factory _RefreshResponse.fromJson(Map<String, dynamic> json) =
-      _$RefreshResponseImpl.fromJson;
+/// Create a copy of RefreshResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RefreshResponseCopyWith<_RefreshResponse> get copyWith => __$RefreshResponseCopyWithImpl<_RefreshResponse>(this, _$identity);
 
-  @override
-  String get accessToken;
-  @override
-  String get refreshToken;
-  @override
-  int get expiresIn;
-  @override
-  UserInfo? get user;
-  @override
-  List<CompanyInfo> get companies;
-  @override
-  int? get activeCompanyId;
-
-  /// Create a copy of RefreshResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RefreshResponseImplCopyWith<_$RefreshResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+Map<String, dynamic> toJson() {
+  return _$RefreshResponseToJson(this, );
 }
 
-UserInfo _$UserInfoFromJson(Map<String, dynamic> json) {
-  return _UserInfo.fromJson(json);
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshResponse&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other._companies, _companies)&&(identical(other.activeCompanyId, activeCompanyId) || other.activeCompanyId == activeCompanyId));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,expiresIn,user,const DeepCollectionEquality().hash(_companies),activeCompanyId);
+
+@override
+String toString() {
+  return 'RefreshResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, user: $user, companies: $companies, activeCompanyId: $activeCompanyId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RefreshResponseCopyWith<$Res> implements $RefreshResponseCopyWith<$Res> {
+  factory _$RefreshResponseCopyWith(_RefreshResponse value, $Res Function(_RefreshResponse) _then) = __$RefreshResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String accessToken, String refreshToken, int expiresIn, UserInfo? user, List<CompanyInfo> companies, int? activeCompanyId
+});
+
+
+@override $UserInfoCopyWith<$Res>? get user;
+
+}
+/// @nodoc
+class __$RefreshResponseCopyWithImpl<$Res>
+    implements _$RefreshResponseCopyWith<$Res> {
+  __$RefreshResponseCopyWithImpl(this._self, this._then);
+
+  final _RefreshResponse _self;
+  final $Res Function(_RefreshResponse) _then;
+
+/// Create a copy of RefreshResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = null,Object? refreshToken = null,Object? expiresIn = null,Object? user = freezed,Object? companies = null,Object? activeCompanyId = freezed,}) {
+  return _then(_RefreshResponse(
+accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
+as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
+as int,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as UserInfo?,companies: null == companies ? _self._companies : companies // ignore: cast_nullable_to_non_nullable
+as List<CompanyInfo>,activeCompanyId: freezed == activeCompanyId ? _self.activeCompanyId : activeCompanyId // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+/// Create a copy of RefreshResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserInfoCopyWith<$Res>? get user {
+    if (_self.user == null) {
+    return null;
+  }
+
+  return $UserInfoCopyWith<$Res>(_self.user!, (value) {
+    return _then(_self.copyWith(user: value));
+  });
+}
+}
+
 
 /// @nodoc
 mixin _$UserInfo {
-  int get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
-  String get role => throw _privateConstructorUsedError;
-  List<String> get permissions => throw _privateConstructorUsedError;
+
+ int get id; String get name; String get email; String get role; List<String> get permissions;
+/// Create a copy of UserInfo
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UserInfoCopyWith<UserInfo> get copyWith => _$UserInfoCopyWithImpl<UserInfo>(this as UserInfo, _$identity);
 
   /// Serializes this UserInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of UserInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $UserInfoCopyWith<UserInfo> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other.permissions, permissions));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,email,role,const DeepCollectionEquality().hash(permissions));
+
+@override
+String toString() {
+  return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $UserInfoCopyWith<$Res> {
-  factory $UserInfoCopyWith(UserInfo value, $Res Function(UserInfo) then) =
-      _$UserInfoCopyWithImpl<$Res, UserInfo>;
-  @useResult
-  $Res call({
-    int id,
-    String name,
-    String email,
-    String role,
-    List<String> permissions,
-  });
-}
+abstract mixin class $UserInfoCopyWith<$Res>  {
+  factory $UserInfoCopyWith(UserInfo value, $Res Function(UserInfo) _then) = _$UserInfoCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name, String email, String role, List<String> permissions
+});
 
+
+
+
+}
 /// @nodoc
-class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
+class _$UserInfoCopyWithImpl<$Res>
     implements $UserInfoCopyWith<$Res> {
-  _$UserInfoCopyWithImpl(this._value, this._then);
+  _$UserInfoCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final UserInfo _self;
+  final $Res Function(UserInfo) _then;
 
-  /// Create a copy of UserInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? role = null,
-    Object? permissions = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as int,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                      as String,
-            email: null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                      as String,
-            role: null == role
-                ? _value.role
-                : role // ignore: cast_nullable_to_non_nullable
-                      as String,
-            permissions: null == permissions
-                ? _value.permissions
-                : permissions // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of UserInfo
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? role = null,Object? permissions = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,permissions: null == permissions ? _self.permissions : permissions // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
 }
 
-/// @nodoc
-abstract class _$$UserInfoImplCopyWith<$Res>
-    implements $UserInfoCopyWith<$Res> {
-  factory _$$UserInfoImplCopyWith(
-    _$UserInfoImpl value,
-    $Res Function(_$UserInfoImpl) then,
-  ) = __$$UserInfoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    int id,
-    String name,
-    String email,
-    String role,
-    List<String> permissions,
-  });
 }
 
-/// @nodoc
-class __$$UserInfoImplCopyWithImpl<$Res>
-    extends _$UserInfoCopyWithImpl<$Res, _$UserInfoImpl>
-    implements _$$UserInfoImplCopyWith<$Res> {
-  __$$UserInfoImplCopyWithImpl(
-    _$UserInfoImpl _value,
-    $Res Function(_$UserInfoImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of UserInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? role = null,
-    Object? permissions = null,
-  }) {
-    return _then(
-      _$UserInfoImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as int,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
-                  as String,
-        email: null == email
-            ? _value.email
-            : email // ignore: cast_nullable_to_non_nullable
-                  as String,
-        role: null == role
-            ? _value.role
-            : role // ignore: cast_nullable_to_non_nullable
-                  as String,
-        permissions: null == permissions
-            ? _value._permissions
-            : permissions // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [UserInfo].
+extension UserInfoPatterns on UserInfo {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _UserInfo value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _UserInfo() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _UserInfo value)  $default,){
+final _that = this;
+switch (_that) {
+case _UserInfo():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _UserInfo value)?  $default,){
+final _that = this;
+switch (_that) {
+case _UserInfo() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String role,  List<String> permissions)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _UserInfo() when $default != null:
+return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String role,  List<String> permissions)  $default,) {final _that = this;
+switch (_that) {
+case _UserInfo():
+return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String email,  String role,  List<String> permissions)?  $default,) {final _that = this;
+switch (_that) {
+case _UserInfo() when $default != null:
+return $default(_that.id,_that.name,_that.email,_that.role,_that.permissions);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$UserInfoImpl implements _UserInfo {
-  const _$UserInfoImpl({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.role = '',
-    final List<String> permissions = const [],
-  }) : _permissions = permissions;
 
-  factory _$UserInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$UserInfoImplFromJson(json);
+class _UserInfo implements UserInfo {
+  const _UserInfo({required this.id, required this.name, required this.email, this.role = '', final  List<String> permissions = const []}): _permissions = permissions;
+  factory _UserInfo.fromJson(Map<String, dynamic> json) => _$UserInfoFromJson(json);
 
-  @override
-  final int id;
-  @override
-  final String name;
-  @override
-  final String email;
-  @override
-  @JsonKey()
-  final String role;
-  final List<String> _permissions;
-  @override
-  @JsonKey()
-  List<String> get permissions {
-    if (_permissions is EqualUnmodifiableListView) return _permissions;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_permissions);
-  }
-
-  @override
-  String toString() {
-    return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$UserInfoImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.role, role) || other.role == role) &&
-            const DeepCollectionEquality().equals(
-              other._permissions,
-              _permissions,
-            ));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    name,
-    email,
-    role,
-    const DeepCollectionEquality().hash(_permissions),
-  );
-
-  /// Create a copy of UserInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$UserInfoImplCopyWith<_$UserInfoImpl> get copyWith =>
-      __$$UserInfoImplCopyWithImpl<_$UserInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$UserInfoImplToJson(this);
-  }
+@override final  int id;
+@override final  String name;
+@override final  String email;
+@override@JsonKey() final  String role;
+ final  List<String> _permissions;
+@override@JsonKey() List<String> get permissions {
+  if (_permissions is EqualUnmodifiableListView) return _permissions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_permissions);
 }
 
-abstract class _UserInfo implements UserInfo {
-  const factory _UserInfo({
-    required final int id,
-    required final String name,
-    required final String email,
-    final String role,
-    final List<String> permissions,
-  }) = _$UserInfoImpl;
 
-  factory _UserInfo.fromJson(Map<String, dynamic> json) =
-      _$UserInfoImpl.fromJson;
+/// Create a copy of UserInfo
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UserInfoCopyWith<_UserInfo> get copyWith => __$UserInfoCopyWithImpl<_UserInfo>(this, _$identity);
 
-  @override
-  int get id;
-  @override
-  String get name;
-  @override
-  String get email;
-  @override
-  String get role;
-  @override
-  List<String> get permissions;
-
-  /// Create a copy of UserInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$UserInfoImplCopyWith<_$UserInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+Map<String, dynamic> toJson() {
+  return _$UserInfoToJson(this, );
 }
 
-CompanyInfo _$CompanyInfoFromJson(Map<String, dynamic> json) {
-  return _CompanyInfo.fromJson(json);
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&const DeepCollectionEquality().equals(other._permissions, _permissions));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,email,role,const DeepCollectionEquality().hash(_permissions));
+
+@override
+String toString() {
+  return 'UserInfo(id: $id, name: $name, email: $email, role: $role, permissions: $permissions)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UserInfoCopyWith<$Res> implements $UserInfoCopyWith<$Res> {
+  factory _$UserInfoCopyWith(_UserInfo value, $Res Function(_UserInfo) _then) = __$UserInfoCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name, String email, String role, List<String> permissions
+});
+
+
+
+
+}
+/// @nodoc
+class __$UserInfoCopyWithImpl<$Res>
+    implements _$UserInfoCopyWith<$Res> {
+  __$UserInfoCopyWithImpl(this._self, this._then);
+
+  final _UserInfo _self;
+  final $Res Function(_UserInfo) _then;
+
+/// Create a copy of UserInfo
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? role = null,Object? permissions = null,}) {
+  return _then(_UserInfo(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,permissions: null == permissions ? _self._permissions : permissions // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$CompanyInfo {
-  int get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  String get role => throw _privateConstructorUsedError;
+
+ int get id; String get name; String get role;
+/// Create a copy of CompanyInfo
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CompanyInfoCopyWith<CompanyInfo> get copyWith => _$CompanyInfoCopyWithImpl<CompanyInfo>(this as CompanyInfo, _$identity);
 
   /// Serializes this CompanyInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of CompanyInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $CompanyInfoCopyWith<CompanyInfo> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CompanyInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,role);
+
+@override
+String toString() {
+  return 'CompanyInfo(id: $id, name: $name, role: $role)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $CompanyInfoCopyWith<$Res> {
-  factory $CompanyInfoCopyWith(
-    CompanyInfo value,
-    $Res Function(CompanyInfo) then,
-  ) = _$CompanyInfoCopyWithImpl<$Res, CompanyInfo>;
-  @useResult
-  $Res call({int id, String name, String role});
-}
+abstract mixin class $CompanyInfoCopyWith<$Res>  {
+  factory $CompanyInfoCopyWith(CompanyInfo value, $Res Function(CompanyInfo) _then) = _$CompanyInfoCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name, String role
+});
 
+
+
+
+}
 /// @nodoc
-class _$CompanyInfoCopyWithImpl<$Res, $Val extends CompanyInfo>
+class _$CompanyInfoCopyWithImpl<$Res>
     implements $CompanyInfoCopyWith<$Res> {
-  _$CompanyInfoCopyWithImpl(this._value, this._then);
+  _$CompanyInfoCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final CompanyInfo _self;
+  final $Res Function(CompanyInfo) _then;
 
-  /// Create a copy of CompanyInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? id = null, Object? name = null, Object? role = null}) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as int,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                      as String,
-            role: null == role
-                ? _value.role
-                : role // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of CompanyInfo
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
 }
 
-/// @nodoc
-abstract class _$$CompanyInfoImplCopyWith<$Res>
-    implements $CompanyInfoCopyWith<$Res> {
-  factory _$$CompanyInfoImplCopyWith(
-    _$CompanyInfoImpl value,
-    $Res Function(_$CompanyInfoImpl) then,
-  ) = __$$CompanyInfoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({int id, String name, String role});
 }
 
-/// @nodoc
-class __$$CompanyInfoImplCopyWithImpl<$Res>
-    extends _$CompanyInfoCopyWithImpl<$Res, _$CompanyInfoImpl>
-    implements _$$CompanyInfoImplCopyWith<$Res> {
-  __$$CompanyInfoImplCopyWithImpl(
-    _$CompanyInfoImpl _value,
-    $Res Function(_$CompanyInfoImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of CompanyInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? id = null, Object? name = null, Object? role = null}) {
-    return _then(
-      _$CompanyInfoImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as int,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
-                  as String,
-        role: null == role
-            ? _value.role
-            : role // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [CompanyInfo].
+extension CompanyInfoPatterns on CompanyInfo {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CompanyInfo value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CompanyInfo() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CompanyInfo value)  $default,){
+final _that = this;
+switch (_that) {
+case _CompanyInfo():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CompanyInfo value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CompanyInfo() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String role)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CompanyInfo() when $default != null:
+return $default(_that.id,_that.name,_that.role);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String role)  $default,) {final _that = this;
+switch (_that) {
+case _CompanyInfo():
+return $default(_that.id,_that.name,_that.role);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String role)?  $default,) {final _that = this;
+switch (_that) {
+case _CompanyInfo() when $default != null:
+return $default(_that.id,_that.name,_that.role);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$CompanyInfoImpl implements _CompanyInfo {
-  const _$CompanyInfoImpl({
-    required this.id,
-    required this.name,
-    this.role = '',
-  });
 
-  factory _$CompanyInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CompanyInfoImplFromJson(json);
+class _CompanyInfo implements CompanyInfo {
+  const _CompanyInfo({required this.id, required this.name, this.role = ''});
+  factory _CompanyInfo.fromJson(Map<String, dynamic> json) => _$CompanyInfoFromJson(json);
 
-  @override
-  final int id;
-  @override
-  final String name;
-  @override
-  @JsonKey()
-  final String role;
+@override final  int id;
+@override final  String name;
+@override@JsonKey() final  String role;
 
-  @override
-  String toString() {
-    return 'CompanyInfo(id: $id, name: $name, role: $role)';
-  }
+/// Create a copy of CompanyInfo
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CompanyInfoCopyWith<_CompanyInfo> get copyWith => __$CompanyInfoCopyWithImpl<_CompanyInfo>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$CompanyInfoImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.role, role) || other.role == role));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, id, name, role);
-
-  /// Create a copy of CompanyInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$CompanyInfoImplCopyWith<_$CompanyInfoImpl> get copyWith =>
-      __$$CompanyInfoImplCopyWithImpl<_$CompanyInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CompanyInfoImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$CompanyInfoToJson(this, );
 }
 
-abstract class _CompanyInfo implements CompanyInfo {
-  const factory _CompanyInfo({
-    required final int id,
-    required final String name,
-    final String role,
-  }) = _$CompanyInfoImpl;
-
-  factory _CompanyInfo.fromJson(Map<String, dynamic> json) =
-      _$CompanyInfoImpl.fromJson;
-
-  @override
-  int get id;
-  @override
-  String get name;
-  @override
-  String get role;
-
-  /// Create a copy of CompanyInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CompanyInfoImplCopyWith<_$CompanyInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CompanyInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role));
 }
 
-SwitchCompanyResponse _$SwitchCompanyResponseFromJson(
-  Map<String, dynamic> json,
-) {
-  return _SwitchCompanyResponse.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,role);
+
+@override
+String toString() {
+  return 'CompanyInfo(id: $id, name: $name, role: $role)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CompanyInfoCopyWith<$Res> implements $CompanyInfoCopyWith<$Res> {
+  factory _$CompanyInfoCopyWith(_CompanyInfo value, $Res Function(_CompanyInfo) _then) = __$CompanyInfoCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name, String role
+});
+
+
+
+
+}
+/// @nodoc
+class __$CompanyInfoCopyWithImpl<$Res>
+    implements _$CompanyInfoCopyWith<$Res> {
+  __$CompanyInfoCopyWithImpl(this._self, this._then);
+
+  final _CompanyInfo _self;
+  final $Res Function(_CompanyInfo) _then;
+
+/// Create a copy of CompanyInfo
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,}) {
+  return _then(_CompanyInfo(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$SwitchCompanyResponse {
-  String get accessToken => throw _privateConstructorUsedError;
-  String get refreshToken => throw _privateConstructorUsedError;
-  int get expiresIn => throw _privateConstructorUsedError;
-  int get activeCompanyId => throw _privateConstructorUsedError;
+
+ String get accessToken; String get refreshToken; int get expiresIn; int get activeCompanyId;
+/// Create a copy of SwitchCompanyResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SwitchCompanyResponseCopyWith<SwitchCompanyResponse> get copyWith => _$SwitchCompanyResponseCopyWithImpl<SwitchCompanyResponse>(this as SwitchCompanyResponse, _$identity);
 
   /// Serializes this SwitchCompanyResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of SwitchCompanyResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $SwitchCompanyResponseCopyWith<SwitchCompanyResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SwitchCompanyResponse&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.activeCompanyId, activeCompanyId) || other.activeCompanyId == activeCompanyId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,expiresIn,activeCompanyId);
+
+@override
+String toString() {
+  return 'SwitchCompanyResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, activeCompanyId: $activeCompanyId)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $SwitchCompanyResponseCopyWith<$Res> {
-  factory $SwitchCompanyResponseCopyWith(
-    SwitchCompanyResponse value,
-    $Res Function(SwitchCompanyResponse) then,
-  ) = _$SwitchCompanyResponseCopyWithImpl<$Res, SwitchCompanyResponse>;
-  @useResult
-  $Res call({
-    String accessToken,
-    String refreshToken,
-    int expiresIn,
-    int activeCompanyId,
-  });
-}
+abstract mixin class $SwitchCompanyResponseCopyWith<$Res>  {
+  factory $SwitchCompanyResponseCopyWith(SwitchCompanyResponse value, $Res Function(SwitchCompanyResponse) _then) = _$SwitchCompanyResponseCopyWithImpl;
+@useResult
+$Res call({
+ String accessToken, String refreshToken, int expiresIn, int activeCompanyId
+});
 
+
+
+
+}
 /// @nodoc
-class _$SwitchCompanyResponseCopyWithImpl<
-  $Res,
-  $Val extends SwitchCompanyResponse
->
+class _$SwitchCompanyResponseCopyWithImpl<$Res>
     implements $SwitchCompanyResponseCopyWith<$Res> {
-  _$SwitchCompanyResponseCopyWithImpl(this._value, this._then);
+  _$SwitchCompanyResponseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final SwitchCompanyResponse _self;
+  final $Res Function(SwitchCompanyResponse) _then;
 
-  /// Create a copy of SwitchCompanyResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accessToken = null,
-    Object? refreshToken = null,
-    Object? expiresIn = null,
-    Object? activeCompanyId = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            accessToken: null == accessToken
-                ? _value.accessToken
-                : accessToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-            refreshToken: null == refreshToken
-                ? _value.refreshToken
-                : refreshToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-            expiresIn: null == expiresIn
-                ? _value.expiresIn
-                : expiresIn // ignore: cast_nullable_to_non_nullable
-                      as int,
-            activeCompanyId: null == activeCompanyId
-                ? _value.activeCompanyId
-                : activeCompanyId // ignore: cast_nullable_to_non_nullable
-                      as int,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of SwitchCompanyResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = null,Object? refreshToken = null,Object? expiresIn = null,Object? activeCompanyId = null,}) {
+  return _then(_self.copyWith(
+accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
+as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
+as int,activeCompanyId: null == activeCompanyId ? _self.activeCompanyId : activeCompanyId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
 
-/// @nodoc
-abstract class _$$SwitchCompanyResponseImplCopyWith<$Res>
-    implements $SwitchCompanyResponseCopyWith<$Res> {
-  factory _$$SwitchCompanyResponseImplCopyWith(
-    _$SwitchCompanyResponseImpl value,
-    $Res Function(_$SwitchCompanyResponseImpl) then,
-  ) = __$$SwitchCompanyResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String accessToken,
-    String refreshToken,
-    int expiresIn,
-    int activeCompanyId,
-  });
 }
 
-/// @nodoc
-class __$$SwitchCompanyResponseImplCopyWithImpl<$Res>
-    extends
-        _$SwitchCompanyResponseCopyWithImpl<$Res, _$SwitchCompanyResponseImpl>
-    implements _$$SwitchCompanyResponseImplCopyWith<$Res> {
-  __$$SwitchCompanyResponseImplCopyWithImpl(
-    _$SwitchCompanyResponseImpl _value,
-    $Res Function(_$SwitchCompanyResponseImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of SwitchCompanyResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? accessToken = null,
-    Object? refreshToken = null,
-    Object? expiresIn = null,
-    Object? activeCompanyId = null,
-  }) {
-    return _then(
-      _$SwitchCompanyResponseImpl(
-        accessToken: null == accessToken
-            ? _value.accessToken
-            : accessToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-        refreshToken: null == refreshToken
-            ? _value.refreshToken
-            : refreshToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-        expiresIn: null == expiresIn
-            ? _value.expiresIn
-            : expiresIn // ignore: cast_nullable_to_non_nullable
-                  as int,
-        activeCompanyId: null == activeCompanyId
-            ? _value.activeCompanyId
-            : activeCompanyId // ignore: cast_nullable_to_non_nullable
-                  as int,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [SwitchCompanyResponse].
+extension SwitchCompanyResponsePatterns on SwitchCompanyResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SwitchCompanyResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SwitchCompanyResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SwitchCompanyResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _SwitchCompanyResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SwitchCompanyResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SwitchCompanyResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresIn,  int activeCompanyId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SwitchCompanyResponse() when $default != null:
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.activeCompanyId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  int expiresIn,  int activeCompanyId)  $default,) {final _that = this;
+switch (_that) {
+case _SwitchCompanyResponse():
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.activeCompanyId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String accessToken,  String refreshToken,  int expiresIn,  int activeCompanyId)?  $default,) {final _that = this;
+switch (_that) {
+case _SwitchCompanyResponse() when $default != null:
+return $default(_that.accessToken,_that.refreshToken,_that.expiresIn,_that.activeCompanyId);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SwitchCompanyResponseImpl implements _SwitchCompanyResponse {
-  const _$SwitchCompanyResponseImpl({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.expiresIn,
-    required this.activeCompanyId,
-  });
 
-  factory _$SwitchCompanyResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SwitchCompanyResponseImplFromJson(json);
+class _SwitchCompanyResponse implements SwitchCompanyResponse {
+  const _SwitchCompanyResponse({required this.accessToken, required this.refreshToken, required this.expiresIn, required this.activeCompanyId});
+  factory _SwitchCompanyResponse.fromJson(Map<String, dynamic> json) => _$SwitchCompanyResponseFromJson(json);
 
-  @override
-  final String accessToken;
-  @override
-  final String refreshToken;
-  @override
-  final int expiresIn;
-  @override
-  final int activeCompanyId;
+@override final  String accessToken;
+@override final  String refreshToken;
+@override final  int expiresIn;
+@override final  int activeCompanyId;
 
-  @override
-  String toString() {
-    return 'SwitchCompanyResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, activeCompanyId: $activeCompanyId)';
-  }
+/// Create a copy of SwitchCompanyResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SwitchCompanyResponseCopyWith<_SwitchCompanyResponse> get copyWith => __$SwitchCompanyResponseCopyWithImpl<_SwitchCompanyResponse>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$SwitchCompanyResponseImpl &&
-            (identical(other.accessToken, accessToken) ||
-                other.accessToken == accessToken) &&
-            (identical(other.refreshToken, refreshToken) ||
-                other.refreshToken == refreshToken) &&
-            (identical(other.expiresIn, expiresIn) ||
-                other.expiresIn == expiresIn) &&
-            (identical(other.activeCompanyId, activeCompanyId) ||
-                other.activeCompanyId == activeCompanyId));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    accessToken,
-    refreshToken,
-    expiresIn,
-    activeCompanyId,
-  );
-
-  /// Create a copy of SwitchCompanyResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$SwitchCompanyResponseImplCopyWith<_$SwitchCompanyResponseImpl>
-  get copyWith =>
-      __$$SwitchCompanyResponseImplCopyWithImpl<_$SwitchCompanyResponseImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SwitchCompanyResponseImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$SwitchCompanyResponseToJson(this, );
 }
 
-abstract class _SwitchCompanyResponse implements SwitchCompanyResponse {
-  const factory _SwitchCompanyResponse({
-    required final String accessToken,
-    required final String refreshToken,
-    required final int expiresIn,
-    required final int activeCompanyId,
-  }) = _$SwitchCompanyResponseImpl;
-
-  factory _SwitchCompanyResponse.fromJson(Map<String, dynamic> json) =
-      _$SwitchCompanyResponseImpl.fromJson;
-
-  @override
-  String get accessToken;
-  @override
-  String get refreshToken;
-  @override
-  int get expiresIn;
-  @override
-  int get activeCompanyId;
-
-  /// Create a copy of SwitchCompanyResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SwitchCompanyResponseImplCopyWith<_$SwitchCompanyResponseImpl>
-  get copyWith => throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SwitchCompanyResponse&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expiresIn, expiresIn) || other.expiresIn == expiresIn)&&(identical(other.activeCompanyId, activeCompanyId) || other.activeCompanyId == activeCompanyId));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,expiresIn,activeCompanyId);
+
+@override
+String toString() {
+  return 'SwitchCompanyResponse(accessToken: $accessToken, refreshToken: $refreshToken, expiresIn: $expiresIn, activeCompanyId: $activeCompanyId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SwitchCompanyResponseCopyWith<$Res> implements $SwitchCompanyResponseCopyWith<$Res> {
+  factory _$SwitchCompanyResponseCopyWith(_SwitchCompanyResponse value, $Res Function(_SwitchCompanyResponse) _then) = __$SwitchCompanyResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String accessToken, String refreshToken, int expiresIn, int activeCompanyId
+});
+
+
+
+
+}
+/// @nodoc
+class __$SwitchCompanyResponseCopyWithImpl<$Res>
+    implements _$SwitchCompanyResponseCopyWith<$Res> {
+  __$SwitchCompanyResponseCopyWithImpl(this._self, this._then);
+
+  final _SwitchCompanyResponse _self;
+  final $Res Function(_SwitchCompanyResponse) _then;
+
+/// Create a copy of SwitchCompanyResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = null,Object? refreshToken = null,Object? expiresIn = null,Object? activeCompanyId = null,}) {
+  return _then(_SwitchCompanyResponse(
+accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
+as String,expiresIn: null == expiresIn ? _self.expiresIn : expiresIn // ignore: cast_nullable_to_non_nullable
+as int,activeCompanyId: null == activeCompanyId ? _self.activeCompanyId : activeCompanyId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+// dart format on

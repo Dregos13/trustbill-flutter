@@ -11,8 +11,27 @@ import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_controls.dart';
 
-final _clientsSearchProvider = StateProvider.autoDispose<String>((ref) => '');
-final _clientsOffsetProvider = StateProvider.autoDispose<int>((ref) => 0);
+class _ClientsSearchNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+  void set(String v) => state = v;
+}
+
+final _clientsSearchProvider =
+    NotifierProvider.autoDispose<_ClientsSearchNotifier, String>(
+  _ClientsSearchNotifier.new,
+);
+
+class _ClientsOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void set(int v) => state = v;
+}
+
+final _clientsOffsetProvider =
+    NotifierProvider.autoDispose<_ClientsOffsetNotifier, int>(
+  _ClientsOffsetNotifier.new,
+);
 
 final clientsProvider =
     FutureProvider.autoDispose<PaginatedResponse<Client>>((ref) async {
@@ -39,8 +58,8 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   }
 
   void _onSearch(String value) {
-    ref.read(_clientsOffsetProvider.notifier).state = 0;
-    ref.read(_clientsSearchProvider.notifier).state = value;
+    ref.read(_clientsOffsetProvider.notifier).set(0);
+    ref.read(_clientsSearchProvider.notifier).set(value);
   }
 
   @override
@@ -102,12 +121,12 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                     hasPrevious: response.hasPrevious,
                     hasNext: response.hasNext,
                     onPrevious: () {
-                      ref.read(_clientsOffsetProvider.notifier).state =
-                          ref.read(_clientsOffsetProvider) - 50;
+                      ref.read(_clientsOffsetProvider.notifier).set(
+                          ref.read(_clientsOffsetProvider) - 50);
                     },
                     onNext: () {
-                      ref.read(_clientsOffsetProvider.notifier).state =
-                          ref.read(_clientsOffsetProvider) + 50;
+                      ref.read(_clientsOffsetProvider.notifier).set(
+                          ref.read(_clientsOffsetProvider) + 50);
                     },
                   ),
                 ],

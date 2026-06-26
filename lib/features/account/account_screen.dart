@@ -348,7 +348,7 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
     final settingsAsync = ref.watch(_companySettingsProvider);
     final logoAsync = ref.watch(_companyLogoProvider);
 
-    final hasLogo = settingsAsync.valueOrNull?['hasLogo'] == true;
+    final hasLogo = settingsAsync.asData?.value?['hasLogo'] == true;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

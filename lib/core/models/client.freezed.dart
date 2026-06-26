@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,341 +9,293 @@ part of 'client.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-Client _$ClientFromJson(Map<String, dynamic> json) {
-  return _Client.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Client {
-  int get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  String get taxId => throw _privateConstructorUsedError;
-  String? get email => throw _privateConstructorUsedError;
-  String? get phone => throw _privateConstructorUsedError;
-  String? get address => throw _privateConstructorUsedError;
-  String get postalCode => throw _privateConstructorUsedError;
-  String get city => throw _privateConstructorUsedError;
-  int get companyId => throw _privateConstructorUsedError;
+
+ int get id; String get name; String get taxId; String? get email; String? get phone; String? get address; String get postalCode; String get city; int get companyId;
+/// Create a copy of Client
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ClientCopyWith<Client> get copyWith => _$ClientCopyWithImpl<Client>(this as Client, _$identity);
 
   /// Serializes this Client to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of Client
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ClientCopyWith<Client> get copyWith => throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.taxId, taxId) || other.taxId == taxId)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.address, address) || other.address == address)&&(identical(other.postalCode, postalCode) || other.postalCode == postalCode)&&(identical(other.city, city) || other.city == city)&&(identical(other.companyId, companyId) || other.companyId == companyId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,taxId,email,phone,address,postalCode,city,companyId);
+
+@override
+String toString() {
+  return 'Client(id: $id, name: $name, taxId: $taxId, email: $email, phone: $phone, address: $address, postalCode: $postalCode, city: $city, companyId: $companyId)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ClientCopyWith<$Res> {
-  factory $ClientCopyWith(Client value, $Res Function(Client) then) =
-      _$ClientCopyWithImpl<$Res, Client>;
-  @useResult
-  $Res call({
-    int id,
-    String name,
-    String taxId,
-    String? email,
-    String? phone,
-    String? address,
-    String postalCode,
-    String city,
-    int companyId,
-  });
-}
+abstract mixin class $ClientCopyWith<$Res>  {
+  factory $ClientCopyWith(Client value, $Res Function(Client) _then) = _$ClientCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name, String taxId, String? email, String? phone, String? address, String postalCode, String city, int companyId
+});
 
+
+
+
+}
 /// @nodoc
-class _$ClientCopyWithImpl<$Res, $Val extends Client>
+class _$ClientCopyWithImpl<$Res>
     implements $ClientCopyWith<$Res> {
-  _$ClientCopyWithImpl(this._value, this._then);
+  _$ClientCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final Client _self;
+  final $Res Function(Client) _then;
 
-  /// Create a copy of Client
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? taxId = null,
-    Object? email = freezed,
-    Object? phone = freezed,
-    Object? address = freezed,
-    Object? postalCode = null,
-    Object? city = null,
-    Object? companyId = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as int,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                      as String,
-            taxId: null == taxId
-                ? _value.taxId
-                : taxId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            email: freezed == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            phone: freezed == phone
-                ? _value.phone
-                : phone // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            address: freezed == address
-                ? _value.address
-                : address // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            postalCode: null == postalCode
-                ? _value.postalCode
-                : postalCode // ignore: cast_nullable_to_non_nullable
-                      as String,
-            city: null == city
-                ? _value.city
-                : city // ignore: cast_nullable_to_non_nullable
-                      as String,
-            companyId: null == companyId
-                ? _value.companyId
-                : companyId // ignore: cast_nullable_to_non_nullable
-                      as int,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of Client
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? taxId = null,Object? email = freezed,Object? phone = freezed,Object? address = freezed,Object? postalCode = null,Object? city = null,Object? companyId = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,taxId: null == taxId ? _self.taxId : taxId // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,postalCode: null == postalCode ? _self.postalCode : postalCode // ignore: cast_nullable_to_non_nullable
+as String,city: null == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String,companyId: null == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
 
-/// @nodoc
-abstract class _$$ClientImplCopyWith<$Res> implements $ClientCopyWith<$Res> {
-  factory _$$ClientImplCopyWith(
-    _$ClientImpl value,
-    $Res Function(_$ClientImpl) then,
-  ) = __$$ClientImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    int id,
-    String name,
-    String taxId,
-    String? email,
-    String? phone,
-    String? address,
-    String postalCode,
-    String city,
-    int companyId,
-  });
 }
 
-/// @nodoc
-class __$$ClientImplCopyWithImpl<$Res>
-    extends _$ClientCopyWithImpl<$Res, _$ClientImpl>
-    implements _$$ClientImplCopyWith<$Res> {
-  __$$ClientImplCopyWithImpl(
-    _$ClientImpl _value,
-    $Res Function(_$ClientImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of Client
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? taxId = null,
-    Object? email = freezed,
-    Object? phone = freezed,
-    Object? address = freezed,
-    Object? postalCode = null,
-    Object? city = null,
-    Object? companyId = null,
-  }) {
-    return _then(
-      _$ClientImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as int,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
-                  as String,
-        taxId: null == taxId
-            ? _value.taxId
-            : taxId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        email: freezed == email
-            ? _value.email
-            : email // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        phone: freezed == phone
-            ? _value.phone
-            : phone // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        address: freezed == address
-            ? _value.address
-            : address // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        postalCode: null == postalCode
-            ? _value.postalCode
-            : postalCode // ignore: cast_nullable_to_non_nullable
-                  as String,
-        city: null == city
-            ? _value.city
-            : city // ignore: cast_nullable_to_non_nullable
-                  as String,
-        companyId: null == companyId
-            ? _value.companyId
-            : companyId // ignore: cast_nullable_to_non_nullable
-                  as int,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [Client].
+extension ClientPatterns on Client {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Client value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Client() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Client value)  $default,){
+final _that = this;
+switch (_that) {
+case _Client():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Client value)?  $default,){
+final _that = this;
+switch (_that) {
+case _Client() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String taxId,  String? email,  String? phone,  String? address,  String postalCode,  String city,  int companyId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Client() when $default != null:
+return $default(_that.id,_that.name,_that.taxId,_that.email,_that.phone,_that.address,_that.postalCode,_that.city,_that.companyId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String taxId,  String? email,  String? phone,  String? address,  String postalCode,  String city,  int companyId)  $default,) {final _that = this;
+switch (_that) {
+case _Client():
+return $default(_that.id,_that.name,_that.taxId,_that.email,_that.phone,_that.address,_that.postalCode,_that.city,_that.companyId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String taxId,  String? email,  String? phone,  String? address,  String postalCode,  String city,  int companyId)?  $default,) {final _that = this;
+switch (_that) {
+case _Client() when $default != null:
+return $default(_that.id,_that.name,_that.taxId,_that.email,_that.phone,_that.address,_that.postalCode,_that.city,_that.companyId);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ClientImpl implements _Client {
-  const _$ClientImpl({
-    required this.id,
-    required this.name,
-    required this.taxId,
-    this.email,
-    this.phone,
-    this.address,
-    this.postalCode = '',
-    this.city = '',
-    required this.companyId,
-  });
 
-  factory _$ClientImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ClientImplFromJson(json);
+class _Client implements Client {
+  const _Client({required this.id, required this.name, required this.taxId, this.email, this.phone, this.address, this.postalCode = '', this.city = '', required this.companyId});
+  factory _Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
 
-  @override
-  final int id;
-  @override
-  final String name;
-  @override
-  final String taxId;
-  @override
-  final String? email;
-  @override
-  final String? phone;
-  @override
-  final String? address;
-  @override
-  @JsonKey()
-  final String postalCode;
-  @override
-  @JsonKey()
-  final String city;
-  @override
-  final int companyId;
+@override final  int id;
+@override final  String name;
+@override final  String taxId;
+@override final  String? email;
+@override final  String? phone;
+@override final  String? address;
+@override@JsonKey() final  String postalCode;
+@override@JsonKey() final  String city;
+@override final  int companyId;
 
-  @override
-  String toString() {
-    return 'Client(id: $id, name: $name, taxId: $taxId, email: $email, phone: $phone, address: $address, postalCode: $postalCode, city: $city, companyId: $companyId)';
-  }
+/// Create a copy of Client
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ClientCopyWith<_Client> get copyWith => __$ClientCopyWithImpl<_Client>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ClientImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.taxId, taxId) || other.taxId == taxId) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.address, address) || other.address == address) &&
-            (identical(other.postalCode, postalCode) ||
-                other.postalCode == postalCode) &&
-            (identical(other.city, city) || other.city == city) &&
-            (identical(other.companyId, companyId) ||
-                other.companyId == companyId));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    name,
-    taxId,
-    email,
-    phone,
-    address,
-    postalCode,
-    city,
-    companyId,
-  );
-
-  /// Create a copy of Client
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ClientImplCopyWith<_$ClientImpl> get copyWith =>
-      __$$ClientImplCopyWithImpl<_$ClientImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ClientImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$ClientToJson(this, );
 }
 
-abstract class _Client implements Client {
-  const factory _Client({
-    required final int id,
-    required final String name,
-    required final String taxId,
-    final String? email,
-    final String? phone,
-    final String? address,
-    final String postalCode,
-    final String city,
-    required final int companyId,
-  }) = _$ClientImpl;
-
-  factory _Client.fromJson(Map<String, dynamic> json) = _$ClientImpl.fromJson;
-
-  @override
-  int get id;
-  @override
-  String get name;
-  @override
-  String get taxId;
-  @override
-  String? get email;
-  @override
-  String? get phone;
-  @override
-  String? get address;
-  @override
-  String get postalCode;
-  @override
-  String get city;
-  @override
-  int get companyId;
-
-  /// Create a copy of Client
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ClientImplCopyWith<_$ClientImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.taxId, taxId) || other.taxId == taxId)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.address, address) || other.address == address)&&(identical(other.postalCode, postalCode) || other.postalCode == postalCode)&&(identical(other.city, city) || other.city == city)&&(identical(other.companyId, companyId) || other.companyId == companyId));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name,taxId,email,phone,address,postalCode,city,companyId);
+
+@override
+String toString() {
+  return 'Client(id: $id, name: $name, taxId: $taxId, email: $email, phone: $phone, address: $address, postalCode: $postalCode, city: $city, companyId: $companyId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ClientCopyWith<$Res> implements $ClientCopyWith<$Res> {
+  factory _$ClientCopyWith(_Client value, $Res Function(_Client) _then) = __$ClientCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name, String taxId, String? email, String? phone, String? address, String postalCode, String city, int companyId
+});
+
+
+
+
+}
+/// @nodoc
+class __$ClientCopyWithImpl<$Res>
+    implements _$ClientCopyWith<$Res> {
+  __$ClientCopyWithImpl(this._self, this._then);
+
+  final _Client _self;
+  final $Res Function(_Client) _then;
+
+/// Create a copy of Client
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? taxId = null,Object? email = freezed,Object? phone = freezed,Object? address = freezed,Object? postalCode = null,Object? city = null,Object? companyId = null,}) {
+  return _then(_Client(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,taxId: null == taxId ? _self.taxId : taxId // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,postalCode: null == postalCode ? _self.postalCode : postalCode // ignore: cast_nullable_to_non_nullable
+as String,city: null == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String,companyId: null == companyId ? _self.companyId : companyId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+// dart format on

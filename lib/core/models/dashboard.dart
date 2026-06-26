@@ -5,7 +5,7 @@ part 'dashboard.freezed.dart';
 part 'dashboard.g.dart';
 
 @freezed
-class DashboardSummary with _$DashboardSummary {
+abstract class DashboardSummary with _$DashboardSummary {
   const factory DashboardSummary({
     required int invoicesThisMonth,
     @JsonKey(fromJson: toDouble) required double totalBilled,
@@ -19,7 +19,7 @@ class DashboardSummary with _$DashboardSummary {
 }
 
 @freezed
-class DashboardInvoice with _$DashboardInvoice {
+abstract class DashboardInvoice with _$DashboardInvoice {
   const factory DashboardInvoice({
     required int id,
     required String series,

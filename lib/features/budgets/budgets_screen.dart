@@ -13,8 +13,27 @@ import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_controls.dart';
 
-final _budgetsStatusProvider = StateProvider.autoDispose<String?>((ref) => null);
-final _budgetsOffsetProvider = StateProvider.autoDispose<int>((ref) => 0);
+class _BudgetsStatusNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? v) => state = v;
+}
+
+final _budgetsStatusProvider =
+    NotifierProvider.autoDispose<_BudgetsStatusNotifier, String?>(
+  _BudgetsStatusNotifier.new,
+);
+
+class _BudgetsOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void set(int v) => state = v;
+}
+
+final _budgetsOffsetProvider =
+    NotifierProvider.autoDispose<_BudgetsOffsetNotifier, int>(
+  _BudgetsOffsetNotifier.new,
+);
 
 final budgetsProvider =
     FutureProvider.autoDispose<PaginatedResponse<BudgetListItem>>((ref) async {
@@ -69,8 +88,8 @@ class BudgetsScreen extends ConsumerWidget {
                   DropdownMenuItem(value: 'confirmed', child: Text('Confirmado')),
                 ],
                 onChanged: (value) {
-                  ref.read(_budgetsOffsetProvider.notifier).state = 0;
-                  ref.read(_budgetsStatusProvider.notifier).state = value;
+                  ref.read(_budgetsOffsetProvider.notifier).set(0);
+                  ref.read(_budgetsStatusProvider.notifier).set(value);
                 },
               ),
             ),
@@ -95,12 +114,12 @@ class BudgetsScreen extends ConsumerWidget {
                     hasPrevious: response.hasPrevious,
                     hasNext: response.hasNext,
                     onPrevious: () {
-                      ref.read(_budgetsOffsetProvider.notifier).state =
-                          ref.read(_budgetsOffsetProvider) - 50;
+                      ref.read(_budgetsOffsetProvider.notifier).set(
+                          ref.read(_budgetsOffsetProvider) - 50);
                     },
                     onNext: () {
-                      ref.read(_budgetsOffsetProvider.notifier).state =
-                          ref.read(_budgetsOffsetProvider) + 50;
+                      ref.read(_budgetsOffsetProvider.notifier).set(
+                          ref.read(_budgetsOffsetProvider) + 50);
                     },
                   ),
                 ],

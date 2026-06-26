@@ -4,7 +4,7 @@ part 'user.freezed.dart';
 part 'user.g.dart';
 
 @freezed
-class LoginResponse with _$LoginResponse {
+abstract class LoginResponse with _$LoginResponse {
   const factory LoginResponse({
     required String accessToken,
     required String refreshToken,
@@ -19,7 +19,7 @@ class LoginResponse with _$LoginResponse {
 }
 
 @freezed
-class RefreshResponse with _$RefreshResponse {
+abstract class RefreshResponse with _$RefreshResponse {
   const factory RefreshResponse({
     required String accessToken,
     required String refreshToken,
@@ -34,7 +34,7 @@ class RefreshResponse with _$RefreshResponse {
 }
 
 @freezed
-class UserInfo with _$UserInfo {
+abstract class UserInfo with _$UserInfo {
   const factory UserInfo({
     required int id,
     required String name,
@@ -48,7 +48,7 @@ class UserInfo with _$UserInfo {
 }
 
 @freezed
-class CompanyInfo with _$CompanyInfo {
+abstract class CompanyInfo with _$CompanyInfo {
   const factory CompanyInfo({
     required int id,
     required String name,
@@ -60,7 +60,7 @@ class CompanyInfo with _$CompanyInfo {
 }
 
 @freezed
-class SwitchCompanyResponse with _$SwitchCompanyResponse {
+abstract class SwitchCompanyResponse with _$SwitchCompanyResponse {
   const factory SwitchCompanyResponse({
     required String accessToken,
     required String refreshToken,

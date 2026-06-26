@@ -6,7 +6,7 @@ part 'invoice.freezed.dart';
 part 'invoice.g.dart';
 
 @freezed
-class InvoiceListItem with _$InvoiceListItem {
+abstract class InvoiceListItem with _$InvoiceListItem {
   const factory InvoiceListItem({
     required int id,
     required String type,
@@ -25,7 +25,7 @@ class InvoiceListItem with _$InvoiceListItem {
 }
 
 @freezed
-class InvoiceClient with _$InvoiceClient {
+abstract class InvoiceClient with _$InvoiceClient {
   const factory InvoiceClient({
     required int id,
     required String name,
@@ -37,7 +37,7 @@ class InvoiceClient with _$InvoiceClient {
 }
 
 @freezed
-class InvoiceDetail with _$InvoiceDetail {
+abstract class InvoiceDetail with _$InvoiceDetail {
   const factory InvoiceDetail({
     required int id,
     required String type,
@@ -62,7 +62,7 @@ class InvoiceDetail with _$InvoiceDetail {
 }
 
 @freezed
-class InvoiceDetailClient with _$InvoiceDetailClient {
+abstract class InvoiceDetailClient with _$InvoiceDetailClient {
   const factory InvoiceDetailClient({
     required int id,
     required String name,
@@ -78,7 +78,7 @@ class InvoiceDetailClient with _$InvoiceDetailClient {
 }
 
 @freezed
-class CreatedBy with _$CreatedBy {
+abstract class CreatedBy with _$CreatedBy {
   const factory CreatedBy({
     required int id,
     required String name,
@@ -89,7 +89,7 @@ class CreatedBy with _$CreatedBy {
 }
 
 @freezed
-class InvoiceLine with _$InvoiceLine {
+abstract class InvoiceLine with _$InvoiceLine {
   const factory InvoiceLine({
     required int id,
     required String description,

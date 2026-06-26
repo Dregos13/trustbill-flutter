@@ -6,8 +6,8 @@ part of 'sale.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SaleListItemImpl _$$SaleListItemImplFromJson(Map<String, dynamic> json) =>
-    _$SaleListItemImpl(
+_SaleListItem _$SaleListItemFromJson(Map<String, dynamic> json) =>
+    _SaleListItem(
       id: (json['id'] as num).toInt(),
       code: json['code'] as String,
       status: json['status'] as String,
@@ -25,7 +25,7 @@ _$SaleListItemImpl _$$SaleListItemImplFromJson(Map<String, dynamic> json) =>
           : SaleParty.fromJson(json['vendor'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$SaleListItemImplToJson(_$SaleListItemImpl instance) =>
+Map<String, dynamic> _$SaleListItemToJson(_SaleListItem instance) =>
     <String, dynamic>{
       'id': instance.id,
       'code': instance.code,
@@ -40,15 +40,14 @@ Map<String, dynamic> _$$SaleListItemImplToJson(_$SaleListItemImpl instance) =>
       'vendor': instance.vendor,
     };
 
-_$SalePartyImpl _$$SalePartyImplFromJson(Map<String, dynamic> json) =>
-    _$SalePartyImpl(
-      id: (json['id'] as num).toInt(),
-      name: json['name'] as String?,
-      taxId: json['taxId'] as String?,
-      email: json['email'] as String?,
-    );
+_SaleParty _$SalePartyFromJson(Map<String, dynamic> json) => _SaleParty(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String?,
+  taxId: json['taxId'] as String?,
+  email: json['email'] as String?,
+);
 
-Map<String, dynamic> _$$SalePartyImplToJson(_$SalePartyImpl instance) =>
+Map<String, dynamic> _$SalePartyToJson(_SaleParty instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
@@ -56,72 +55,69 @@ Map<String, dynamic> _$$SalePartyImplToJson(_$SalePartyImpl instance) =>
       'email': instance.email,
     };
 
-_$AvailableBudgetImpl _$$AvailableBudgetImplFromJson(
-  Map<String, dynamic> json,
-) => _$AvailableBudgetImpl(
-  id: (json['id'] as num).toInt(),
-  series: json['series'] as String,
-  number: (json['number'] as num).toInt(),
-  issuedAt: json['issuedAt'] as String,
-  total: toDouble(json['total']),
-  taxKind: json['taxKind'] as String?,
-  quoteStatus: json['quoteStatus'] as String?,
-  client: json['client'] == null
-      ? null
-      : SaleParty.fromJson(json['client'] as Map<String, dynamic>),
-);
-
-Map<String, dynamic> _$$AvailableBudgetImplToJson(
-  _$AvailableBudgetImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'series': instance.series,
-  'number': instance.number,
-  'issuedAt': instance.issuedAt,
-  'total': instance.total,
-  'taxKind': instance.taxKind,
-  'quoteStatus': instance.quoteStatus,
-  'client': instance.client,
-};
-
-_$SaleDetailImpl _$$SaleDetailImplFromJson(Map<String, dynamic> json) =>
-    _$SaleDetailImpl(
+_AvailableBudget _$AvailableBudgetFromJson(Map<String, dynamic> json) =>
+    _AvailableBudget(
       id: (json['id'] as num).toInt(),
-      code: json['code'] as String,
-      status: json['status'] as String,
-      regime: json['regime'] as String?,
-      budgetId: (json['budgetId'] as num?)?.toInt(),
-      internalNotes: json['internalNotes'] as String?,
-      totalPlanned: toDouble(json['totalPlanned']),
-      totalInvoiced: toDouble(json['totalInvoiced']),
-      totalPending: toDouble(json['totalPending']),
+      series: json['series'] as String,
+      number: (json['number'] as num).toInt(),
+      issuedAt: json['issuedAt'] as String,
+      total: toDouble(json['total']),
+      taxKind: json['taxKind'] as String?,
+      quoteStatus: json['quoteStatus'] as String?,
       client: json['client'] == null
           ? null
           : SaleParty.fromJson(json['client'] as Map<String, dynamic>),
-      vendor: json['vendor'] == null
-          ? null
-          : SaleParty.fromJson(json['vendor'] as Map<String, dynamic>),
-      budget: json['budget'] == null
-          ? null
-          : SaleBudgetRef.fromJson(json['budget'] as Map<String, dynamic>),
-      lines:
-          (json['lines'] as List<dynamic>?)
-              ?.map((e) => SaleDetailLine.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      installments:
-          (json['installments'] as List<dynamic>?)
-              ?.map((e) => SaleInstallment.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      invoices:
-          (json['invoices'] as List<dynamic>?)
-              ?.map((e) => SaleInvoiceRef.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
     );
 
-Map<String, dynamic> _$$SaleDetailImplToJson(_$SaleDetailImpl instance) =>
+Map<String, dynamic> _$AvailableBudgetToJson(_AvailableBudget instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'series': instance.series,
+      'number': instance.number,
+      'issuedAt': instance.issuedAt,
+      'total': instance.total,
+      'taxKind': instance.taxKind,
+      'quoteStatus': instance.quoteStatus,
+      'client': instance.client,
+    };
+
+_SaleDetail _$SaleDetailFromJson(Map<String, dynamic> json) => _SaleDetail(
+  id: (json['id'] as num).toInt(),
+  code: json['code'] as String,
+  status: json['status'] as String,
+  regime: json['regime'] as String?,
+  budgetId: (json['budgetId'] as num?)?.toInt(),
+  internalNotes: json['internalNotes'] as String?,
+  totalPlanned: toDouble(json['totalPlanned']),
+  totalInvoiced: toDouble(json['totalInvoiced']),
+  totalPending: toDouble(json['totalPending']),
+  client: json['client'] == null
+      ? null
+      : SaleParty.fromJson(json['client'] as Map<String, dynamic>),
+  vendor: json['vendor'] == null
+      ? null
+      : SaleParty.fromJson(json['vendor'] as Map<String, dynamic>),
+  budget: json['budget'] == null
+      ? null
+      : SaleBudgetRef.fromJson(json['budget'] as Map<String, dynamic>),
+  lines:
+      (json['lines'] as List<dynamic>?)
+          ?.map((e) => SaleDetailLine.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  installments:
+      (json['installments'] as List<dynamic>?)
+          ?.map((e) => SaleInstallment.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  invoices:
+      (json['invoices'] as List<dynamic>?)
+          ?.map((e) => SaleInvoiceRef.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$SaleDetailToJson(_SaleDetail instance) =>
     <String, dynamic>{
       'id': instance.id,
       'code': instance.code,
@@ -140,8 +136,8 @@ Map<String, dynamic> _$$SaleDetailImplToJson(_$SaleDetailImpl instance) =>
       'invoices': instance.invoices,
     };
 
-_$SaleBudgetRefImpl _$$SaleBudgetRefImplFromJson(Map<String, dynamic> json) =>
-    _$SaleBudgetRefImpl(
+_SaleBudgetRef _$SaleBudgetRefFromJson(Map<String, dynamic> json) =>
+    _SaleBudgetRef(
       id: (json['id'] as num).toInt(),
       series: json['series'] as String,
       number: (json['number'] as num).toInt(),
@@ -151,7 +147,7 @@ _$SaleBudgetRefImpl _$$SaleBudgetRefImplFromJson(Map<String, dynamic> json) =>
       taxKind: json['taxKind'] as String?,
     );
 
-Map<String, dynamic> _$$SaleBudgetRefImplToJson(_$SaleBudgetRefImpl instance) =>
+Map<String, dynamic> _$SaleBudgetRefToJson(_SaleBudgetRef instance) =>
     <String, dynamic>{
       'id': instance.id,
       'series': instance.series,
@@ -162,8 +158,8 @@ Map<String, dynamic> _$$SaleBudgetRefImplToJson(_$SaleBudgetRefImpl instance) =>
       'taxKind': instance.taxKind,
     };
 
-_$SaleDetailLineImpl _$$SaleDetailLineImplFromJson(Map<String, dynamic> json) =>
-    _$SaleDetailLineImpl(
+_SaleDetailLine _$SaleDetailLineFromJson(Map<String, dynamic> json) =>
+    _SaleDetailLine(
       id: (json['id'] as num).toInt(),
       productId: (json['productId'] as num?)?.toInt(),
       serviceId: (json['serviceId'] as num?)?.toInt(),
@@ -188,47 +184,44 @@ _$SaleDetailLineImpl _$$SaleDetailLineImplFromJson(Map<String, dynamic> json) =>
           : toDouble(json['pendingTotal']),
     );
 
-Map<String, dynamic> _$$SaleDetailLineImplToJson(
-  _$SaleDetailLineImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'productId': instance.productId,
-  'serviceId': instance.serviceId,
-  'description': instance.description,
-  'quantity': instance.quantity,
-  'unitPrice': instance.unitPrice,
-  'discountRate': instance.discountRate,
-  'taxRate': instance.taxRate,
-  'taxAmount': instance.taxAmount,
-  'total': instance.total,
-  'invoicedQuantity': instance.invoicedQuantity,
-  'invoicedTotal': instance.invoicedTotal,
-  'pendingQuantity': instance.pendingQuantity,
-  'pendingTotal': instance.pendingTotal,
-};
+Map<String, dynamic> _$SaleDetailLineToJson(_SaleDetailLine instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'productId': instance.productId,
+      'serviceId': instance.serviceId,
+      'description': instance.description,
+      'quantity': instance.quantity,
+      'unitPrice': instance.unitPrice,
+      'discountRate': instance.discountRate,
+      'taxRate': instance.taxRate,
+      'taxAmount': instance.taxAmount,
+      'total': instance.total,
+      'invoicedQuantity': instance.invoicedQuantity,
+      'invoicedTotal': instance.invoicedTotal,
+      'pendingQuantity': instance.pendingQuantity,
+      'pendingTotal': instance.pendingTotal,
+    };
 
-_$SaleInstallmentImpl _$$SaleInstallmentImplFromJson(
-  Map<String, dynamic> json,
-) => _$SaleInstallmentImpl(
-  id: (json['id'] as num).toInt(),
-  index: (json['index'] as num).toInt(),
-  dueDate: json['dueDate'] as String?,
-  percentage: toDoubleN(json['percentage']),
-  plannedAmount: toDoubleN(json['plannedAmount']),
-);
+_SaleInstallment _$SaleInstallmentFromJson(Map<String, dynamic> json) =>
+    _SaleInstallment(
+      id: (json['id'] as num).toInt(),
+      index: (json['index'] as num).toInt(),
+      dueDate: json['dueDate'] as String?,
+      percentage: toDoubleN(json['percentage']),
+      plannedAmount: toDoubleN(json['plannedAmount']),
+    );
 
-Map<String, dynamic> _$$SaleInstallmentImplToJson(
-  _$SaleInstallmentImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'index': instance.index,
-  'dueDate': instance.dueDate,
-  'percentage': instance.percentage,
-  'plannedAmount': instance.plannedAmount,
-};
+Map<String, dynamic> _$SaleInstallmentToJson(_SaleInstallment instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'index': instance.index,
+      'dueDate': instance.dueDate,
+      'percentage': instance.percentage,
+      'plannedAmount': instance.plannedAmount,
+    };
 
-_$SaleInvoiceRefImpl _$$SaleInvoiceRefImplFromJson(Map<String, dynamic> json) =>
-    _$SaleInvoiceRefImpl(
+_SaleInvoiceRef _$SaleInvoiceRefFromJson(Map<String, dynamic> json) =>
+    _SaleInvoiceRef(
       id: (json['id'] as num).toInt(),
       series: json['series'] as String,
       number: (json['number'] as num).toInt(),
@@ -238,14 +231,13 @@ _$SaleInvoiceRefImpl _$$SaleInvoiceRefImplFromJson(Map<String, dynamic> json) =>
       isFinal: json['isFinal'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$SaleInvoiceRefImplToJson(
-  _$SaleInvoiceRefImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'series': instance.series,
-  'number': instance.number,
-  'status': instance.status,
-  'issuedAt': instance.issuedAt,
-  'total': instance.total,
-  'isFinal': instance.isFinal,
-};
+Map<String, dynamic> _$SaleInvoiceRefToJson(_SaleInvoiceRef instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'series': instance.series,
+      'number': instance.number,
+      'status': instance.status,
+      'issuedAt': instance.issuedAt,
+      'total': instance.total,
+      'isFinal': instance.isFinal,
+    };

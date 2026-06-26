@@ -13,9 +13,27 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/pagination_controls.dart';
 import '../../widgets/doc_type_switcher.dart';
 
+class _InvoicesStatusNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? v) => state = v;
+}
+
 final _invoicesStatusProvider =
-    StateProvider.autoDispose<String?>((ref) => null);
-final _invoicesOffsetProvider = StateProvider.autoDispose<int>((ref) => 0);
+    NotifierProvider.autoDispose<_InvoicesStatusNotifier, String?>(
+  _InvoicesStatusNotifier.new,
+);
+
+class _InvoicesOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void set(int v) => state = v;
+}
+
+final _invoicesOffsetProvider =
+    NotifierProvider.autoDispose<_InvoicesOffsetNotifier, int>(
+  _InvoicesOffsetNotifier.new,
+);
 
 final invoicesProvider =
     FutureProvider.autoDispose<PaginatedResponse<InvoiceListItem>>((ref) async {
@@ -77,8 +95,8 @@ class InvoicesScreen extends ConsumerWidget {
                       value: 'cancelled', child: Text('Anulada')),
                 ],
                 onChanged: (value) {
-                  ref.read(_invoicesOffsetProvider.notifier).state = 0;
-                  ref.read(_invoicesStatusProvider.notifier).state = value;
+                  ref.read(_invoicesOffsetProvider.notifier).set(0);
+                  ref.read(_invoicesStatusProvider.notifier).set(value);
                 },
               ),
             ),
@@ -113,12 +131,12 @@ class InvoicesScreen extends ConsumerWidget {
                     hasPrevious: response.hasPrevious,
                     hasNext: response.hasNext,
                     onPrevious: () {
-                      ref.read(_invoicesOffsetProvider.notifier).state =
-                          ref.read(_invoicesOffsetProvider) - 50;
+                      ref.read(_invoicesOffsetProvider.notifier).set(
+                          ref.read(_invoicesOffsetProvider) - 50);
                     },
                     onNext: () {
-                      ref.read(_invoicesOffsetProvider.notifier).state =
-                          ref.read(_invoicesOffsetProvider) + 50;
+                      ref.read(_invoicesOffsetProvider.notifier).set(
+                          ref.read(_invoicesOffsetProvider) + 50);
                     },
                   ),
                 ],

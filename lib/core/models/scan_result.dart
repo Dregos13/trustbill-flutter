@@ -4,7 +4,7 @@ part 'scan_result.freezed.dart';
 part 'scan_result.g.dart';
 
 @freezed
-class OcrLineItem with _$OcrLineItem {
+abstract class OcrLineItem with _$OcrLineItem {
   const factory OcrLineItem({
     required String description,
     required double quantity,
@@ -18,7 +18,7 @@ class OcrLineItem with _$OcrLineItem {
 }
 
 @freezed
-class ScanResult with _$ScanResult {
+abstract class ScanResult with _$ScanResult {
   const factory ScanResult({
     String? supplierName,
     String? supplierCif,
