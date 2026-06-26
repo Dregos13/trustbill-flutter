@@ -33,6 +33,8 @@ import '../../features/catalog/create_edit_service_screen.dart';
 import '../../widgets/app_shell.dart';
 import '../../widgets/no_permission_screen.dart';
 import '../../features/taskmap/agenda/agenda_screen.dart';
+import '../../features/taskmap/task/task_detail_screen.dart';
+import '../../features/taskmap/task/task_form_screen.dart';
 
 // ── Route permission requirements ──────────────────────────────────────────────
 
@@ -100,7 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
 
         // Module-gated routes
-        if (loc.startsWith('/tasks') &&
+        if (loc.startsWith('/task') &&
             !user.modules.contains('taskmap')) {
           return '/no-permission';
         }
@@ -212,6 +214,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CreateEditServiceScreen(existing: service);
         },
       ),
+      // ── Task routes (full-screen, own Scaffold, no shell) ──────────────────
+      GoRoute(
+        path: '/task/new',
+        builder: (_, _) => const TaskFormScreen(),
+      ),
+      GoRoute(
+        path: '/task/:id/edit',
+        builder: (_, state) => TaskFormScreen(
+          taskId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/task/:id',
+        builder: (_, state) => TaskDetailScreen(
+          taskId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+
       GoRoute(
         path: '/scan',
         builder: (context, _) => const ScanScreen(),

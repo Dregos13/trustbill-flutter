@@ -12,10 +12,13 @@ abstract final class TmColors {
 
   static const Color bg = Color(0xFF0B0F14);
   static const Color surface = Color(0xFF141B24);
+  static final Color hairline = Colors.white.withValues(alpha: 0.08);
 
   static const Color accent = Color(0xFF38BDF8);
   static const Color danger = Color(0xFFEF4444);
 
+  static const Color statusPending = Color(0xFFFBBF24);
+  static const Color statusInProgress = Color(0xFF38BDF8);
   static const Color statusDone = Color(0xFF22C55E);
 
   static const LinearGradient backgroundGradient = LinearGradient(

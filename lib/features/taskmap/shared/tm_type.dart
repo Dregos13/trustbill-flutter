@@ -54,4 +54,11 @@ abstract final class TmType {
     color: TmColors.textPrimary,
     fontFeatures: _tabular,
   );
+
+  static const TextStyle moneyLg = TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w800,
+    color: TmColors.textPrimary,
+    fontFeatures: _tabular,
+  );
 }
