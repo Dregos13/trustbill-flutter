@@ -202,17 +202,15 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 
 ### Tasks
 
-- [ ] **5.1** Replace stub `/map` route with real `MapScreen()`
-- [ ] **5.2** Move `/agenda` + `/map` into ShellRoute (bottom nav destinations)
-- [ ] **5.3** Keep `/task/new`, `/task/:id`, `/task/:id/edit` OUTSIDE ShellRoute (full-screen, no bottom nav)
-- [ ] **5.4** Router redirect: paths starting with `/map`, `/agenda`, `/task` → redirect to `/` if `!hasModule('taskmap')`
-- [ ] **5.5** Update `AppShell._buildFab()` in `lib/widgets/app_shell.dart`:
-  - Add case for `/map` → FAB = "Nueva tarea" (requires `tasks.write`)
-  - Add case for `/agenda` → no FAB (list view, FAB on map)
-- [ ] **5.6** Update `AppBottomNav` — tab order: Inicio, Clientes, Facturas, Compras, Catálogo, **Tareas** (last)
-- [ ] **5.7** PopScope on `/map` → back → go to `/` (same pattern as existing screens)
-- [ ] **5.8** `flutter build apk --debug` → must succeed
-- [ ] **5.9** Full nav test: all tabs navigate correctly, back button correct
+- [x] **5.1** `/map` route wired to real `MapScreen()` in ShellRoute (done in 4E)
+- [x] **5.2** `/tasks` (agenda) + `/map` both inside ShellRoute (done in 4C + 4E)
+- [x] **5.3** `/task/new`, `/task/:id`, `/task/:id/edit` OUTSIDE ShellRoute (done in 4D)
+- [x] **5.4** Router redirect: `/task*` + `/map*` → `/no-permission` if `!hasModule('taskmap')` (done in 4D + 4E)
+- [x] **5.5** AppShell FAB: `/map` + `/tasks` → "Nueva tarea" (tasks.write); detail/form screens → no FAB
+- [x] **5.6** Bottom nav: Inicio/Clientes/Facturas/Compras pinned; Catálogo, Tareas, Mapa in "Más" overflow
+- [x] **5.7** AppShell PopScope: any non-`/` route → back → `go('/')` (covers `/map` and `/tasks`)
+- [x] **5.8** `flutter build apk --debug` → ✅
+- [x] **5.9** Full nav test ✅ | version `1.1.4+24`
 
 **Commit**: `feat(taskmap): phase-5 — router integration + shell FAB + nav order`
 
@@ -295,5 +293,5 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 | 3 — Data Layer | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-3 |
 | 4A–D — UI (partial) | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4A…4D |
 | 4E — Map Screen | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4E |
-| 5 — Router | ⬜ TODO | ⬜ | ⬜ | — |
+| 5 — Router | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-5 |
 | 6 — QA | ⬜ TODO | ⬜ | ⬜ | — |
