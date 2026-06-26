@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/auth/permission_helpers.dart';
 import '../core/auth/permission_provider.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme_tokens.dart';
 
 // ── Tab definition ─────────────────────────────────────────────────────────────
 
@@ -80,6 +81,8 @@ const _allTabs = [
   ),
 ];
 
+const _maxPinnedTabs = 4;
+
 // ── Provider: visible tabs ─────────────────────────────────────────────────────
 
 /// List of tabs visible to the current user based on their permissions and enabled modules.
@@ -109,24 +112,57 @@ class AppBottomNav extends ConsumerWidget {
     required this.onNavigate,
   });
 
-  int _currentIndex(List<_TabDef> tabs) {
-    // Presupuestos y Ventas viven dentro de la sección "Facturas" (no en Inicio).
+  bool _matchesTab(_TabDef tab, String loc) {
+    if (tab.route == '/') return loc == '/';
+    return loc.startsWith(tab.routePrefix);
+  }
+
+  int _currentIndex(List<_TabDef> pinned, List<_TabDef> overflow) {
     var loc = currentLocation;
     if (loc.startsWith('/budgets') || loc.startsWith('/sales')) {
       loc = '/invoices';
     }
-    for (int i = 0; i < tabs.length; i++) {
-      final tab = tabs[i];
-      if (tab.route == '/' && loc == '/') return i;
-      if (tab.route != '/' && loc.startsWith(tab.routePrefix)) return i;
+    for (int i = 0; i < pinned.length; i++) {
+      if (_matchesTab(pinned[i], loc)) return i;
     }
+    // If current route is in overflow, highlight "Más" tab
+    final inOverflow = overflow.any((t) => _matchesTab(t, loc));
+    if (inOverflow) return pinned.length; // "Más" index
     return 0;
+  }
+
+  void _showMoreSheet(
+    BuildContext context,
+    List<_TabDef> overflow,
+    String currentLocation,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _MoreSheet(
+        tabs: overflow,
+        currentLocation: currentLocation,
+        onNavigate: (route) {
+          Navigator.of(context).pop();
+          onNavigate(route);
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabs = ref.watch(visibleTabsProvider);
-    final activeIdx = _currentIndex(tabs);
+
+    final pinned = tabs.length <= _maxPinnedTabs
+        ? tabs
+        : tabs.sublist(0, _maxPinnedTabs);
+    final overflow = tabs.length <= _maxPinnedTabs
+        ? <_TabDef>[]
+        : tabs.sublist(_maxPinnedTabs);
+
+    final activeIdx = _currentIndex(pinned, overflow);
+    final overflowActive = overflow.isNotEmpty && activeIdx == pinned.length;
 
     return Container(
       decoration: BoxDecoration(
@@ -145,19 +181,116 @@ class AppBottomNav extends ConsumerWidget {
           height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: tabs
-                .asMap()
-                .entries
-                .map((entry) => _NavItem(
-                      icon: entry.value.icon,
-                      activeIcon: entry.value.activeIcon,
-                      label: entry.value.label,
-                      isActive: entry.key == activeIdx,
-                      onTap: () => onNavigate(entry.value.route),
-                    ))
-                .toList(),
+            children: [
+              ...pinned.asMap().entries.map((entry) => _NavItem(
+                    icon: entry.value.icon,
+                    activeIcon: entry.value.activeIcon,
+                    label: entry.value.label,
+                    isActive: entry.key == activeIdx,
+                    onTap: () => onNavigate(entry.value.route),
+                  )),
+              if (overflow.isNotEmpty)
+                _NavItem(
+                  icon: Icons.more_horiz,
+                  activeIcon: Icons.more_horiz,
+                  label: 'Más',
+                  isActive: overflowActive,
+                  onTap: () =>
+                      _showMoreSheet(context, overflow, currentLocation),
+                ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── More bottom sheet ──────────────────────────────────────────────────────────
+
+class _MoreSheet extends StatelessWidget {
+  final List<_TabDef> tabs;
+  final String currentLocation;
+  final ValueChanged<String> onNavigate;
+
+  const _MoreSheet({
+    required this.tabs,
+    required this.currentLocation,
+    required this.onNavigate,
+  });
+
+  bool _isActive(_TabDef tab) {
+    var loc = currentLocation;
+    if (loc.startsWith('/budgets') || loc.startsWith('/sales')) {
+      loc = '/invoices';
+    }
+    if (tab.route == '/') return loc == '/';
+    return loc.startsWith(tab.routePrefix);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: context.appBorder,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...tabs.map((tab) {
+            final active = _isActive(tab);
+            final color = active ? AppColors.primary : context.appText;
+            return InkWell(
+              onTap: () => onNavigate(tab.route),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                child: Row(
+                  children: [
+                    Icon(
+                      active ? tab.activeIcon : tab.icon,
+                      color: color,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      tab.label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight:
+                            active ? FontWeight.w700 : FontWeight.w500,
+                        color: color,
+                      ),
+                    ),
+                    if (active) ...[
+                      const Spacer(),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

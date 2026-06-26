@@ -95,6 +95,7 @@ class AuthNotifier extends Notifier<AuthState> {
         activeCompanyId: activeCompanyId,
         clientId: clientId,
       );
+      await _applyModules();
       return true;
     } on DioException catch (e) {
       // Solo limpiamos si el SERVER rechazó el token (respondió 401). Un error
@@ -165,6 +166,7 @@ class AuthNotifier extends Notifier<AuthState> {
         activeCompanyId: res.activeCompanyId,
         clientId: clientId,
       );
+      await _applyModules();
     } catch (e) {
       // El interceptor envuelve el ApiError dentro de DioException.error, así
       // que desempaquetamos para mostrar el mensaje real del server (p.ej.
@@ -201,6 +203,7 @@ class AuthNotifier extends Notifier<AuthState> {
           activeCompanyId: res.activeCompanyId,
           clientId: currentState.clientId,
         );
+        await _applyModules();
       }
     } catch (e) {
       // El 401 normalmente lo resuelve el interceptor (refresh + reintento); si
@@ -238,6 +241,20 @@ class AuthNotifier extends Notifier<AuthState> {
     await _apiClient.storage.delete(key: _keySavedEmail);
     await _apiClient.storage.delete(key: _keySavedPassword);
     state = const AuthState.needsSetup();
+  }
+
+  /// Fetches /me/capabilities and merges modules into the current authenticated state.
+  /// Non-fatal: if the call fails, modules stay empty and the tab stays hidden.
+  Future<void> _applyModules() async {
+    try {
+      final modules = await _endpoints.getEnabledModules();
+      final s = state;
+      if (s is AuthAuthenticated) {
+        state = s.copyWith(user: s.user.copyWith(modules: modules));
+      }
+    } catch (_) {
+      // best-effort — tab stays hidden on failure
+    }
   }
 
   String get _currentClientId {

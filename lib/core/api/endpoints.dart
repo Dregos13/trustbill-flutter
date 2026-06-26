@@ -54,6 +54,13 @@ class Endpoints {
     return SwitchCompanyResponse.fromJson(res.data);
   }
 
+  /// Returns enabled module names for the current user's company.
+  Future<List<String>> getEnabledModules() async {
+    final res = await _api.get('/me/capabilities');
+    final data = res.data as Map<String, dynamic>;
+    return List<String>.from(data['modules'] as List? ?? []);
+  }
+
   // ---- Dashboard ----
 
   Future<DashboardSummary> getDashboardSummary() async {
