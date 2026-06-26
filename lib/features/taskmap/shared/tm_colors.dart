@@ -10,6 +10,9 @@ abstract final class TmColors {
   static const Color textSecondary = Color(0xFF9BA8B7);
   static const Color textMuted = Color(0xFF63707E);
 
+  static const Color bg = Color(0xFF0B0F14);
+  static const Color surface = Color(0xFF141B24);
+
   static const Color accent = Color(0xFF38BDF8);
   static const Color danger = Color(0xFFEF4444);
 
