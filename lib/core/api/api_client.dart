@@ -25,6 +25,10 @@ class ApiClient {
 
   void Function()? onAuthError;
 
+  /// Exposes the underlying Dio instance for repositories that need direct
+  /// access to GET/POST/PATCH/DELETE with typed generics (e.g. TasksRepository).
+  Dio get dio => _dio;
+
   ApiClient({
     FlutterSecureStorage? storage,
     Dio? dio,

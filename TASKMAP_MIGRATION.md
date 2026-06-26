@@ -103,7 +103,7 @@ Clean separation: get data layer right before touching UI. Easier to unit-test. 
 
 ### Tasks
 
-- [ ] **3.1** Create folder structure:
+- [x] **3.1** Create folder structure:
   ```
   lib/features/taskmap/
     data/
@@ -116,27 +116,15 @@ Clean separation: get data layer right before touching UI. Easier to unit-test. 
     task/
     shared/
   ```
-- [ ] **3.2** Port `core/models/task_status.dart` → `lib/features/taskmap/data/models/task_status.dart`
-  - Keep identical, just move namespace
-- [ ] **3.3** Port models from taskmap into `lib/features/taskmap/data/models/`:
-  - `field_task.dart` (FieldTask, ClientRef)
-  - `map_client.dart` (MapClient, StatusCounts)
-  - `bill.dart` (BillSummary, BillLine)
-  - `task_summary.dart` (TaskSummary)
-  - `task_form_options.dart` (TaskClientOption, AssignableUser, InvoiceOption, TaskInput)
-  - Fix all import paths to point inside main app
-- [ ] **3.4** Port `tasks_repository.dart` → `lib/features/taskmap/data/tasks_repository.dart`
-  - `ApiClient` import → `lib/core/api/api_client.dart` (main app's client)
-- [ ] **3.5** Port `task_actions.dart` → `lib/features/taskmap/data/task_actions.dart`
-- [ ] **3.6** Create `lib/features/taskmap/data/providers.dart`:
-  ```dart
-  final tasksRepositoryProvider = Provider<TasksRepository>((ref) {
-    return TasksRepository(ref.watch(apiClientProvider));
-  });
-  ```
-  - Wire to main app's `apiClientProvider` from `lib/core/api/api_client.dart`
-- [ ] **3.7** Run `flutter analyze` on new files — zero errors
-- [ ] **3.8** `flutter build apk --debug` → must succeed
+- [x] **3.2** Port `task_status.dart` → `lib/features/taskmap/data/models/task_status.dart` (updated AppColors import)
+- [x] **3.3** Port all models into `lib/features/taskmap/data/models/`:
+  - `field_task.dart`, `map_client.dart`, `bill.dart`, `task_summary.dart`, `task_form_options.dart`
+  - Added 4 status colors to main app `AppColors`
+- [x] **3.4** Port `tasks_repository.dart` — fixed `?clientId`/`?bbox` null-aware map syntax; added `Dio get dio` getter to `ApiClient`
+- [x] **3.5** Port `task_actions.dart` — adapted provider imports to main app
+- [x] **3.6** Create `providers.dart` — `_activeCompanyProvider` wired to `authProvider` (Riverpod 3, no authControllerProvider)
+- [x] **3.7** `flutter analyze lib/features/taskmap/` → 0 issues
+- [x] **3.8** `flutter build apk --debug` → ✅
 
 **Skills**: `/graphify` before. Copy files manually with Read+Write tools — don't trust raw copy.  
 **Commit**: `feat(taskmap): phase-3 — data layer models + repository`
@@ -304,7 +292,7 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 |-------|--------|----------|-------------|--------|
 | 1 — Foundation | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-1 |
 | 2 — Module Gate | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-2 |
-| 3 — Data Layer | ⬜ TODO | ⬜ | ⬜ | — |
+| 3 — Data Layer | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-3 |
 | 4 — UI Screens | ⬜ TODO | ⬜ | ⬜ | — |
 | 5 — Router | ⬜ TODO | ⬜ | ⬜ | — |
 | 6 — QA | ⬜ TODO | ⬜ | ⬜ | — |

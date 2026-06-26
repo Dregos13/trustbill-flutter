@@ -31,6 +31,12 @@ class AppColors {
   static const gray800 = Color(0xFF1E293B);
   static const gray900 = Color(0xFF0F172A);
 
+  // Task status colors
+  static const statusPending = Color(0xFFFBBF24);    // amber
+  static const statusInProgress = Color(0xFF38BDF8); // sky blue
+  static const statusDone = Color(0xFF22C55E);        // green
+  static const statusCancelled = Color(0xFF64748B);  // slate
+
   static const background = gray50;
   static const surface = Colors.white;
   static const text = gray900;
