@@ -15,10 +15,11 @@ import 'widgets/set_location.dart';
 
 /// Create (`/task/new`) or edit (`/task/:id/edit`) a field task.
 class TaskFormScreen extends ConsumerStatefulWidget {
-  const TaskFormScreen({super.key, this.taskId, this.presetClientId});
+  const TaskFormScreen({super.key, this.taskId, this.presetClientId, this.initialScheduledAt});
 
   final int? taskId;
   final int? presetClientId;
+  final DateTime? initialScheduledAt;
 
   bool get isEditing => taskId != null;
 
@@ -89,9 +90,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         if (_clientId != null) {
           _invoices = await repo.invoicesForClient(_clientId!);
         }
-      } else if (widget.presetClientId != null) {
-        _clientId = widget.presetClientId;
-        _invoices = await repo.invoicesForClient(_clientId!);
+      } else {
+        if (widget.presetClientId != null) {
+          _clientId = widget.presetClientId;
+          _invoices = await repo.invoicesForClient(_clientId!);
+        }
+        if (widget.initialScheduledAt != null) {
+          _scheduledAt = widget.initialScheduledAt;
+        }
       }
     } catch (e) {
       _error = friendlyError(e);

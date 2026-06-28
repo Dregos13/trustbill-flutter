@@ -249,6 +249,7 @@ class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
                         : () => context.push('/sales/new', extra: {
                               'budgetId': b.id,
                               'clientId': b.client!.id,
+                              'taxKind': b.taxKind,
                             }),
                     icon: const Icon(Icons.point_of_sale),
                     label: const Text('Convertir en venta'),

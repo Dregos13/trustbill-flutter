@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-
 import '../data/models/field_task.dart';
 import '../data/providers.dart';
+import 'calendar_week_view.dart';
 import '../shared/skeleton.dart';
 import '../shared/state_views.dart';
 import '../shared/tm_colors.dart';
@@ -24,14 +24,16 @@ class AgendaScreen extends ConsumerStatefulWidget {
 
 class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   bool _includeDone = false;
+  bool _calendarMode = false;
 
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(agendaTasksProvider(_includeDone));
+    // Calendar always loads all tasks so scheduled ones appear regardless of status.
+    final async = ref.watch(agendaTasksProvider(_calendarMode ? true : _includeDone));
 
     Future<void> refresh() async {
-      ref.invalidate(agendaTasksProvider(_includeDone));
-      await ref.read(agendaTasksProvider(_includeDone).future);
+      ref.invalidate(agendaTasksProvider(_calendarMode ? true : _includeDone));
+      await ref.read(agendaTasksProvider(_calendarMode ? true : _includeDone).future);
     }
 
     return DecoratedBox(
@@ -39,48 +41,86 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       child: SafeArea(
         top: false,
         bottom: false,
-        child: RefreshIndicator(
-          color: TmColors.accent,
-          backgroundColor: TmColors.surface,
-          onRefresh: refresh,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
-              TmSpacing.lg,
-              TmSpacing.md,
-              TmSpacing.lg,
-              88,
-            ),
-            children: [
-              _Header(
-                includeDone: _includeDone,
-                onToggle: (v) => setState(() => _includeDone = v),
-              ),
-              const SizedBox(height: TmSpacing.lg),
-              ...async.when(
-                loading: () => const [
-                  SkeletonTaskCard(),
-                  SizedBox(height: TmSpacing.md),
-                  SkeletonTaskCard(),
-                  SizedBox(height: TmSpacing.md),
-                  SkeletonTaskCard(),
-                ],
-                error: (e, _) => [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24),
-                    child: ErrorView(
-                      error: e,
-                      onRetry: () =>
-                          ref.invalidate(agendaTasksProvider(_includeDone)),
-                    ),
+        child: _calendarMode
+            ? _buildCalendar(context, async)
+            : RefreshIndicator(
+                color: TmColors.accent,
+                backgroundColor: TmColors.surface,
+                onRefresh: refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    TmSpacing.lg,
+                    TmSpacing.md,
+                    TmSpacing.lg,
+                    88,
                   ),
-                ],
-                data: (tasks) => _buildSections(context, tasks),
+                  children: [
+                    _Header(
+                      includeDone: _includeDone,
+                      calendarMode: _calendarMode,
+                      onToggleDone: (v) => setState(() => _includeDone = v),
+                      onToggleCalendar: (v) => setState(() => _calendarMode = v),
+                    ),
+                    const SizedBox(height: TmSpacing.lg),
+                    ...async.when(
+                      loading: () => const [
+                        SkeletonTaskCard(),
+                        SizedBox(height: TmSpacing.md),
+                        SkeletonTaskCard(),
+                        SizedBox(height: TmSpacing.md),
+                        SkeletonTaskCard(),
+                      ],
+                      error: (e, _) => [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 24),
+                          child: ErrorView(
+                            error: e,
+                            onRetry: () => ref.invalidate(
+                                agendaTasksProvider(_includeDone)),
+                          ),
+                        ),
+                      ],
+                      data: (tasks) => _buildSections(context, tasks),
+                    ),
+                  ],
+                ),
               ),
-            ],
+      ),
+    );
+  }
+
+  Widget _buildCalendar(BuildContext context, AsyncValue<List<FieldTask>> async) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(TmSpacing.lg, TmSpacing.md, TmSpacing.lg, 0),
+          child: _Header(
+            includeDone: _includeDone,
+            calendarMode: _calendarMode,
+            onToggleDone: (v) => setState(() => _includeDone = v),
+            onToggleCalendar: (v) => setState(() => _calendarMode = v),
           ),
         ),
-      ),
+        const SizedBox(height: TmSpacing.sm),
+        Expanded(
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator(color: TmColors.accent)),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(TmSpacing.lg),
+              child: ErrorView(
+                error: e,
+                onRetry: () => ref.invalidate(agendaTasksProvider(true)),
+              ),
+            ),
+            data: (tasks) => CalendarWeekView(
+              tasks: tasks,
+              onSlotTap: (dt) => context.push('/task/new', extra: {'scheduledAt': dt}),
+              onTaskTap: (t) => context.push('/task/${t.id}'),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -173,10 +213,17 @@ _Bucket _classify(FieldTask t, DateTime now) {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.includeDone, required this.onToggle});
+  const _Header({
+    required this.includeDone,
+    required this.calendarMode,
+    required this.onToggleDone,
+    required this.onToggleCalendar,
+  });
 
   final bool includeDone;
-  final ValueChanged<bool> onToggle;
+  final bool calendarMode;
+  final ValueChanged<bool> onToggleDone;
+  final ValueChanged<bool> onToggleCalendar;
 
   @override
   Widget build(BuildContext context) {
@@ -193,8 +240,70 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        _Segmented(includeDone: includeDone, onToggle: onToggle),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _ViewToggle(calendarMode: calendarMode, onToggle: onToggleCalendar),
+            if (!calendarMode) ...[
+              const SizedBox(height: TmSpacing.xs),
+              _Segmented(includeDone: includeDone, onToggle: onToggleDone),
+            ],
+          ],
+        ),
       ],
+    );
+  }
+}
+
+class _ViewToggle extends StatelessWidget {
+  const _ViewToggle({required this.calendarMode, required this.onToggle});
+
+  final bool calendarMode;
+  final ValueChanged<bool> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: TmColors.surface.withValues(alpha: 0.7),
+        borderRadius: TmRadii.brSm,
+        border: Border.all(color: TmColors.glassBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _item(Icons.list_rounded, 'Lista', !calendarMode, () => onToggle(false)),
+          _item(Icons.calendar_view_week_rounded, 'Calendario', calendarMode, () => onToggle(true)),
+        ],
+      ),
+    );
+  }
+
+  Widget _item(IconData icon, String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? TmColors.accent.withValues(alpha: 0.16) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: selected ? TmColors.accent : TmColors.textMuted),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TmType.label.copyWith(
+                color: selected ? TmColors.accent : TmColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

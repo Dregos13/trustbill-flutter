@@ -43,8 +43,9 @@ final _availableBudgetsProvider = FutureProvider.autoDispose
 class CreateSaleScreen extends ConsumerStatefulWidget {
   final int? initialBudgetId;
   final int? initialClientId;
+  final String? initialTaxKind;
 
-  const CreateSaleScreen({super.key, this.initialBudgetId, this.initialClientId});
+  const CreateSaleScreen({super.key, this.initialBudgetId, this.initialClientId, this.initialTaxKind});
 
   @override
   ConsumerState<CreateSaleScreen> createState() => _CreateSaleScreenState();
@@ -56,7 +57,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
 
   Client? _selectedClient;
   int? _selectedBudgetId;
-  String _taxKind = 'IVA';
+  late String _taxKind;
   String _status = 'OPEN';
   final _internalNotesCtrl = TextEditingController();
   final List<DocLine> _lines = [];
@@ -152,6 +153,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   @override
   void initState() {
     super.initState();
+    _taxKind = widget.initialTaxKind ?? 'IVA';
     _selectedBudgetId = widget.initialBudgetId;
     // Resolve the preselected client (from "Convertir en venta") once loaded.
     if (widget.initialClientId != null) {

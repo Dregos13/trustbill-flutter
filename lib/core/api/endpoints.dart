@@ -98,6 +98,13 @@ class Endpoints {
     return Client.fromJson(res.data);
   }
 
+  Future<void> patchClientLocation(int id, double latitude, double longitude) async {
+    await _api.patch(
+      '/clients/$id/location',
+      data: {'latitude': latitude, 'longitude': longitude},
+    );
+  }
+
   // ---- Invoices ----
 
   Future<PaginatedResponse<InvoiceListItem>> getInvoices({

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
 import '../../core/theme/app_colors.dart';
@@ -19,6 +22,9 @@ class CreateClientScreen extends ConsumerStatefulWidget {
 class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _saving = false;
+  bool _locating = false;
+  double? _latitude;
+  double? _longitude;
 
   late final TextEditingController _nameCtrl;
   late final TextEditingController _taxIdCtrl;
@@ -55,6 +61,46 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     super.dispose();
   }
 
+  Future<void> _detectLocation() async {
+    setState(() => _locating = true);
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        throw 'Activa la ubicación del dispositivo para usar el GPS.';
+      }
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+        throw 'Permiso de ubicación denegado.';
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => _LocationConfirmDialog(lat: pos.latitude, lng: pos.longitude),
+      );
+      if (confirmed == true) {
+        setState(() {
+          _latitude = pos.latitude;
+          _longitude = pos.longitude;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(friendlyError(e, fallback: 'No se pudo obtener la ubicación.')),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
@@ -76,6 +122,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         result = await endpoints.updateClient(widget.existingClient!.id, data);
       } else {
         result = await endpoints.createClient(data);
+        if (_latitude != null && _longitude != null) {
+          await endpoints.patchClientLocation(result.id, _latitude!, _longitude!);
+        }
       }
 
       if (!mounted) return;
@@ -210,6 +259,18 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 ),
               ],
             ),
+            if (!_isEditing) ...[
+              const SizedBox(height: 20),
+              _SectionTitle('Ubicación'),
+              const SizedBox(height: 8),
+              _LocationField(
+                latitude: _latitude,
+                longitude: _longitude,
+                locating: _locating,
+                onDetect: _detectLocation,
+                onClear: () => setState(() { _latitude = null; _longitude = null; }),
+              ),
+            ],
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -268,6 +329,117 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
           (required
               ? (v) => (v == null || v.trim().isEmpty) ? 'Campo obligatorio' : null
               : null),
+    );
+  }
+}
+
+class _LocationField extends StatelessWidget {
+  const _LocationField({
+    required this.latitude,
+    required this.longitude,
+    required this.locating,
+    required this.onDetect,
+    required this.onClear,
+  });
+
+  final double? latitude;
+  final double? longitude;
+  final bool locating;
+  final VoidCallback onDetect;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    if (locating) {
+      return const Row(
+        children: [
+          SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+          SizedBox(width: 10),
+          Text('Obteniendo ubicación...', style: TextStyle(color: AppColors.gray500)),
+        ],
+      );
+    }
+    if (latitude != null && longitude != null) {
+      return Row(
+        children: [
+          const Icon(Icons.location_on_rounded, color: AppColors.success, size: 18),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              '${latitude!.toStringAsFixed(5)}, ${longitude!.toStringAsFixed(5)}',
+              style: const TextStyle(fontSize: 13, color: AppColors.success),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: AppColors.gray500),
+            onPressed: onClear,
+            tooltip: 'Quitar ubicación',
+          ),
+        ],
+      );
+    }
+    return OutlinedButton.icon(
+      onPressed: onDetect,
+      icon: const Icon(Icons.my_location_rounded, size: 18),
+      label: const Text('Detectar ubicación'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        side: const BorderSide(color: AppColors.primary),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+}
+
+class _LocationConfirmDialog extends StatelessWidget {
+  const _LocationConfirmDialog({required this.lat, required this.lng});
+
+  final double lat;
+  final double lng;
+
+  @override
+  Widget build(BuildContext context) {
+    final point = LatLng(lat, lng);
+    return AlertDialog(
+      title: const Text('¿Es correcta esta ubicación?'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 220,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: FlutterMap(
+            options: MapOptions(initialCenter: point, initialZoom: 15),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.trustinfacts.mobile',
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: point,
+                    width: 32,
+                    height: 32,
+                    child: const Icon(Icons.location_pin, color: AppColors.danger, size: 32),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('No es correcta'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+          child: const Text('Confirmar'),
+        ),
+      ],
     );
   }
 }

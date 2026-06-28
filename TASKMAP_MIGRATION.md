@@ -254,6 +254,33 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 
 ---
 
+## Phase 7 — Calendar View + Bug Fixes
+
+> Gate: Calendar week view working in Tareas. Bugs from QA verified fixed. Build clean.
+
+### Bug fixes
+
+- [x] **7.1** Bug: `CreateSaleScreen` didn't inherit `taxKind` from budget → added `initialTaxKind` param, passed via router `extra`
+- [x] **7.2** Bug: back nav after "Emitir factura" from sale exited app (iOS) → `sale_detail_screen` `context.push` → `context.go`
+- [x] **7.3** Feature: map client sheet groups tasks by status — "En curso" / "Pendiente" / "Completadas" with section headers
+- [x] **7.4** Feature: "Detectar ubicación" GPS button in create client form — map confirmation dialog → auto-PATCH location after create
+- [x] **7.5** Feature: calendar week view in Tareas — "Lista" | "Calendario" toggle, week grid, tap slot → pre-filled task form
+
+### Calendar implementation
+
+- `lib/features/taskmap/agenda/calendar_week_view.dart` — new file
+  - `PageView` for week swiping (page 1000 = current week)
+  - 7 columns × 24 hourly rows, `_kHourH = 56px` per row
+  - Task chips positioned via `Positioned(top: hour * 56)`, colored by status
+  - Tap empty slot → `onSlotTap(DateTime)` → router pushes `/task/new` with `scheduledAt` in extra
+  - Tap chip → `onTaskTap(FieldTask)` → router pushes `/task/:id`
+- `TaskFormScreen` — added `initialScheduledAt` param, wired in `_load()`
+- `app_router.dart` `/task/new` — reads `extra['scheduledAt']` as `DateTime?`
+
+**Commit**: `feat(taskmap): phase-7 — calendar week view + bug fixes`
+
+---
+
 ## Decisions Log
 
 | # | Decision | Reason |
@@ -295,3 +322,4 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 | 4E — Map Screen | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4E |
 | 5 — Router | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-5 |
 | 6 — QA | ⬜ TODO | ⬜ | ⬜ | — |
+| 7 — Calendar + Bug fixes | ⬜ TODO | ✅ | ✅ | feat(taskmap): phase-7 |

@@ -178,6 +178,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CreateSaleScreen(
             initialBudgetId: extra?['budgetId'] as int?,
             initialClientId: extra?['clientId'] as int?,
+            initialTaxKind: extra?['taxKind'] as String?,
           );
         },
       ),
@@ -218,7 +219,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       // ── Task routes (full-screen, own Scaffold, no shell) ──────────────────
       GoRoute(
         path: '/task/new',
-        builder: (_, _) => const TaskFormScreen(),
+        builder: (_, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TaskFormScreen(
+            initialScheduledAt: extra?['scheduledAt'] as DateTime?,
+          );
+        },
       ),
       GoRoute(
         path: '/task/:id/edit',

@@ -84,7 +84,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
       ref.invalidate(saleDetailProvider(sale.id));
       final invoiceId = (res['invoice'] as Map<String, dynamic>?)?['id'] as int?;
       _toast('Factura borrador creada.', AppColors.success);
-      if (invoiceId != null) context.push('/invoices/$invoiceId');
+      if (invoiceId != null) context.go('/invoices/$invoiceId');
     } catch (e) {
       if (!mounted) return;
       setState(() => _invoicing = false);
