@@ -50,6 +50,8 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     _addressCtrl = TextEditingController(text: c?.address ?? '');
     _postalCtrl  = TextEditingController(text: c?.postalCode ?? '');
     _cityCtrl    = TextEditingController(text: c?.city ?? '');
+    _latitude    = c?.latitude;
+    _longitude   = c?.longitude;
   }
 
   @override
@@ -159,9 +161,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
         result = await endpoints.updateClient(widget.existingClient!.id, data);
       } else {
         result = await endpoints.createClient(data);
-        if (_latitude != null && _longitude != null) {
-          await endpoints.patchClientLocation(result.id, _latitude!, _longitude!);
-        }
+      }
+      if (_latitude != null && _longitude != null) {
+        await endpoints.patchClientLocation(result.id, _latitude!, _longitude!);
       }
 
       if (!mounted) return;
@@ -296,18 +298,16 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
                 ),
               ],
             ),
-            if (!_isEditing) ...[
-              const SizedBox(height: 20),
-              _SectionTitle('Ubicación'),
-              const SizedBox(height: 8),
-              _LocationField(
-                latitude: _latitude,
-                longitude: _longitude,
-                locating: _locating,
-                onDetect: _detectLocation,
-                onClear: () => setState(() { _latitude = null; _longitude = null; }),
-              ),
-            ],
+            const SizedBox(height: 20),
+            _SectionTitle('Ubicación'),
+            const SizedBox(height: 8),
+            _LocationField(
+              latitude: _latitude,
+              longitude: _longitude,
+              locating: _locating,
+              onDetect: _detectLocation,
+              onClear: () => setState(() { _latitude = null; _longitude = null; }),
+            ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,

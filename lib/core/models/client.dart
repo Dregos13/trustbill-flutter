@@ -14,6 +14,8 @@ abstract class Client with _$Client {
     String? address,
     @Default('') String postalCode,
     @Default('') String city,
+    double? latitude,
+    double? longitude,
     required int companyId,
   }) = _Client;
 
