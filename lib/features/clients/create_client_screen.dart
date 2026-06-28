@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
@@ -61,32 +64,66 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
     super.dispose();
   }
 
+  /// Geocodes the typed address via Nominatim. Falls back to GPS if no address.
   Future<void> _detectLocation() async {
     setState(() => _locating = true);
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) {
-        throw 'Activa la ubicación del dispositivo para usar el GPS.';
+      double? lat;
+      double? lng;
+
+      final address = _addressCtrl.text.trim();
+      final city    = _cityCtrl.text.trim();
+      final postal  = _postalCtrl.text.trim();
+
+      if (address.isNotEmpty || city.isNotEmpty) {
+        // Build a query from the typed fields.
+        final query = [address, postal, city].where((s) => s.isNotEmpty).join(', ');
+        final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+          'q': query,
+          'format': 'json',
+          'limit': '1',
+          'addressdetails': '0',
+        });
+        final res = await http.get(
+          uri,
+          headers: {'User-Agent': 'com.trustinfacts.mobile'},
+        );
+        if (res.statusCode == 200) {
+          final List<dynamic> data = json.decode(res.body) as List<dynamic>;
+          if (data.isNotEmpty) {
+            lat = double.tryParse(data[0]['lat'] as String? ?? '');
+            lng = double.tryParse(data[0]['lon'] as String? ?? '');
+          }
+        }
+        if (lat == null) {
+          throw 'No se encontró la dirección. Intenta con más detalle o usa el GPS.';
+        }
+      } else {
+        // No address typed — use device GPS.
+        if (!await Geolocator.isLocationServiceEnabled()) {
+          throw 'Escribe una dirección o activa el GPS para detectar la ubicación.';
+        }
+        var perm = await Geolocator.checkPermission();
+        if (perm == LocationPermission.denied) {
+          perm = await Geolocator.requestPermission();
+        }
+        if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+          throw 'Permiso de ubicación denegado.';
+        }
+        final pos = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        );
+        lat = pos.latitude;
+        lng = pos.longitude;
       }
-      var perm = await Geolocator.checkPermission();
-      if (perm == LocationPermission.denied) {
-        perm = await Geolocator.requestPermission();
-      }
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        throw 'Permiso de ubicación denegado.';
-      }
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
-      );
+
       if (!mounted) return;
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (_) => _LocationConfirmDialog(lat: pos.latitude, lng: pos.longitude),
+        builder: (_) => _LocationConfirmDialog(lat: lat!, lng: lng!),
       );
       if (confirmed == true) {
-        setState(() {
-          _latitude = pos.latitude;
-          _longitude = pos.longitude;
-        });
+        setState(() { _latitude = lat; _longitude = lng; });
       }
     } catch (e) {
       if (!mounted) return;

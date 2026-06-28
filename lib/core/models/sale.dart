@@ -61,6 +61,7 @@ abstract class SaleDetail with _$SaleDetail {
     required String code,
     required String status,
     String? regime,
+    String? taxKind,
     int? budgetId,
     String? internalNotes,
     @JsonKey(fromJson: toDouble) required double totalPlanned,

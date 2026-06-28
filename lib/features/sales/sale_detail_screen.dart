@@ -74,6 +74,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                 if (l.serviceId != null) 'serviceId': l.serviceId,
               })
           .toList(),
+      if (sale.taxKind != null) 'taxKind': sale.taxKind,
     };
 
     try {

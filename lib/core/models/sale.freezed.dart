@@ -936,7 +936,7 @@ $SalePartyCopyWith<$Res>? get client {
 /// @nodoc
 mixin _$SaleDetail {
 
- int get id; String get code; String get status; String? get regime; int? get budgetId; String? get internalNotes;@JsonKey(fromJson: toDouble) double get totalPlanned;@JsonKey(fromJson: toDouble) double get totalInvoiced;@JsonKey(fromJson: toDouble) double get totalPending; SaleParty? get client; SaleParty? get vendor; SaleBudgetRef? get budget; List<SaleDetailLine> get lines; List<SaleInstallment> get installments; List<SaleInvoiceRef> get invoices;
+ int get id; String get code; String get status; String? get regime; String? get taxKind; int? get budgetId; String? get internalNotes;@JsonKey(fromJson: toDouble) double get totalPlanned;@JsonKey(fromJson: toDouble) double get totalInvoiced;@JsonKey(fromJson: toDouble) double get totalPending; SaleParty? get client; SaleParty? get vendor; SaleBudgetRef? get budget; List<SaleDetailLine> get lines; List<SaleInstallment> get installments; List<SaleInvoiceRef> get invoices;
 /// Create a copy of SaleDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -949,16 +949,16 @@ $SaleDetailCopyWith<SaleDetail> get copyWith => _$SaleDetailCopyWithImpl<SaleDet
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SaleDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.code, code) || other.code == code)&&(identical(other.status, status) || other.status == status)&&(identical(other.regime, regime) || other.regime == regime)&&(identical(other.budgetId, budgetId) || other.budgetId == budgetId)&&(identical(other.internalNotes, internalNotes) || other.internalNotes == internalNotes)&&(identical(other.totalPlanned, totalPlanned) || other.totalPlanned == totalPlanned)&&(identical(other.totalInvoiced, totalInvoiced) || other.totalInvoiced == totalInvoiced)&&(identical(other.totalPending, totalPending) || other.totalPending == totalPending)&&(identical(other.client, client) || other.client == client)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.budget, budget) || other.budget == budget)&&const DeepCollectionEquality().equals(other.lines, lines)&&const DeepCollectionEquality().equals(other.installments, installments)&&const DeepCollectionEquality().equals(other.invoices, invoices));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SaleDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.code, code) || other.code == code)&&(identical(other.status, status) || other.status == status)&&(identical(other.regime, regime) || other.regime == regime)&&(identical(other.taxKind, taxKind) || other.taxKind == taxKind)&&(identical(other.budgetId, budgetId) || other.budgetId == budgetId)&&(identical(other.internalNotes, internalNotes) || other.internalNotes == internalNotes)&&(identical(other.totalPlanned, totalPlanned) || other.totalPlanned == totalPlanned)&&(identical(other.totalInvoiced, totalInvoiced) || other.totalInvoiced == totalInvoiced)&&(identical(other.totalPending, totalPending) || other.totalPending == totalPending)&&(identical(other.client, client) || other.client == client)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.budget, budget) || other.budget == budget)&&const DeepCollectionEquality().equals(other.lines, lines)&&const DeepCollectionEquality().equals(other.installments, installments)&&const DeepCollectionEquality().equals(other.invoices, invoices));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,code,status,regime,budgetId,internalNotes,totalPlanned,totalInvoiced,totalPending,client,vendor,budget,const DeepCollectionEquality().hash(lines),const DeepCollectionEquality().hash(installments),const DeepCollectionEquality().hash(invoices));
+int get hashCode => Object.hash(runtimeType,id,code,status,regime,taxKind,budgetId,internalNotes,totalPlanned,totalInvoiced,totalPending,client,vendor,budget,const DeepCollectionEquality().hash(lines),const DeepCollectionEquality().hash(installments),const DeepCollectionEquality().hash(invoices));
 
 @override
 String toString() {
-  return 'SaleDetail(id: $id, code: $code, status: $status, regime: $regime, budgetId: $budgetId, internalNotes: $internalNotes, totalPlanned: $totalPlanned, totalInvoiced: $totalInvoiced, totalPending: $totalPending, client: $client, vendor: $vendor, budget: $budget, lines: $lines, installments: $installments, invoices: $invoices)';
+  return 'SaleDetail(id: $id, code: $code, status: $status, regime: $regime, taxKind: $taxKind, budgetId: $budgetId, internalNotes: $internalNotes, totalPlanned: $totalPlanned, totalInvoiced: $totalInvoiced, totalPending: $totalPending, client: $client, vendor: $vendor, budget: $budget, lines: $lines, installments: $installments, invoices: $invoices)';
 }
 
 
@@ -969,7 +969,7 @@ abstract mixin class $SaleDetailCopyWith<$Res>  {
   factory $SaleDetailCopyWith(SaleDetail value, $Res Function(SaleDetail) _then) = _$SaleDetailCopyWithImpl;
 @useResult
 $Res call({
- int id, String code, String status, String? regime, int? budgetId, String? internalNotes,@JsonKey(fromJson: toDouble) double totalPlanned,@JsonKey(fromJson: toDouble) double totalInvoiced,@JsonKey(fromJson: toDouble) double totalPending, SaleParty? client, SaleParty? vendor, SaleBudgetRef? budget, List<SaleDetailLine> lines, List<SaleInstallment> installments, List<SaleInvoiceRef> invoices
+ int id, String code, String status, String? regime, String? taxKind, int? budgetId, String? internalNotes,@JsonKey(fromJson: toDouble) double totalPlanned,@JsonKey(fromJson: toDouble) double totalInvoiced,@JsonKey(fromJson: toDouble) double totalPending, SaleParty? client, SaleParty? vendor, SaleBudgetRef? budget, List<SaleDetailLine> lines, List<SaleInstallment> installments, List<SaleInvoiceRef> invoices
 });
 
 
@@ -986,12 +986,13 @@ class _$SaleDetailCopyWithImpl<$Res>
 
 /// Create a copy of SaleDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? code = null,Object? status = null,Object? regime = freezed,Object? budgetId = freezed,Object? internalNotes = freezed,Object? totalPlanned = null,Object? totalInvoiced = null,Object? totalPending = null,Object? client = freezed,Object? vendor = freezed,Object? budget = freezed,Object? lines = null,Object? installments = null,Object? invoices = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? code = null,Object? status = null,Object? regime = freezed,Object? taxKind = freezed,Object? budgetId = freezed,Object? internalNotes = freezed,Object? totalPlanned = null,Object? totalInvoiced = null,Object? totalPending = null,Object? client = freezed,Object? vendor = freezed,Object? budget = freezed,Object? lines = null,Object? installments = null,Object? invoices = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,regime: freezed == regime ? _self.regime : regime // ignore: cast_nullable_to_non_nullable
+as String?,taxKind: freezed == taxKind ? _self.taxKind : taxKind // ignore: cast_nullable_to_non_nullable
 as String?,budgetId: freezed == budgetId ? _self.budgetId : budgetId // ignore: cast_nullable_to_non_nullable
 as int?,internalNotes: freezed == internalNotes ? _self.internalNotes : internalNotes // ignore: cast_nullable_to_non_nullable
 as String?,totalPlanned: null == totalPlanned ? _self.totalPlanned : totalPlanned // ignore: cast_nullable_to_non_nullable
@@ -1124,10 +1125,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String code,  String status,  String? regime,  int? budgetId,  String? internalNotes, @JsonKey(fromJson: toDouble)  double totalPlanned, @JsonKey(fromJson: toDouble)  double totalInvoiced, @JsonKey(fromJson: toDouble)  double totalPending,  SaleParty? client,  SaleParty? vendor,  SaleBudgetRef? budget,  List<SaleDetailLine> lines,  List<SaleInstallment> installments,  List<SaleInvoiceRef> invoices)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String code,  String status,  String? regime,  String? taxKind,  int? budgetId,  String? internalNotes, @JsonKey(fromJson: toDouble)  double totalPlanned, @JsonKey(fromJson: toDouble)  double totalInvoiced, @JsonKey(fromJson: toDouble)  double totalPending,  SaleParty? client,  SaleParty? vendor,  SaleBudgetRef? budget,  List<SaleDetailLine> lines,  List<SaleInstallment> installments,  List<SaleInvoiceRef> invoices)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SaleDetail() when $default != null:
-return $default(_that.id,_that.code,_that.status,_that.regime,_that.budgetId,_that.internalNotes,_that.totalPlanned,_that.totalInvoiced,_that.totalPending,_that.client,_that.vendor,_that.budget,_that.lines,_that.installments,_that.invoices);case _:
+return $default(_that.id,_that.code,_that.status,_that.regime,_that.taxKind,_that.budgetId,_that.internalNotes,_that.totalPlanned,_that.totalInvoiced,_that.totalPending,_that.client,_that.vendor,_that.budget,_that.lines,_that.installments,_that.invoices);case _:
   return orElse();
 
 }
@@ -1145,10 +1146,10 @@ return $default(_that.id,_that.code,_that.status,_that.regime,_that.budgetId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String code,  String status,  String? regime,  int? budgetId,  String? internalNotes, @JsonKey(fromJson: toDouble)  double totalPlanned, @JsonKey(fromJson: toDouble)  double totalInvoiced, @JsonKey(fromJson: toDouble)  double totalPending,  SaleParty? client,  SaleParty? vendor,  SaleBudgetRef? budget,  List<SaleDetailLine> lines,  List<SaleInstallment> installments,  List<SaleInvoiceRef> invoices)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String code,  String status,  String? regime,  String? taxKind,  int? budgetId,  String? internalNotes, @JsonKey(fromJson: toDouble)  double totalPlanned, @JsonKey(fromJson: toDouble)  double totalInvoiced, @JsonKey(fromJson: toDouble)  double totalPending,  SaleParty? client,  SaleParty? vendor,  SaleBudgetRef? budget,  List<SaleDetailLine> lines,  List<SaleInstallment> installments,  List<SaleInvoiceRef> invoices)  $default,) {final _that = this;
 switch (_that) {
 case _SaleDetail():
-return $default(_that.id,_that.code,_that.status,_that.regime,_that.budgetId,_that.internalNotes,_that.totalPlanned,_that.totalInvoiced,_that.totalPending,_that.client,_that.vendor,_that.budget,_that.lines,_that.installments,_that.invoices);case _:
+return $default(_that.id,_that.code,_that.status,_that.regime,_that.taxKind,_that.budgetId,_that.internalNotes,_that.totalPlanned,_that.totalInvoiced,_that.totalPending,_that.client,_that.vendor,_that.budget,_that.lines,_that.installments,_that.invoices);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1165,10 +1166,10 @@ return $default(_that.id,_that.code,_that.status,_that.regime,_that.budgetId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String code,  String status,  String? regime,  int? budgetId,  String? internalNotes, @JsonKey(fromJson: toDouble)  double totalPlanned, @JsonKey(fromJson: toDouble)  double totalInvoiced, @JsonKey(fromJson: toDouble)  double totalPending,  SaleParty? client,  SaleParty? vendor,  SaleBudgetRef? budget,  List<SaleDetailLine> lines,  List<SaleInstallment> installments,  List<SaleInvoiceRef> invoices)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String code,  String status,  String? regime,  String? taxKind,  int? budgetId,  String? internalNotes, @JsonKey(fromJson: toDouble)  double totalPlanned, @JsonKey(fromJson: toDouble)  double totalInvoiced, @JsonKey(fromJson: toDouble)  double totalPending,  SaleParty? client,  SaleParty? vendor,  SaleBudgetRef? budget,  List<SaleDetailLine> lines,  List<SaleInstallment> installments,  List<SaleInvoiceRef> invoices)?  $default,) {final _that = this;
 switch (_that) {
 case _SaleDetail() when $default != null:
-return $default(_that.id,_that.code,_that.status,_that.regime,_that.budgetId,_that.internalNotes,_that.totalPlanned,_that.totalInvoiced,_that.totalPending,_that.client,_that.vendor,_that.budget,_that.lines,_that.installments,_that.invoices);case _:
+return $default(_that.id,_that.code,_that.status,_that.regime,_that.taxKind,_that.budgetId,_that.internalNotes,_that.totalPlanned,_that.totalInvoiced,_that.totalPending,_that.client,_that.vendor,_that.budget,_that.lines,_that.installments,_that.invoices);case _:
   return null;
 
 }
@@ -1180,13 +1181,14 @@ return $default(_that.id,_that.code,_that.status,_that.regime,_that.budgetId,_th
 @JsonSerializable()
 
 class _SaleDetail implements SaleDetail {
-  const _SaleDetail({required this.id, required this.code, required this.status, this.regime, this.budgetId, this.internalNotes, @JsonKey(fromJson: toDouble) required this.totalPlanned, @JsonKey(fromJson: toDouble) required this.totalInvoiced, @JsonKey(fromJson: toDouble) required this.totalPending, this.client, this.vendor, this.budget, final  List<SaleDetailLine> lines = const [], final  List<SaleInstallment> installments = const [], final  List<SaleInvoiceRef> invoices = const []}): _lines = lines,_installments = installments,_invoices = invoices;
+  const _SaleDetail({required this.id, required this.code, required this.status, this.regime, this.taxKind, this.budgetId, this.internalNotes, @JsonKey(fromJson: toDouble) required this.totalPlanned, @JsonKey(fromJson: toDouble) required this.totalInvoiced, @JsonKey(fromJson: toDouble) required this.totalPending, this.client, this.vendor, this.budget, final  List<SaleDetailLine> lines = const [], final  List<SaleInstallment> installments = const [], final  List<SaleInvoiceRef> invoices = const []}): _lines = lines,_installments = installments,_invoices = invoices;
   factory _SaleDetail.fromJson(Map<String, dynamic> json) => _$SaleDetailFromJson(json);
 
 @override final  int id;
 @override final  String code;
 @override final  String status;
 @override final  String? regime;
+@override final  String? taxKind;
 @override final  int? budgetId;
 @override final  String? internalNotes;
 @override@JsonKey(fromJson: toDouble) final  double totalPlanned;
@@ -1230,16 +1232,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SaleDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.code, code) || other.code == code)&&(identical(other.status, status) || other.status == status)&&(identical(other.regime, regime) || other.regime == regime)&&(identical(other.budgetId, budgetId) || other.budgetId == budgetId)&&(identical(other.internalNotes, internalNotes) || other.internalNotes == internalNotes)&&(identical(other.totalPlanned, totalPlanned) || other.totalPlanned == totalPlanned)&&(identical(other.totalInvoiced, totalInvoiced) || other.totalInvoiced == totalInvoiced)&&(identical(other.totalPending, totalPending) || other.totalPending == totalPending)&&(identical(other.client, client) || other.client == client)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.budget, budget) || other.budget == budget)&&const DeepCollectionEquality().equals(other._lines, _lines)&&const DeepCollectionEquality().equals(other._installments, _installments)&&const DeepCollectionEquality().equals(other._invoices, _invoices));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SaleDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.code, code) || other.code == code)&&(identical(other.status, status) || other.status == status)&&(identical(other.regime, regime) || other.regime == regime)&&(identical(other.taxKind, taxKind) || other.taxKind == taxKind)&&(identical(other.budgetId, budgetId) || other.budgetId == budgetId)&&(identical(other.internalNotes, internalNotes) || other.internalNotes == internalNotes)&&(identical(other.totalPlanned, totalPlanned) || other.totalPlanned == totalPlanned)&&(identical(other.totalInvoiced, totalInvoiced) || other.totalInvoiced == totalInvoiced)&&(identical(other.totalPending, totalPending) || other.totalPending == totalPending)&&(identical(other.client, client) || other.client == client)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.budget, budget) || other.budget == budget)&&const DeepCollectionEquality().equals(other._lines, _lines)&&const DeepCollectionEquality().equals(other._installments, _installments)&&const DeepCollectionEquality().equals(other._invoices, _invoices));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,code,status,regime,budgetId,internalNotes,totalPlanned,totalInvoiced,totalPending,client,vendor,budget,const DeepCollectionEquality().hash(_lines),const DeepCollectionEquality().hash(_installments),const DeepCollectionEquality().hash(_invoices));
+int get hashCode => Object.hash(runtimeType,id,code,status,regime,taxKind,budgetId,internalNotes,totalPlanned,totalInvoiced,totalPending,client,vendor,budget,const DeepCollectionEquality().hash(_lines),const DeepCollectionEquality().hash(_installments),const DeepCollectionEquality().hash(_invoices));
 
 @override
 String toString() {
-  return 'SaleDetail(id: $id, code: $code, status: $status, regime: $regime, budgetId: $budgetId, internalNotes: $internalNotes, totalPlanned: $totalPlanned, totalInvoiced: $totalInvoiced, totalPending: $totalPending, client: $client, vendor: $vendor, budget: $budget, lines: $lines, installments: $installments, invoices: $invoices)';
+  return 'SaleDetail(id: $id, code: $code, status: $status, regime: $regime, taxKind: $taxKind, budgetId: $budgetId, internalNotes: $internalNotes, totalPlanned: $totalPlanned, totalInvoiced: $totalInvoiced, totalPending: $totalPending, client: $client, vendor: $vendor, budget: $budget, lines: $lines, installments: $installments, invoices: $invoices)';
 }
 
 
@@ -1250,7 +1252,7 @@ abstract mixin class _$SaleDetailCopyWith<$Res> implements $SaleDetailCopyWith<$
   factory _$SaleDetailCopyWith(_SaleDetail value, $Res Function(_SaleDetail) _then) = __$SaleDetailCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String code, String status, String? regime, int? budgetId, String? internalNotes,@JsonKey(fromJson: toDouble) double totalPlanned,@JsonKey(fromJson: toDouble) double totalInvoiced,@JsonKey(fromJson: toDouble) double totalPending, SaleParty? client, SaleParty? vendor, SaleBudgetRef? budget, List<SaleDetailLine> lines, List<SaleInstallment> installments, List<SaleInvoiceRef> invoices
+ int id, String code, String status, String? regime, String? taxKind, int? budgetId, String? internalNotes,@JsonKey(fromJson: toDouble) double totalPlanned,@JsonKey(fromJson: toDouble) double totalInvoiced,@JsonKey(fromJson: toDouble) double totalPending, SaleParty? client, SaleParty? vendor, SaleBudgetRef? budget, List<SaleDetailLine> lines, List<SaleInstallment> installments, List<SaleInvoiceRef> invoices
 });
 
 
@@ -1267,12 +1269,13 @@ class __$SaleDetailCopyWithImpl<$Res>
 
 /// Create a copy of SaleDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? code = null,Object? status = null,Object? regime = freezed,Object? budgetId = freezed,Object? internalNotes = freezed,Object? totalPlanned = null,Object? totalInvoiced = null,Object? totalPending = null,Object? client = freezed,Object? vendor = freezed,Object? budget = freezed,Object? lines = null,Object? installments = null,Object? invoices = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? code = null,Object? status = null,Object? regime = freezed,Object? taxKind = freezed,Object? budgetId = freezed,Object? internalNotes = freezed,Object? totalPlanned = null,Object? totalInvoiced = null,Object? totalPending = null,Object? client = freezed,Object? vendor = freezed,Object? budget = freezed,Object? lines = null,Object? installments = null,Object? invoices = null,}) {
   return _then(_SaleDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,regime: freezed == regime ? _self.regime : regime // ignore: cast_nullable_to_non_nullable
+as String?,taxKind: freezed == taxKind ? _self.taxKind : taxKind // ignore: cast_nullable_to_non_nullable
 as String?,budgetId: freezed == budgetId ? _self.budgetId : budgetId // ignore: cast_nullable_to_non_nullable
 as int?,internalNotes: freezed == internalNotes ? _self.internalNotes : internalNotes // ignore: cast_nullable_to_non_nullable
 as String?,totalPlanned: null == totalPlanned ? _self.totalPlanned : totalPlanned // ignore: cast_nullable_to_non_nullable
