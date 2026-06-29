@@ -92,13 +92,6 @@
       "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\ios\\Runner\\Runner-Bridging-Header.h:1"
     },
     {
-      "id": "file::generated_plugin_registrant",
-      "label": "generated_plugin_registrant.h",
-      "fileType": "code",
-      "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.h",
-      "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.h:1"
-    },
-    {
       "id": "generated_plugin_registrant::fl_register_plugins",
       "label": "fl_register_plugins",
       "fileType": "code",
@@ -195,13 +188,6 @@
       "fileType": "code",
       "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\linux\\runner\\my_application.cc",
       "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\linux\\runner\\my_application.cc:138"
-    },
-    {
-      "id": "generated_plugin_registrant::registerplugins",
-      "label": "RegisterPlugins",
-      "fileType": "code",
-      "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc",
-      "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc:14"
     },
     {
       "id": "file::flutter_window",
@@ -426,6 +412,20 @@
       "fileType": "code",
       "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\runner\\win32_window.cpp",
       "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\runner\\win32_window.cpp:275"
+    },
+    {
+      "id": "file::generated_plugin_registrant",
+      "label": "generated_plugin_registrant.cc",
+      "fileType": "code",
+      "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc",
+      "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc:1"
+    },
+    {
+      "id": "generated_plugin_registrant::registerplugins",
+      "label": "RegisterPlugins",
+      "fileType": "code",
+      "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc",
+      "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc:15"
     }
   ],
   "edges": [
@@ -589,15 +589,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\linux\\runner\\my_application.cc",
       "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\linux\\runner\\my_application.cc:138",
-      "weight": 1
-    },
-    {
-      "source": "file::generated_plugin_registrant",
-      "target": "generated_plugin_registrant::registerplugins",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc",
-      "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc:14",
       "weight": 1
     },
     {
@@ -851,12 +842,21 @@
       "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\runner\\win32_window.cpp",
       "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\runner\\win32_window.cpp:275",
       "weight": 1
+    },
+    {
+      "source": "file::generated_plugin_registrant",
+      "target": "generated_plugin_registrant::registerplugins",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc",
+      "sourceLocation": "C:\\Users\\rami-\\Documents\\TrustCore\\TrustBill-Flutter\\trustbill-flutter\\windows\\flutter\\generated_plugin_registrant.cc:15",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 1029,
+    "files": 21,
     "nodes": 61,
     "edges": 47,
-    "builtAt": "2026-06-09T14:23:05.611Z"
+    "builtAt": "2026-06-29T08:37:48.786Z"
   }
 }

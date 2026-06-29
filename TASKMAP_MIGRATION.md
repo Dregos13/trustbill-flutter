@@ -1,6 +1,6 @@
 # TaskMap → TrustBill-Flutter Migration
 
-> Status: PLANNING  
+> Status: COMPLETE ✅  
 > Owner: TrustBill Senior Dev  
 > Started: 2026-06-26  
 > Approach: slow, iterative, test each phase before next
@@ -222,10 +222,10 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 
 ### Tasks
 
-- [ ] **6.1** Full smoke test — existing features:
+- [x] **6.1** Full smoke test — existing features:
   - Login → Dashboard → Clientes → Facturas → Compras → Catálogo → Account
   - Invoice CRUD, Budget, Sales, Scan
-- [ ] **6.2** TaskMap module ENABLED tests:
+- [x] **6.2** TaskMap module ENABLED tests:
   - Tab "Tareas" visible
   - Map loads OSM tiles
   - Pins render, clusters group correctly
@@ -234,20 +234,20 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
   - Edit task
   - Advance status (PENDING → IN_PROGRESS → DONE)
   - Set client location via map
-- [ ] **6.3** TaskMap module DISABLED tests:
+- [x] **6.3** TaskMap module DISABLED tests:
   - Tab "Tareas" hidden
   - Deep-link `/map` → redirects to `/`
   - Deep-link `/task/1` → redirects to `/`
-- [ ] **6.4** Location permission flow:
+- [x] **6.4** Location permission flow:
   - First launch → permission dialog appears
   - Denied → map still loads (no crash), location button disabled
   - Granted → map centers on user
-- [ ] **6.5** Offline / API down:
+- [x] **6.5** Offline / API down:
   - Task list shows error state (not crash)
   - Map shows error state
-- [ ] **6.6** Verify `friendlyError()` used in all taskmap error states
-- [ ] **6.7** Final `flutter build apk --debug` + `adb install` + full pass
-- [ ] **6.8** Archive taskmap repo: tag it `v1.2.0-final-standalone`, add README note pointing to main app
+- [x] **6.6** Verify `friendlyError()` used in all taskmap error states
+- [x] **6.7** Final `flutter build apk --debug` + `adb install` + full pass
+- [x] **6.8** Archive taskmap repo: tag it `v1.2.0-final-standalone`, add README note pointing to main app
 
 **Skills**: `/verify` skill for manual device testing. `/code-review` final pass.  
 **Commit**: `feat(taskmap): phase-6 — QA pass, module gating verified, archived standalone app`
@@ -321,5 +321,5 @@ The meat of the migration. Each screen is self-contained. Port one screen, verif
 | 4A–D — UI (partial) | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4A…4D |
 | 4E — Map Screen | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-4E |
 | 5 — Router | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-5 |
-| 6 — QA | ⬜ TODO | ⬜ | ⬜ | — |
-| 7 — Calendar + Bug fixes | ⬜ TODO | ✅ | ✅ | feat(taskmap): phase-7 |
+| 6 — QA | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-6 |
+| 7 — Calendar + Bug fixes | ✅ DONE | ✅ | ✅ | feat(taskmap): phase-7 |
