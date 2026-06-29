@@ -43,15 +43,8 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path_android: "tf_icon_pack/01_icon_full.png"
-  image_path_ios: "tf_icon_pack/01_icon_full.png"
-  min_sdk_android: 21
-  adaptive_icon_foreground: "tf_icon_pack/02_icon_foreground.png"
-  adaptive_icon_background: "tf_icon_pack/03_icon_background.png"
-  adaptive_icon_monochrome: "tf_icon_pack/04_icon_monochrome.png"
+  image_path: "assets/icon/icon_ios.png"
   remove_alpha_ios: true
-  web:
-    generate: false
 
 flutter:
   uses-material-design: true
