@@ -49,29 +49,36 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     super.initState();
     final result = ref.read(scanProvider).result;
 
-    _supplierNameCtrl =
-        TextEditingController(text: result?.supplierName ?? '');
-    _supplierCifCtrl =
-        TextEditingController(text: result?.supplierCif ?? '');
+    _supplierNameCtrl = TextEditingController(text: result?.supplierName ?? '');
+    _supplierCifCtrl = TextEditingController(text: result?.supplierCif ?? '');
     _supplierEmailCtrl = TextEditingController();
-    _supplierPhoneCtrl =
-        TextEditingController(text: result?.supplierPhone ?? '');
-    _supplierAddressCtrl =
-        TextEditingController(text: result?.supplierAddress ?? '');
+    _supplierPhoneCtrl = TextEditingController(
+      text: result?.supplierPhone ?? '',
+    );
+    _supplierAddressCtrl = TextEditingController(
+      text: result?.supplierAddress ?? '',
+    );
     _supplierPostalCtrl = TextEditingController();
     _supplierNotesCtrl = TextEditingController();
 
-    _invoiceNumberCtrl =
-        TextEditingController(text: result?.invoiceNumber ?? '');
+    _invoiceNumberCtrl = TextEditingController(
+      text: result?.invoiceNumber ?? '',
+    );
     _issueDateCtrl = TextEditingController(
-        text: _formatDisplayDate(result?.date ?? DateTime.now().toIso8601String()));
+      text: _formatDisplayDate(
+        result?.date ?? DateTime.now().toIso8601String(),
+      ),
+    );
     _dueDateCtrl = TextEditingController(
-        text: _formatDisplayDate(result?.dueDate ?? ''));
+      text: _formatDisplayDate(result?.dueDate ?? ''),
+    );
 
     _totalCtrl = TextEditingController(
-        text: (result?.total ?? 0).toStringAsFixed(2));
+      text: (result?.total ?? 0).toStringAsFixed(2),
+    );
     _taxCtrl = TextEditingController(
-        text: (result?.taxAmount ?? 0).toStringAsFixed(2));
+      text: (result?.taxAmount ?? 0).toStringAsFixed(2),
+    );
   }
 
   String _formatDisplayDate(String iso) {
@@ -99,8 +106,10 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return DateTime.now().toUtc().toIso8601String();
   }
 
-  Future<void> _pickDate(TextEditingController ctrl,
-      {bool allowFuture = false}) async {
+  Future<void> _pickDate(
+    TextEditingController ctrl, {
+    bool allowFuture = false,
+  }) async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -145,7 +154,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'No se encontró ningún proveedor. Se creará uno nuevo al confirmar.'),
+              'No se encontró ningún proveedor. Se creará uno nuevo al confirmar.',
+            ),
             duration: Duration(seconds: 3),
           ),
         );
@@ -169,7 +179,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('No se pudo buscar el proveedor. Puedes rellenar los datos manualmente.'),
+            content: Text(
+              'No se pudo buscar el proveedor. Puedes rellenar los datos manualmente.',
+            ),
             duration: Duration(seconds: 3),
           ),
         );
@@ -184,16 +196,21 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       _matchedSupplier = s;
       _supplierNameCtrl.text = s.name;
       _supplierCifCtrl.text = s.taxId ?? '';
-      if (s.email != null && s.email!.isNotEmpty)
+      if (s.email != null && s.email!.isNotEmpty) {
         _supplierEmailCtrl.text = s.email!;
-      if (s.phone != null && s.phone!.isNotEmpty)
+      }
+      if (s.phone != null && s.phone!.isNotEmpty) {
         _supplierPhoneCtrl.text = s.phone!;
-      if (s.address != null && s.address!.isNotEmpty)
+      }
+      if (s.address != null && s.address!.isNotEmpty) {
         _supplierAddressCtrl.text = s.address!;
-      if (s.postalCode != null && s.postalCode!.isNotEmpty)
+      }
+      if (s.postalCode != null && s.postalCode!.isNotEmpty) {
         _supplierPostalCtrl.text = s.postalCode!;
-      if (s.notes != null && s.notes!.isNotEmpty)
+      }
+      if (s.notes != null && s.notes!.isNotEmpty) {
         _supplierNotesCtrl.text = s.notes!;
+      }
     });
   }
 
@@ -204,13 +221,16 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     if (state.imageBytes == null) return;
 
     final scanResult = state.result;
-    final lines = scanResult?.lines
-            .map((l) => <String, dynamic>{
-                  'description': l.description,
-                  'base': l.unitPrice * l.quantity,
-                  'taxRate': l.taxRate,
-                  'taxAmount': l.unitPrice * l.quantity * l.taxRate / 100,
-                })
+    final lines =
+        scanResult?.lines
+            .map(
+              (l) => <String, dynamic>{
+                'description': l.description,
+                'base': l.unitPrice * l.quantity,
+                'taxRate': l.taxRate,
+                'taxAmount': l.unitPrice * l.quantity * l.taxRate / 100,
+              },
+            )
             .toList() ??
         <Map<String, dynamic>>[];
 
@@ -283,7 +303,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       if (next.confirmed != null && prev?.confirmed == null) {
         setState(() => _showSuccess = true);
         Future.delayed(const Duration(seconds: 2), () {
-          if (!mounted) return;
+          if (!context.mounted) return;
           final supplierName =
               next.confirmed!.supplier['name'] as String? ?? '';
           final supplierCreated = next.confirmed!.supplierCreated;
@@ -305,324 +325,344 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return Stack(
       children: [
         Scaffold(
-      appBar: AppBar(
-        title: const Text('Revisar factura'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Confidence indicator
-            if (confidence > 0) ...[
-              _ConfidenceBanner(confidence: confidence),
-              const SizedBox(height: 16),
-            ],
-
-            // Error display
-            if (state.error != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.dangerBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  state.error!,
-                  style:
-                      const TextStyle(color: AppColors.danger, fontSize: 13),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // ── Proveedor ──────────────────────────────────────────────────
-            _SectionTitle('Proveedor'),
-            const SizedBox(height: 8),
-
-            // Matched supplier banner
-            if (_matchedSupplier != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.successBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle,
-                        color: AppColors.success, size: 16),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'Proveedor encontrado en tu base de datos',
-                        style: TextStyle(
-                            color: AppColors.success, fontSize: 13),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () =>
-                          setState(() => _matchedSupplier = null),
-                      child: const Icon(Icons.close,
-                          color: AppColors.success, size: 16),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Nombre fiscal + search button
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          appBar: AppBar(
+            title: const Text('Revisar factura'),
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+          ),
+          body: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Expanded(
-                  child: _buildField(
-                    controller: _supplierNameCtrl,
-                    label: 'Nombre fiscal',
-                    icon: Icons.store,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Nombre requerido' : null,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: _searchingSupplier
-                      ? const SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2),
-                            ),
-                          ),
-                        )
-                      : IconButton.filled(
-                          onPressed: _searchSupplier,
-                          icon: const Icon(Icons.search),
-                          tooltip: 'Buscar en tu base de datos',
-                          style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white),
-                        ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+                // Confidence indicator
+                if (confidence > 0) ...[
+                  _ConfidenceBanner(confidence: confidence),
+                  const SizedBox(height: 16),
+                ],
 
-            _buildField(
-              controller: _supplierCifCtrl,
-              label: 'CIF / NIF',
-              icon: Icons.badge,
-              hint: 'Busca por CIF para encontrar el proveedor',
-            ),
-            const SizedBox(height: 12),
-
-            _buildField(
-              controller: _supplierEmailCtrl,
-              label: 'Email',
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 12),
-
-            _buildField(
-              controller: _supplierPhoneCtrl,
-              label: 'Teléfono',
-              icon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 12),
-
-            _buildField(
-              controller: _supplierAddressCtrl,
-              label: 'Dirección',
-              icon: Icons.location_on_outlined,
-            ),
-            const SizedBox(height: 12),
-
-            _buildField(
-              controller: _supplierPostalCtrl,
-              label: 'Código postal',
-              icon: Icons.markunread_mailbox_outlined,
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 12),
-
-            _buildField(
-              controller: _supplierNotesCtrl,
-              label: 'Notas',
-              icon: Icons.notes,
-              maxLines: 2,
-            ),
-
-            // ── Datos de la factura ────────────────────────────────────────
-            const SizedBox(height: 24),
-            _SectionTitle('Datos de la factura'),
-            const SizedBox(height: 8),
-
-            _buildField(
-              controller: _invoiceNumberCtrl,
-              label: 'Nº Factura',
-              icon: Icons.tag,
-            ),
-            const SizedBox(height: 12),
-
-            // Fecha emisión
-            GestureDetector(
-              onTap: () => _pickDate(_issueDateCtrl),
-              child: AbsorbPointer(
-                child: _buildField(
-                  controller: _issueDateCtrl,
-                  label: 'Fecha emisión',
-                  icon: Icons.calendar_today,
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Fecha requerida' : null,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Fecha vencimiento
-            GestureDetector(
-              onTap: () => _pickDate(_dueDateCtrl, allowFuture: true),
-              child: AbsorbPointer(
-                child: _buildField(
-                  controller: _dueDateCtrl,
-                  label: 'Fecha vencimiento',
-                  icon: Icons.event_outlined,
-                  hint: 'Opcional',
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Régimen fiscal
-            DropdownButtonFormField<String>(
-              value: _taxKind,
-              decoration: InputDecoration(
-                labelText: 'Régimen fiscal',
-                prefixIcon: const Icon(Icons.account_balance_outlined,
-                    color: AppColors.gray400),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'IVA', child: Text('IVA')),
-                DropdownMenuItem(value: 'IPSI', child: Text('IPSI')),
-              ],
-              onChanged: (v) => setState(() => _taxKind = v ?? 'IVA'),
-            ),
-            const SizedBox(height: 12),
-
-            // Estado
-            DropdownButtonFormField<String>(
-              value: _status,
-              decoration: InputDecoration(
-                labelText: 'Estado',
-                prefixIcon: const Icon(Icons.payments_outlined,
-                    color: AppColors.gray400),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              items: const [
-                DropdownMenuItem(
-                    value: 'UNPAID', child: Text('Pendiente')),
-                DropdownMenuItem(value: 'PAID', child: Text('Pagada')),
-              ],
-              onChanged: (v) => setState(() => _status = v ?? 'UNPAID'),
-            ),
-
-            // ── Importes ───────────────────────────────────────────────────
-            const SizedBox(height: 24),
-            _SectionTitle('Importes'),
-            const SizedBox(height: 8),
-
-            _buildField(
-              controller: _totalCtrl,
-              label: 'Total',
-              icon: Icons.euro,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              validator: (v) {
-                final n = double.tryParse(v ?? '');
-                if (n == null || n <= 0) return 'Total requerido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-
-            _buildField(
-              controller: _taxCtrl,
-              label: 'Impuesto / IVA',
-              icon: Icons.receipt_long,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-            ),
-
-            // ── Líneas detectadas (read-only) ──────────────────────────────
-            if (state.result != null &&
-                state.result!.lines.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              _SectionTitle(
-                  'Líneas detectadas (${state.result!.lines.length})'),
-              const SizedBox(height: 8),
-              ...state.result!.lines.map((line) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
+                // Error display
+                if (state.error != null) ...[
+                  Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.gray50,
+                      color: AppColors.dangerBg,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.gray200),
+                    ),
+                    child: Text(
+                      state.error!,
+                      style: const TextStyle(
+                        color: AppColors.danger,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ── Proveedor ──────────────────────────────────────────────────
+                _SectionTitle('Proveedor'),
+                const SizedBox(height: 8),
+
+                // Matched supplier banner
+                if (_matchedSupplier != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.successBg,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        Expanded(
+                        const Icon(
+                          Icons.check_circle,
+                          color: AppColors.success,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
                           child: Text(
-                            line.description,
-                            style: const TextStyle(
+                            'Proveedor encontrado en tu base de datos',
+                            style: TextStyle(
+                              color: AppColors.success,
                               fontSize: 13,
-                              color: AppColors.gray700,
                             ),
                           ),
                         ),
-                        Text(
-                          '${line.total.toStringAsFixed(2)} EUR',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.gray800,
+                        GestureDetector(
+                          onTap: () => setState(() => _matchedSupplier = null),
+                          child: const Icon(
+                            Icons.close,
+                            color: AppColors.success,
+                            size: 16,
                           ),
                         ),
                       ],
                     ),
-                  )),
-            ],
+                  ),
 
-            const SizedBox(height: 32),
+                // Nombre fiscal + search button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildField(
+                        controller: _supplierNameCtrl,
+                        label: 'Nombre fiscal',
+                        icon: Icons.store,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Nombre requerido' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: _searchingSupplier
+                          ? const SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : IconButton.filled(
+                              onPressed: _searchSupplier,
+                              icon: const Icon(Icons.search),
+                              tooltip: 'Buscar en tu base de datos',
+                              style: IconButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
 
-            // Submit button
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                onPressed: state.isConfirming ? null : _submit,
-                icon: const Icon(Icons.check),
-                label: const Text('Registrar factura'),
-              ),
+                _buildField(
+                  controller: _supplierCifCtrl,
+                  label: 'CIF / NIF',
+                  icon: Icons.badge,
+                  hint: 'Busca por CIF para encontrar el proveedor',
+                ),
+                const SizedBox(height: 12),
+
+                _buildField(
+                  controller: _supplierEmailCtrl,
+                  label: 'Email',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 12),
+
+                _buildField(
+                  controller: _supplierPhoneCtrl,
+                  label: 'Teléfono',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 12),
+
+                _buildField(
+                  controller: _supplierAddressCtrl,
+                  label: 'Dirección',
+                  icon: Icons.location_on_outlined,
+                ),
+                const SizedBox(height: 12),
+
+                _buildField(
+                  controller: _supplierPostalCtrl,
+                  label: 'Código postal',
+                  icon: Icons.markunread_mailbox_outlined,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+
+                _buildField(
+                  controller: _supplierNotesCtrl,
+                  label: 'Notas',
+                  icon: Icons.notes,
+                  maxLines: 2,
+                ),
+
+                // ── Datos de la factura ────────────────────────────────────────
+                const SizedBox(height: 24),
+                _SectionTitle('Datos de la factura'),
+                const SizedBox(height: 8),
+
+                _buildField(
+                  controller: _invoiceNumberCtrl,
+                  label: 'Nº Factura',
+                  icon: Icons.tag,
+                ),
+                const SizedBox(height: 12),
+
+                // Fecha emisión
+                GestureDetector(
+                  onTap: () => _pickDate(_issueDateCtrl),
+                  child: AbsorbPointer(
+                    child: _buildField(
+                      controller: _issueDateCtrl,
+                      label: 'Fecha emisión',
+                      icon: Icons.calendar_today,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Fecha requerida' : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Fecha vencimiento
+                GestureDetector(
+                  onTap: () => _pickDate(_dueDateCtrl, allowFuture: true),
+                  child: AbsorbPointer(
+                    child: _buildField(
+                      controller: _dueDateCtrl,
+                      label: 'Fecha vencimiento',
+                      icon: Icons.event_outlined,
+                      hint: 'Opcional',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Régimen fiscal
+                DropdownButtonFormField<String>(
+                  initialValue: _taxKind,
+                  decoration: InputDecoration(
+                    labelText: 'Régimen fiscal',
+                    prefixIcon: const Icon(
+                      Icons.account_balance_outlined,
+                      color: AppColors.gray400,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'IVA', child: Text('IVA')),
+                    DropdownMenuItem(value: 'IPSI', child: Text('IPSI')),
+                  ],
+                  onChanged: (v) => setState(() => _taxKind = v ?? 'IVA'),
+                ),
+                const SizedBox(height: 12),
+
+                // Estado
+                DropdownButtonFormField<String>(
+                  initialValue: _status,
+                  decoration: InputDecoration(
+                    labelText: 'Estado',
+                    prefixIcon: const Icon(
+                      Icons.payments_outlined,
+                      color: AppColors.gray400,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'UNPAID', child: Text('Pendiente')),
+                    DropdownMenuItem(value: 'PAID', child: Text('Pagada')),
+                  ],
+                  onChanged: (v) => setState(() => _status = v ?? 'UNPAID'),
+                ),
+
+                // ── Importes ───────────────────────────────────────────────────
+                const SizedBox(height: 24),
+                _SectionTitle('Importes'),
+                const SizedBox(height: 8),
+
+                _buildField(
+                  controller: _totalCtrl,
+                  label: 'Total',
+                  icon: Icons.euro,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) {
+                    final n = double.tryParse(v ?? '');
+                    if (n == null || n <= 0) return 'Total requerido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                _buildField(
+                  controller: _taxCtrl,
+                  label: 'Impuesto / IVA',
+                  icon: Icons.receipt_long,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                ),
+
+                // ── Líneas detectadas (read-only) ──────────────────────────────
+                if (state.result != null && state.result!.lines.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _SectionTitle(
+                    'Líneas detectadas (${state.result!.lines.length})',
+                  ),
+                  const SizedBox(height: 8),
+                  ...state.result!.lines.map(
+                    (line) => Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.gray50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.gray200),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              line.description,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.gray700,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '${line.total.toStringAsFixed(2)} EUR',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.gray800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 32),
+
+                // Submit button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: state.isConfirming ? null : _submit,
+                    icon: const Icon(Icons.check),
+                    label: const Text('Registrar factura'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+          ),
         ),
         if (state.isConfirming || _showSuccess)
           _ConfirmProgressOverlay(success: _showSuccess),
@@ -645,11 +685,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon:
-            icon != null ? Icon(icon, color: AppColors.gray400) : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        prefixIcon: icon != null ? Icon(icon, color: AppColors.gray400) : null,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
       keyboardType: keyboardType,
       maxLines: maxLines,
@@ -689,16 +726,14 @@ class _SupplierPickerDialog extends StatelessWidget {
         child: ListView.separated(
           shrinkWrap: true,
           itemCount: suppliers.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
+          separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (_, i) {
             final s = suppliers[i];
             return ListTile(
-              leading:
-                  const Icon(Icons.store, color: AppColors.primary),
+              leading: const Icon(Icons.store, color: AppColors.primary),
               title: Text(s.name),
               subtitle: s.taxId != null && s.taxId!.isNotEmpty
-                  ? Text(s.taxId!,
-                      style: const TextStyle(fontSize: 12))
+                  ? Text(s.taxId!, style: const TextStyle(fontSize: 12))
                   : null,
               onTap: () => Navigator.of(context).pop(s),
             );
@@ -747,10 +782,20 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
     super.initState();
     if (!widget.success) {
       Timer(const Duration(milliseconds: 900), () {
-        if (mounted) setState(() { _stepState[0] = 2; _stepState[1] = 1; });
+        if (mounted) {
+          setState(() {
+            _stepState[0] = 2;
+            _stepState[1] = 1;
+          });
+        }
       });
       Timer(const Duration(milliseconds: 1900), () {
-        if (mounted) setState(() { _stepState[1] = 2; _stepState[2] = 1; });
+        if (mounted) {
+          setState(() {
+            _stepState[1] = 2;
+            _stepState[2] = 1;
+          });
+        }
       });
     }
   }
@@ -782,16 +827,21 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
                 ),
               ),
               const SizedBox(height: 24),
-              ...List.generate(_labels.length, (i) => _StepRow(
-                    icon: _icons[i],
-                    label: _labels[i],
-                    state: allDone ? 2 : _stepState[i],
-                  )),
+              ...List.generate(
+                _labels.length,
+                (i) => _StepRow(
+                  icon: _icons[i],
+                  label: _labels[i],
+                  state: allDone ? 2 : _stepState[i],
+                ),
+              ),
               if (allDone) ...[
                 const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.successBg,
                     borderRadius: BorderRadius.circular(10),
@@ -799,8 +849,11 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle,
-                          color: AppColors.success, size: 20),
+                      const Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       const Text(
                         'Todo listo',
@@ -827,7 +880,11 @@ class _StepRow extends StatelessWidget {
   final String label;
   final int state; // 0=pending, 1=active, 2=done
 
-  const _StepRow({required this.icon, required this.label, required this.state});
+  const _StepRow({
+    required this.icon,
+    required this.label,
+    required this.state,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -848,22 +905,29 @@ class _StepRow extends StatelessWidget {
                     color: AppColors.primary,
                   )
                 : isDone
-                    ? const Icon(Icons.check_circle,
-                        color: AppColors.success, size: 28)
-                    : Icon(Icons.radio_button_unchecked,
-                        color: AppColors.gray300, size: 28),
+                ? const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 28,
+                  )
+                : Icon(
+                    Icons.radio_button_unchecked,
+                    color: AppColors.gray300,
+                    size: 28,
+                  ),
           ),
           const SizedBox(width: 14),
-          Icon(icon,
-              size: 18,
-              color: isPending ? AppColors.gray300 : AppColors.primary),
+          Icon(
+            icon,
+            size: 18,
+            color: isPending ? AppColors.gray300 : AppColors.primary,
+          ),
           const SizedBox(width: 10),
           Text(
             label,
             style: TextStyle(
               fontSize: 14,
-              fontWeight:
-                  isActive ? FontWeight.w600 : FontWeight.w400,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
               color: isPending ? AppColors.gray400 : AppColors.gray800,
             ),
           ),

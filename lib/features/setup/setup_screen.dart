@@ -66,7 +66,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                   Image.asset(
                     'assets/images/trustinfacts-logo-light.png',
                     height: 40,
-                    errorBuilder: (_, __, ___) => const Text(
+                    errorBuilder: (_, _, _) => const Text(
                       'TrustInFacts',
                       style: TextStyle(
                         color: Colors.white,
@@ -87,124 +87,128 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                   Theme(
                     data: buildAppTheme(),
                     child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'Introduce el identificador de tu empresa',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.gray700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Tu administrador te proporcionara este dato.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.gray400,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          if (_error != null) ...[
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.dangerBg,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                _error!,
-                                style: const TextStyle(
-                                  color: AppColors.danger,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          TextFormField(
-                            controller: _controller,
-                            autocorrect: false,
-                            textInputAction: TextInputAction.done,
-                            decoration: InputDecoration(
-                              labelText: 'ID de empresa',
-                              hintText: 'ej: demo',
-                              suffixText: '.trustinfacts.com',
-                              suffixStyle: TextStyle(
-                                color: AppColors.gray400,
-                                fontSize: 13,
-                              ),
-                            ),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) {
-                                return 'Introduce el identificador';
-                              }
-                              if (!RegExp(r'^[a-zA-Z0-9\-]+$')
-                                  .hasMatch(v.trim())) {
-                                return 'Solo letras, numeros y guiones';
-                              }
-                              return null;
-                            },
-                            onFieldSubmitted: (_) => _handleContinue(),
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.gray50,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.link,
-                                    size: 16, color: AppColors.gray400),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _controller.text.trim().isEmpty
-                                        ? 'app.{id}.trustinfacts.com'
-                                        : 'app.${_controller.text.trim().toLowerCase()}.trustinfacts.com',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.gray500,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            height: 46,
-                            child: ElevatedButton(
-                              onPressed: _loading ? null : _handleContinue,
-                              child: Text(
-                                _loading ? 'Conectando...' : 'Continuar',
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                            ),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'Introduce el identificador de tu empresa',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.gray700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tu administrador te proporcionara este dato.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.gray400,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            if (_error != null) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.dangerBg,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _error!,
+                                  style: const TextStyle(
+                                    color: AppColors.danger,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            TextFormField(
+                              controller: _controller,
+                              autocorrect: false,
+                              textInputAction: TextInputAction.done,
+                              decoration: InputDecoration(
+                                labelText: 'ID de empresa',
+                                hintText: 'ej: demo',
+                                suffixText: '.trustinfacts.com',
+                                suffixStyle: TextStyle(
+                                  color: AppColors.gray400,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Introduce el identificador';
+                                }
+                                if (!RegExp(
+                                  r'^[a-zA-Z0-9\-]+$',
+                                ).hasMatch(v.trim())) {
+                                  return 'Solo letras, numeros y guiones';
+                                }
+                                return null;
+                              },
+                              onFieldSubmitted: (_) => _handleContinue(),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.gray50,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.link,
+                                    size: 16,
+                                    color: AppColors.gray400,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _controller.text.trim().isEmpty
+                                          ? 'app.{id}.trustinfacts.com'
+                                          : 'app.${_controller.text.trim().toLowerCase()}.trustinfacts.com',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.gray500,
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              height: 46,
+                              child: ElevatedButton(
+                                onPressed: _loading ? null : _handleContinue,
+                                child: Text(
+                                  _loading ? 'Conectando...' : 'Continuar',
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
                   ),
                 ],
               ),

@@ -32,8 +32,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _loadSavedCredentials() async {
     if (_loadedSaved) return;
     _loadedSaved = true;
-    final saved =
-        await ref.read(authProvider.notifier).getSavedCredentials();
+    final saved = await ref.read(authProvider.notifier).getSavedCredentials();
     if (saved != null && mounted) {
       setState(() {
         _emailController.text = saved['email']!;
@@ -45,7 +44,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authProvider.notifier).login(
+    await ref
+        .read(authProvider.notifier)
+        .login(
           _emailController.text.trim(),
           _passwordController.text,
           rememberCredentials: _rememberCredentials,
@@ -57,10 +58,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final isLoading = authState is AuthLoading;
-    final error =
-        authState is AuthUnauthenticated ? authState.error : null;
-    final clientId =
-        authState is AuthUnauthenticated ? authState.clientId : '';
+    final error = authState is AuthUnauthenticated ? authState.error : null;
+    final clientId = authState is AuthUnauthenticated ? authState.clientId : '';
 
     // Load saved credentials once when screen renders
     if (authState is AuthUnauthenticated && !_loadedSaved) {
@@ -92,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Image.asset(
                     'assets/images/trustinfacts-logo-light.png',
                     height: 40,
-                    errorBuilder: (_, __, ___) => const Text(
+                    errorBuilder: (_, _, _) => const Text(
                       'TrustInFacts',
                       style: TextStyle(
                         color: Colors.white,
@@ -113,177 +112,185 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Theme(
                     data: buildAppTheme(),
                     child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Server indicator
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.gray50,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.dns_outlined,
-                                    size: 16, color: AppColors.gray400),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'app.$clientId.trustinfacts.com',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.gray500,
-                                      fontFamily: 'monospace',
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Server indicator
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.gray50,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.dns_outlined,
+                                    size: 16,
+                                    color: AppColors.gray400,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'app.$clientId.trustinfacts.com',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.gray500,
+                                        fontFamily: 'monospace',
+                                      ),
                                     ),
                                   ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      ref
+                                          .read(authProvider.notifier)
+                                          .resetSetup();
+                                    },
+                                    child: Text(
+                                      'Cambiar',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _tenantController,
+                              autocorrect: false,
+                              decoration: const InputDecoration(
+                                labelText: 'Base de datos (tenant)',
+                                hintText: 'ej: trustcore',
+                                prefixIcon: Icon(
+                                  Icons.storage_outlined,
+                                  size: 18,
                                 ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Introduce el tenant';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            if (error != null) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.dangerBg,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  error,
+                                  style: const TextStyle(
+                                    color: AppColors.danger,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              autocorrect: false,
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                                hintText: 'tu@email.com',
+                              ),
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Introduce tu email';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Contrasena',
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return 'Introduce tu contrasena';
+                                }
+                                return null;
+                              },
+                              onFieldSubmitted: (_) => _handleLogin(),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: _rememberCredentials,
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _rememberCredentials = v ?? false;
+                                      });
+                                    },
+                                    activeColor: AppColors.primary,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
-                                    ref
-                                        .read(authProvider.notifier)
-                                        .resetSetup();
+                                    setState(() {
+                                      _rememberCredentials =
+                                          !_rememberCredentials;
+                                    });
                                   },
-                                  child: Text(
-                                    'Cambiar',
+                                  child: const Text(
+                                    'Recordar credenciales',
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color: AppColors.gray600,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _tenantController,
-                            autocorrect: false,
-                            decoration: const InputDecoration(
-                              labelText: 'Base de datos (tenant)',
-                              hintText: 'ej: trustcore',
-                              prefixIcon: Icon(Icons.storage_outlined, size: 18),
-                            ),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) {
-                                return 'Introduce el tenant';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          if (error != null) ...[
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.dangerBg,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                error,
-                                style: const TextStyle(
-                                  color: AppColors.danger,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
                             const SizedBox(height: 16),
+                            SizedBox(
+                              height: 46,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : _handleLogin,
+                                child: Text(
+                                  isLoading ? 'Entrando...' : 'Entrar',
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                              ),
+                            ),
                           ],
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            autocorrect: false,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              hintText: 'tu@email.com',
-                            ),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) {
-                                return 'Introduce tu email';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Contrasena',
-                            ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) {
-                                return 'Introduce tu contrasena';
-                              }
-                              return null;
-                            },
-                            onFieldSubmitted: (_) => _handleLogin(),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _rememberCredentials,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      _rememberCredentials = v ?? false;
-                                    });
-                                  },
-                                  activeColor: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _rememberCredentials =
-                                        !_rememberCredentials;
-                                  });
-                                },
-                                child: const Text(
-                                  'Recordar credenciales',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.gray600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            height: 46,
-                            child: ElevatedButton(
-                              onPressed: isLoading ? null : _handleLogin,
-                              child: Text(
-                                isLoading ? 'Entrando...' : 'Entrar',
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
                   ),
                 ],
               ),

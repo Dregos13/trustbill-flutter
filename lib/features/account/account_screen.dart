@@ -13,17 +13,18 @@ import '../../core/auth/permission_provider.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
-final _companyLogoProvider =
-    FutureProvider.autoDispose<Uint8List?>((ref) async {
+final _companyLogoProvider = FutureProvider.autoDispose<Uint8List?>((
+  ref,
+) async {
   final endpoints = ref.watch(endpointsProvider);
   return endpoints.getCompanyLogo();
 });
 
 final _companySettingsProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  final endpoints = ref.watch(endpointsProvider);
-  return endpoints.getCompanySettings();
-});
+      final endpoints = ref.watch(endpointsProvider);
+      return endpoints.getCompanySettings();
+    });
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
@@ -146,8 +147,11 @@ class AccountScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
-                    child: const Icon(Icons.admin_panel_settings_outlined,
-                        size: 18, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.admin_panel_settings_outlined,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -166,13 +170,18 @@ class AccountScreen extends ConsumerWidget {
                         Text(
                           'Configura qué puede hacer cada usuario',
                           style: TextStyle(
-                              fontSize: 12, color: Theme.of(context).hintColor),
+                            fontSize: 12,
+                            color: Theme.of(context).hintColor,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right,
-                      size: 18, color: context.appTextSubtle),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: context.appTextSubtle,
+                  ),
                 ],
               ),
             ),
@@ -191,7 +200,8 @@ class AccountScreen extends ConsumerWidget {
               foregroundColor: AppColors.danger,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text(
               'Cerrar sesion',
@@ -235,8 +245,8 @@ class _AppearanceSection extends ConsumerWidget {
                   themeMode == ThemeMode.dark
                       ? Icons.dark_mode
                       : themeMode == ThemeMode.light
-                          ? Icons.light_mode
-                          : Icons.brightness_auto,
+                      ? Icons.light_mode
+                      : Icons.brightness_auto,
                   color: context.appPrimary,
                   size: 18,
                 ),
@@ -244,9 +254,9 @@ class _AppearanceSection extends ConsumerWidget {
               const SizedBox(width: 12),
               Text(
                 'Apariencia',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -275,7 +285,9 @@ class _AppearanceSection extends ConsumerWidget {
             ],
             selected: {themeMode},
             onSelectionChanged: (selection) {
-              ref.read(themeControllerProvider.notifier).setThemeMode(selection.first);
+              ref
+                  .read(themeControllerProvider.notifier)
+                  .setThemeMode(selection.first);
             },
           ),
         ],
@@ -310,8 +322,7 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
     setState(() => _uploading = true);
     try {
       final endpoints = ref.read(endpointsProvider);
-      await endpoints.uploadCompanyLogo(
-          imageBytes: bytes, mimeType: mimeType);
+      await endpoints.uploadCompanyLogo(imageBytes: bytes, mimeType: mimeType);
 
       ref.invalidate(_companyLogoProvider);
       ref.invalidate(_companySettingsProvider);
@@ -327,7 +338,13 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(friendlyError(e, fallback: 'No se pudo actualizar el logo. Intenta con otra imagen.')),
+          content: Text(
+            friendlyError(
+              e,
+              fallback:
+                  'No se pudo actualizar el logo. Intenta con otra imagen.',
+            ),
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -348,7 +365,7 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
     final settingsAsync = ref.watch(_companySettingsProvider);
     final logoAsync = ref.watch(_companyLogoProvider);
 
-    final hasLogo = settingsAsync.asData?.value?['hasLogo'] == true;
+    final hasLogo = settingsAsync.asData?.value['hasLogo'] == true;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,8 +422,11 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                             ),
                     )
                   : Center(
-                      child: Icon(Icons.image_outlined,
-                          color: context.appTextSubtle, size: 28),
+                      child: Icon(
+                        Icons.image_outlined,
+                        color: context.appTextSubtle,
+                        size: 28,
+                      ),
                     ),
             ),
             const SizedBox(width: 14),
@@ -418,7 +438,9 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                     Text(
                       'Sin logo configurado',
                       style: TextStyle(
-                          fontSize: 13, color: context.appTextMuted),
+                        fontSize: 13,
+                        color: context.appTextMuted,
+                      ),
                     ),
                   if (hasLogo)
                     const Text(
@@ -439,32 +461,39 @@ class _CompanyLogoSectionState extends ConsumerState<_CompanyLogoSection> {
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.primary),
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
                             )
                           : const Icon(Icons.upload, size: 16),
                       label: Text(
                         _uploading
                             ? 'Subiendo...'
                             : hasLogo
-                                ? 'Cambiar logo'
-                                : 'Subir logo',
+                            ? 'Cambiar logo'
+                            : 'Subir logo',
                         style: const TextStyle(fontSize: 13),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         side: const BorderSide(color: AppColors.primary),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'JPEG, PNG o WebP · max 2 MB',
-                    style: TextStyle(fontSize: 10, color: context.appTextSubtle),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: context.appTextSubtle,
+                    ),
                   ),
                 ],
               ),
@@ -483,11 +512,7 @@ class _CompanyCard extends StatelessWidget {
   final bool isActive;
   final VoidCallback? onTap;
 
-  const _CompanyCard({
-    required this.name,
-    required this.isActive,
-    this.onTap,
-  });
+  const _CompanyCard({required this.name, required this.isActive, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -538,8 +563,10 @@ class _CompanyCard extends StatelessWidget {
             ),
             if (isActive)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBg,
                   borderRadius: BorderRadius.circular(20),

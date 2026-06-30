@@ -25,32 +25,35 @@ class Endpoints {
   // ---- Auth ----
 
   Future<LoginResponse> login(String email, String password) async {
-    final res = await _api.post('/auth/login', data: {
-      'email': email,
-      'password': password,
-      'tenant': _api.tenant, // multi-DB: enruta a la base de datos del cliente
-    });
+    final res = await _api.post(
+      '/auth/login',
+      data: {
+        'email': email,
+        'password': password,
+        'tenant':
+            _api.tenant, // multi-DB: enruta a la base de datos del cliente
+      },
+    );
     return LoginResponse.fromJson(res.data);
   }
 
   Future<RefreshResponse> refresh(String refreshToken) async {
-    final res = await _api.post('/auth/refresh', data: {
-      'refreshToken': refreshToken,
-      'tenant': _api.tenant,
-    });
+    final res = await _api.post(
+      '/auth/refresh',
+      data: {'refreshToken': refreshToken, 'tenant': _api.tenant},
+    );
     return RefreshResponse.fromJson(res.data);
   }
 
   Future<void> logout(String refreshToken) async {
-    await _api.post('/auth/logout', data: {
-      'refreshToken': refreshToken,
-    });
+    await _api.post('/auth/logout', data: {'refreshToken': refreshToken});
   }
 
   Future<SwitchCompanyResponse> switchCompany(int companyId) async {
-    final res = await _api.post('/auth/switch-company', data: {
-      'companyId': companyId,
-    });
+    final res = await _api.post(
+      '/auth/switch-company',
+      data: {'companyId': companyId},
+    );
     return SwitchCompanyResponse.fromJson(res.data);
   }
 
@@ -75,11 +78,14 @@ class Endpoints {
     int offset = 0,
     String? search,
   }) async {
-    final res = await _api.get('/clients', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (search != null && search.isNotEmpty) 'search': search,
-    });
+    final res = await _api.get(
+      '/clients',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, Client.fromJson);
   }
 
@@ -98,7 +104,11 @@ class Endpoints {
     return Client.fromJson(res.data);
   }
 
-  Future<void> patchClientLocation(int id, double latitude, double longitude) async {
+  Future<void> patchClientLocation(
+    int id,
+    double latitude,
+    double longitude,
+  ) async {
     await _api.patch(
       '/clients/$id/location',
       data: {'latitude': latitude, 'longitude': longitude},
@@ -115,14 +125,17 @@ class Endpoints {
     String? from,
     String? to,
   }) async {
-    final res = await _api.get('/invoices', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (status != null && status.isNotEmpty) 'status': status,
-      if (clientId != null) 'clientId': clientId,
-      if (from != null) 'from': from,
-      if (to != null) 'to': to,
-    });
+    final res = await _api.get(
+      '/invoices',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (status != null && status.isNotEmpty) 'status': status,
+        'clientId': ?clientId,
+        'from': ?from,
+        'to': ?to,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, InvoiceListItem.fromJson);
   }
 
@@ -159,23 +172,31 @@ class Endpoints {
   /// Edit DRAFT content (lines/issuedAt/notes/taxKind). Returns invoice detail.
   /// 409 if final/confirmed/canceled, paid, or sale-linked.
   Future<Map<String, dynamic>> updateInvoiceContent(
-      int id, Map<String, dynamic> body) async {
+    int id,
+    Map<String, dynamic> body,
+  ) async {
     final res = await _api.patch('/invoices/$id', data: body);
     return res.data as Map<String, dynamic>;
   }
 
   /// Edit the private internal notes (allowed in any status).
-  Future<Map<String, dynamic>> updateInvoiceInternalNotes(int id,
-      {String? internalNotes}) async {
-    final res = await _api.patch('/invoices/$id/internal-notes',
-        data: {'internalNotes': internalNotes});
+  Future<Map<String, dynamic>> updateInvoiceInternalNotes(
+    int id, {
+    String? internalNotes,
+  }) async {
+    final res = await _api.patch(
+      '/invoices/$id/internal-notes',
+      data: {'internalNotes': internalNotes},
+    );
     return res.data as Map<String, dynamic>;
   }
 
   /// Register a payment against an invoice. Server-validated: only on a
   /// confirmed/final invoice and never above the pending amount.
   Future<Map<String, dynamic>> createPayment(
-      int invoiceId, Map<String, dynamic> data) async {
+    int invoiceId,
+    Map<String, dynamic> data,
+  ) async {
     final res = await _api.post('/invoices/$invoiceId/payments', data: data);
     return res.data as Map<String, dynamic>;
   }
@@ -190,14 +211,17 @@ class Endpoints {
     String? from,
     String? to,
   }) async {
-    final res = await _api.get('/budgets', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (status != null && status.isNotEmpty) 'status': status,
-      if (clientId != null) 'clientId': clientId,
-      if (from != null) 'from': from,
-      if (to != null) 'to': to,
-    });
+    final res = await _api.get(
+      '/budgets',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (status != null && status.isNotEmpty) 'status': status,
+        'clientId': ?clientId,
+        'from': ?from,
+        'to': ?to,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, BudgetListItem.fromJson);
   }
 
@@ -233,14 +257,17 @@ class Endpoints {
     String? from,
     String? to,
   }) async {
-    final res = await _api.get('/sales', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (status != null && status.isNotEmpty) 'status': status,
-      if (clientId != null) 'clientId': clientId,
-      if (from != null) 'from': from,
-      if (to != null) 'to': to,
-    });
+    final res = await _api.get(
+      '/sales',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (status != null && status.isNotEmpty) 'status': status,
+        'clientId': ?clientId,
+        'from': ?from,
+        'to': ?to,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, SaleListItem.fromJson);
   }
 
@@ -250,9 +277,10 @@ class Endpoints {
   }
 
   Future<List<AvailableBudget>> getAvailableBudgets(int clientId) async {
-    final res = await _api.get('/sales/available-budgets', queryParams: {
-      'clientId': clientId,
-    });
+    final res = await _api.get(
+      '/sales/available-budgets',
+      queryParams: {'clientId': clientId},
+    );
     final raw = (res.data as Map<String, dynamic>)['items'] as List;
     return raw
         .map((e) => AvailableBudget.fromJson(e as Map<String, dynamic>))
@@ -266,7 +294,9 @@ class Endpoints {
 
   /// Returns { invoice: {...}, sale: SaleDetail }.
   Future<Map<String, dynamic>> createInvoiceFromSale(
-      int saleId, Map<String, dynamic> data) async {
+    int saleId,
+    Map<String, dynamic> data,
+  ) async {
     final res = await _api.post('/sales/$saleId/invoice', data: data);
     return res.data as Map<String, dynamic>;
   }
@@ -278,11 +308,14 @@ class Endpoints {
     int offset = 0,
     String? search,
   }) async {
-    final res = await _api.get('/products', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (search != null && search.isNotEmpty) 'search': search,
-    });
+    final res = await _api.get(
+      '/products',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, Product.fromJson);
   }
 
@@ -291,11 +324,14 @@ class Endpoints {
     int offset = 0,
     String? search,
   }) async {
-    final res = await _api.get('/services', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (search != null && search.isNotEmpty) 'search': search,
-    });
+    final res = await _api.get(
+      '/services',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, Service.fromJson);
   }
 
@@ -321,8 +357,8 @@ class Endpoints {
     final ext = mimeType == 'image/png'
         ? 'logo.png'
         : mimeType == 'image/webp'
-            ? 'logo.webp'
-            : 'logo.jpg';
+        ? 'logo.webp'
+        : 'logo.jpg';
     final res = await _api.postMultipart(
       '/company/logo',
       fileBytes: imageBytes,
@@ -348,9 +384,13 @@ class Endpoints {
   }
 
   Future<UserWithPermissions> updateUserPermissions(
-      int userId, List<String> permissions) async {
-    final res = await _api.put('/users/$userId/permissions',
-        data: {'permissions': permissions});
+    int userId,
+    List<String> permissions,
+  ) async {
+    final res = await _api.put(
+      '/users/$userId/permissions',
+      data: {'permissions': permissions},
+    );
     return UserWithPermissions.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -377,22 +417,32 @@ class Endpoints {
   }
 
   Future<InvoiceCreatedResponse> confirmScan(
-      SupplierInvoiceConfirmPayload payload) async {
+    SupplierInvoiceConfirmPayload payload,
+  ) async {
     final res = await _api.post('/receipts/confirm', data: payload.toJson());
     return InvoiceCreatedResponse.fromJson(res.data);
   }
 
-  Future<List<SupplierMatch>> lookupSupplier({String? taxId, String? name}) async {
-    final res = await _api.get('/suppliers/lookup', queryParams: {
-      if (taxId != null && taxId.isNotEmpty) 'taxId': taxId,
-      if (name != null && name.isNotEmpty) 'name': name,
-    });
+  Future<List<SupplierMatch>> lookupSupplier({
+    String? taxId,
+    String? name,
+  }) async {
+    final res = await _api.get(
+      '/suppliers/lookup',
+      queryParams: {
+        if (taxId != null && taxId.isNotEmpty) 'taxId': taxId,
+        if (name != null && name.isNotEmpty) 'name': name,
+      },
+    );
     final list = res.data as List<dynamic>;
-    return list.map((e) => SupplierMatch.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => SupplierMatch.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<String, dynamic>> createSupplier(
-      Map<String, dynamic> supplierData) async {
+    Map<String, dynamic> supplierData,
+  ) async {
     final res = await _api.post('/suppliers', data: supplierData);
     return res.data as Map<String, dynamic>;
   }
@@ -404,11 +454,14 @@ class Endpoints {
     int offset = 0,
     String? status,
   }) async {
-    final res = await _api.get('/purchases', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (status != null && status.isNotEmpty) 'status': status,
-    });
+    final res = await _api.get(
+      '/purchases',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (status != null && status.isNotEmpty) 'status': status,
+      },
+    );
     return PaginatedResponse.fromJson(res.data, PurchaseListItem.fromJson);
   }
 
@@ -421,10 +474,7 @@ class Endpoints {
     int? year,
     String? status,
   }) async {
-    final queryParams = <String, dynamic>{
-      'limit': limit,
-      'offset': offset,
-    };
+    final queryParams = <String, dynamic>{'limit': limit, 'offset': offset};
     if (model != null && model.isNotEmpty) queryParams['model'] = model;
     if (year != null) queryParams['year'] = year;
     if (status != null && status.isNotEmpty) queryParams['status'] = status;
@@ -440,14 +490,21 @@ class Endpoints {
     int offset = 0,
     String? search,
   }) async {
-    final res = await _api.get('/products', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (search != null && search.isNotEmpty) 'search': search,
-    });
+    final res = await _api.get(
+      '/products',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
     final data = res.data;
-    final raw = data is Map<String, dynamic> ? data['items'] as List : data as List;
-    return raw.map((e) => CatalogProduct.fromJson(e as Map<String, dynamic>)).toList();
+    final raw = data is Map<String, dynamic>
+        ? data['items'] as List
+        : data as List;
+    return raw
+        .map((e) => CatalogProduct.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<CatalogProduct> getCatalogProduct(int id) async {
@@ -460,7 +517,10 @@ class Endpoints {
     return CatalogProduct.fromJson(res.data as Map<String, dynamic>);
   }
 
-  Future<CatalogProduct> updateCatalogProduct(int id, Map<String, dynamic> data) async {
+  Future<CatalogProduct> updateCatalogProduct(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
     final res = await _api.put('/products/$id', data: data);
     return CatalogProduct.fromJson(res.data as Map<String, dynamic>);
   }
@@ -476,14 +536,21 @@ class Endpoints {
     int offset = 0,
     String? search,
   }) async {
-    final res = await _api.get('/services', queryParams: {
-      'limit': limit,
-      'offset': offset,
-      if (search != null && search.isNotEmpty) 'search': search,
-    });
+    final res = await _api.get(
+      '/services',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
     final svcData = res.data;
-    final svcRaw = svcData is Map<String, dynamic> ? svcData['items'] as List : svcData as List;
-    return svcRaw.map((e) => CatalogService.fromJson(e as Map<String, dynamic>)).toList();
+    final svcRaw = svcData is Map<String, dynamic>
+        ? svcData['items'] as List
+        : svcData as List;
+    return svcRaw
+        .map((e) => CatalogService.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<CatalogService> createCatalogService(Map<String, dynamic> data) async {
@@ -491,7 +558,10 @@ class Endpoints {
     return CatalogService.fromJson(res.data as Map<String, dynamic>);
   }
 
-  Future<CatalogService> updateCatalogService(int id, Map<String, dynamic> data) async {
+  Future<CatalogService> updateCatalogService(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
     final res = await _api.put('/services/$id', data: data);
     return CatalogService.fromJson(res.data as Map<String, dynamic>);
   }
@@ -504,7 +574,9 @@ class Endpoints {
 
   Future<List<InventoryMovement>> getInventoryMovements(int productId) async {
     final res = await _api.get('/inventory/movements/$productId');
-    return (res.data as List).map((e) => InventoryMovement.fromJson(e as Map<String, dynamic>)).toList();
+    return (res.data as List)
+        .map((e) => InventoryMovement.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> createInventoryEntry({
@@ -513,12 +585,15 @@ class Endpoints {
     required double unitCost,
     String? notes,
   }) async {
-    await _api.post('/inventory/entries', data: {
-      'productId': productId,
-      'quantity': quantity,
-      'unitCost': unitCost,
-      if (notes != null && notes.isNotEmpty) 'notes': notes,
-    });
+    await _api.post(
+      '/inventory/entries',
+      data: {
+        'productId': productId,
+        'quantity': quantity,
+        'unitCost': unitCost,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      },
+    );
   }
 
   Future<void> adjustInventory({
@@ -526,10 +601,13 @@ class Endpoints {
     required int delta,
     String? reason,
   }) async {
-    await _api.post('/inventory/adjust', data: {
-      'productId': productId,
-      'delta': delta,
-      if (reason != null && reason.isNotEmpty) 'reason': reason,
-    });
+    await _api.post(
+      '/inventory/adjust',
+      data: {
+        'productId': productId,
+        'delta': delta,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      },
+    );
   }
 }

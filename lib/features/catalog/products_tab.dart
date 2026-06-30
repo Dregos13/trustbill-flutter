@@ -35,13 +35,26 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
   }
 
   Future<void> _load({String? search}) async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final ep = ref.read(endpointsProvider);
       final items = await ep.getCatalogProducts(search: search);
-      if (mounted) setState(() { _products = items; _loading = false; });
+      if (mounted) {
+        setState(() {
+          _products = items;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      if (mounted) setState(() { _error = friendlyError(e); _loading = false; });
+      if (mounted) {
+        setState(() {
+          _error = friendlyError(e);
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -50,12 +63,20 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Eliminar producto'),
-        content: Text('¿Eliminar "${p.name}"? Esta acción no se puede deshacer.'),
+        content: Text(
+          '¿Eliminar "${p.name}"? Esta acción no se puede deshacer.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Eliminar',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -63,11 +84,18 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
     if (confirmed != true || !mounted) return;
     try {
       await ref.read(endpointsProvider).deleteCatalogProduct(p.id);
-      await _load(search: _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim());
+      await _load(
+        search: _searchCtrl.text.trim().isEmpty
+            ? null
+            : _searchCtrl.text.trim(),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendlyError(e)), backgroundColor: AppColors.danger),
+          SnackBar(
+            content: Text(friendlyError(e)),
+            backgroundColor: AppColors.danger,
+          ),
         );
       }
     }
@@ -76,85 +104,108 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
   @override
   Widget build(BuildContext context) {
     final perms = ref.watch(permissionsProvider);
-    final canWrite = perms.contains(Permissions.productsWrite) || perms.contains('products.*');
+    final canWrite =
+        perms.contains(Permissions.productsWrite) ||
+        perms.contains('products.*');
 
     return Stack(
       children: [
         Column(
           children: [
             Padding(
-          padding: const EdgeInsets.all(12),
-          child: TextField(
-            controller: _searchCtrl,
-            decoration: InputDecoration(
-              hintText: 'Buscar producto...',
-              prefixIcon: const Icon(Icons.search, size: 20),
-              suffixIcon: _searchCtrl.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: () {
-                        _searchCtrl.clear();
-                        _load();
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: context.appSurface,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: context.appBorder),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: context.appBorder),
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: _searchCtrl,
+                decoration: InputDecoration(
+                  hintText: 'Buscar producto...',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _searchCtrl.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            _load();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: context.appSurface,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: context.appBorder),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: context.appBorder),
+                  ),
+                ),
+                onSubmitted: (v) =>
+                    _load(search: v.trim().isEmpty ? null : v.trim()),
+                onChanged: (v) {
+                  setState(() {});
+                  if (v.isEmpty) _load();
+                },
               ),
             ),
-            onSubmitted: (v) => _load(search: v.trim().isEmpty ? null : v.trim()),
-            onChanged: (v) {
-              setState(() {});
-              if (v.isEmpty) _load();
-            },
-          ),
-        ),
-        Expanded(
-          child: _loading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(_error!, style: const TextStyle(color: AppColors.danger)),
+                          Text(
+                            _error!,
+                            style: const TextStyle(color: AppColors.danger),
+                          ),
                           const SizedBox(height: 12),
-                          TextButton(onPressed: _load, child: const Text('Reintentar')),
+                          TextButton(
+                            onPressed: _load,
+                            child: const Text('Reintentar'),
+                          ),
                         ],
                       ),
                     )
                   : _products.isEmpty
-                      ? Center(child: Text('Sin productos', style: TextStyle(color: context.appTextMuted)))
-                      : RefreshIndicator(
-                          onRefresh: () => _load(search: _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim()),
-                          child: ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
-                            itemCount: _products.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
-                            itemBuilder: (_, i) => _ProductCard(
-                              product: _products[i],
-                              canWrite: canWrite,
-                              onDelete: () => _delete(_products[i]),
-                              onEdit: () async {
-                                await context.push(
-                                  '/catalog/products/${_products[i].id}/edit',
-                                  extra: _products[i],
-                                );
-                                _load();
-                              },
-                              onTap: () => context.push('/catalog/products/${_products[i].id}'),
-                            ),
+                  ? Center(
+                      child: Text(
+                        'Sin productos',
+                        style: TextStyle(color: context.appTextMuted),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => _load(
+                        search: _searchCtrl.text.trim().isEmpty
+                            ? null
+                            : _searchCtrl.text.trim(),
+                      ),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                        itemCount: _products.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (_, i) => _ProductCard(
+                          product: _products[i],
+                          canWrite: canWrite,
+                          onDelete: () => _delete(_products[i]),
+                          onEdit: () async {
+                            await context.push(
+                              '/catalog/products/${_products[i].id}/edit',
+                              extra: _products[i],
+                            );
+                            _load();
+                          },
+                          onTap: () => context.push(
+                            '/catalog/products/${_products[i].id}',
                           ),
                         ),
-        ),
+                      ),
+                    ),
+            ),
           ],
         ),
         if (canWrite)
@@ -169,7 +220,13 @@ class _ProductsTabState extends ConsumerState<ProductsTab> {
                 _load();
               },
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Nuevo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              label: const Text(
+                'Nuevo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
       ],
@@ -222,7 +279,11 @@ class _ProductCard extends StatelessWidget {
                 color: context.appPrimarySoft,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.inventory_2_outlined, color: context.appPrimary, size: 22),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                color: context.appPrimary,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -231,32 +292,51 @@ class _ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: context.appText),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: context.appText,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     product.sku,
-                    style: TextStyle(fontSize: 12, color: context.appTextMuted, fontFamily: 'monospace'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.appTextMuted,
+                      fontFamily: 'monospace',
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
                         '€${product.price.toStringAsFixed(2)}',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.appText),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: context.appText,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: stockColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           'Stock: ${product.stockQty}',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: stockColor),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: stockColor,
+                          ),
                         ),
                       ),
                     ],
@@ -266,7 +346,11 @@ class _ProductCard extends StatelessWidget {
             ),
             if (canWrite)
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: context.appTextMuted, size: 20),
+                icon: Icon(
+                  Icons.more_vert,
+                  color: context.appTextMuted,
+                  size: 20,
+                ),
                 onSelected: (v) {
                   if (v == 'edit') onEdit();
                   if (v == 'delete') onDelete();
@@ -275,7 +359,10 @@ class _ProductCard extends StatelessWidget {
                   const PopupMenuItem(value: 'edit', child: Text('Editar')),
                   const PopupMenuItem(
                     value: 'delete',
-                    child: Text('Eliminar', style: TextStyle(color: AppColors.danger)),
+                    child: Text(
+                      'Eliminar',
+                      style: TextStyle(color: AppColors.danger),
+                    ),
                   ),
                 ],
               ),

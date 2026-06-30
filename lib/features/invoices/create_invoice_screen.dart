@@ -14,22 +14,25 @@ import '../../core/utils/error_messages.dart';
 
 // ── Providers ────────────────────────────────────────────────────────────────
 
-final _clientsForInvoiceProvider =
-    FutureProvider.autoDispose<List<Client>>((ref) async {
+final _clientsForInvoiceProvider = FutureProvider.autoDispose<List<Client>>((
+  ref,
+) async {
   final endpoints = ref.watch(endpointsProvider);
   final res = await endpoints.getClients(limit: 100);
   return res.items;
 });
 
-final _productsForInvoiceProvider =
-    FutureProvider.autoDispose<List<Product>>((ref) async {
+final _productsForInvoiceProvider = FutureProvider.autoDispose<List<Product>>((
+  ref,
+) async {
   final endpoints = ref.watch(endpointsProvider);
   final res = await endpoints.getProducts(limit: 100);
   return res.items;
 });
 
-final _servicesForInvoiceProvider =
-    FutureProvider.autoDispose<List<Service>>((ref) async {
+final _servicesForInvoiceProvider = FutureProvider.autoDispose<List<Service>>((
+  ref,
+) async {
   final endpoints = ref.watch(endpointsProvider);
   final res = await endpoints.getServices(limit: 100);
   return res.items;
@@ -46,15 +49,11 @@ class _InvoiceLine {
   int? productId;
   int? serviceId;
 
-  _InvoiceLine({
-    this.description = '',
-    this.quantity = 1,
-    this.unitPrice = 0,
-    this.taxRate = 21,
-    this.discountRate = 0,
-    this.productId,
-    this.serviceId,
-  });
+  _InvoiceLine({this.taxRate = 21})
+    : description = '',
+      quantity = 1,
+      unitPrice = 0,
+      discountRate = 0;
 
   double get base => quantity * unitPrice * (1 - discountRate / 100);
   double get taxAmount => base * (taxRate / 100);
@@ -115,15 +114,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       if (_notesCtrl.text.trim().isNotEmpty)
         'publicNotes': _notesCtrl.text.trim(),
       'lines': _lines
-          .map((l) => {
-                'description': l.description.trim(),
-                'quantity': l.quantity.toInt(),
-                'unitPrice': l.unitPrice,
-                'taxRate': l.taxRate,
-                'discountRate': l.discountRate,
-                if (l.productId != null) 'productId': l.productId,
-                if (l.serviceId != null) 'serviceId': l.serviceId,
-              })
+          .map(
+            (l) => {
+              'description': l.description.trim(),
+              'quantity': l.quantity.toInt(),
+              'unitPrice': l.unitPrice,
+              'taxRate': l.taxRate,
+              'discountRate': l.discountRate,
+              if (l.productId != null) 'productId': l.productId,
+              if (l.serviceId != null) 'serviceId': l.serviceId,
+            },
+          )
           .toList(),
     };
 
@@ -146,8 +147,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(friendlyError(e,
-              fallback: 'No se pudo crear la factura. Verifica los datos.')),
+          content: Text(
+            friendlyError(
+              e,
+              fallback: 'No se pudo crear la factura. Verifica los datos.',
+            ),
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -190,7 +195,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 )
@@ -200,7 +207,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   child: const Text(
                     'Guardar',
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w600),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
             ],
@@ -212,24 +221,32 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               children: [
                 // Notice: always draft
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.warningBg,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: AppColors.warning.withValues(alpha: 0.4)),
+                      color: AppColors.warning.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.info_outline,
-                          color: AppColors.warning, size: 16),
+                      Icon(
+                        Icons.info_outline,
+                        color: AppColors.warning,
+                        size: 16,
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Las facturas creadas desde móvil se guardan como borrador.',
                           style: TextStyle(
-                              fontSize: 12, color: AppColors.warning),
+                            fontSize: 12,
+                            color: AppColors.warning,
+                          ),
                         ),
                       ),
                     ],
@@ -260,17 +277,23 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                           decoration: InputDecoration(
                             labelText: 'Fecha de emisión',
                             border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            contentPadding:
-                                const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
                             suffixIcon: const Icon(
-                                Icons.calendar_today, size: 18),
+                              Icons.calendar_today,
+                              size: 18,
+                            ),
                           ),
                           child: Text(
                             DateFormat('dd/MM/yyyy').format(_issuedAt),
                             style: TextStyle(
-                                fontSize: 14, color: context.appText),
+                              fontSize: 14,
+                              color: context.appText,
+                            ),
                           ),
                         ),
                       ),
@@ -281,9 +304,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                         decoration: InputDecoration(
                           labelText: 'Régimen fiscal',
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
@@ -292,15 +318,19 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                             dropdownColor: context.appSurfaceRaised,
                             items: [
                               DropdownMenuItem(
-                                  value: 'IVA',
-                                  child: Text('IVA',
-                                      style: TextStyle(
-                                          color: context.appText))),
+                                value: 'IVA',
+                                child: Text(
+                                  'IVA',
+                                  style: TextStyle(color: context.appText),
+                                ),
+                              ),
                               DropdownMenuItem(
-                                  value: 'IPSI',
-                                  child: Text('IPSI',
-                                      style: TextStyle(
-                                          color: context.appText))),
+                                value: 'IPSI',
+                                child: Text(
+                                  'IPSI',
+                                  style: TextStyle(color: context.appText),
+                                ),
+                              ),
                             ],
                             onChanged: (v) {
                               if (v != null) {
@@ -326,13 +356,16 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   children: [
                     _SectionTitle('Líneas de factura'),
                     TextButton.icon(
-                      onPressed: () => setState(() => _lines.add(_InvoiceLine(
-                            taxRate: _taxKind == 'IVA' ? 21 : 10,
-                          ))),
+                      onPressed: () => setState(
+                        () => _lines.add(
+                          _InvoiceLine(taxRate: _taxKind == 'IVA' ? 21 : 10),
+                        ),
+                      ),
                       icon: const Icon(Icons.add, size: 16),
                       label: const Text('Añadir línea'),
                       style: TextButton.styleFrom(
-                          foregroundColor: context.appPrimary),
+                        foregroundColor: context.appPrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -371,7 +404,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   decoration: InputDecoration(
                     hintText: 'Se imprimirán en la factura...',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     contentPadding: const EdgeInsets.all(12),
                   ),
                 ),
@@ -387,19 +421,24 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: _saving
                         ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Text(
                             'Guardar como borrador',
                             style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                   ),
                 ),
@@ -417,7 +456,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 32),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 32),
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 decoration: BoxDecoration(
                   color: context.appSurfaceRaised,
                   borderRadius: BorderRadius.circular(16),
@@ -425,8 +466,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle,
-                        color: AppColors.success, size: 56),
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppColors.success,
+                      size: 56,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       '¡Borrador creado!',
@@ -441,7 +485,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       'La factura ha sido guardada como borrador.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: 14, color: context.appTextMuted),
+                        fontSize: 14,
+                        color: context.appTextMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -505,27 +551,34 @@ class _ClientSelector extends ConsumerWidget {
                     decoration: InputDecoration(
                       labelText: 'Cliente *',
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<Client>(
                         value: resolvedClient,
-                        hint: Text('Selecciona cliente...',
-                            style: TextStyle(color: context.appTextMuted)),
+                        hint: Text(
+                          'Selecciona cliente...',
+                          style: TextStyle(color: context.appTextMuted),
+                        ),
                         isExpanded: true,
                         isDense: true,
                         dropdownColor: context.appSurfaceRaised,
                         items: clients
-                            .map((c) => DropdownMenuItem<Client>(
-                                  value: c,
-                                  child: Text(
-                                    c.name,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: context.appText),
-                                  ),
-                                ))
+                            .map(
+                              (c) => DropdownMenuItem<Client>(
+                                value: c,
+                                child: Text(
+                                  c.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: context.appText),
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: onChanged,
                       ),
@@ -546,8 +599,11 @@ class _ClientSelector extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                         color: context.appPrimarySoft,
                       ),
-                      child: Icon(Icons.person_add,
-                          color: context.appPrimary, size: 20),
+                      child: Icon(
+                        Icons.person_add,
+                        color: context.appPrimary,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -561,13 +617,15 @@ class _ClientSelector extends ConsumerWidget {
                 children: [
                   if (resolvedClient.taxId.isNotEmpty)
                     _InfoChip(
-                        icon: Icons.badge_outlined,
-                        label: resolvedClient.taxId),
+                      icon: Icons.badge_outlined,
+                      label: resolvedClient.taxId,
+                    ),
                   if (resolvedClient.email != null &&
                       resolvedClient.email!.isNotEmpty)
                     _InfoChip(
-                        icon: Icons.email_outlined,
-                        label: resolvedClient.email!),
+                      icon: Icons.email_outlined,
+                      label: resolvedClient.email!,
+                    ),
                 ],
               ),
             ],
@@ -609,15 +667,16 @@ class _LineCardState extends ConsumerState<_LineCard> {
     super.initState();
     _descCtrl = TextEditingController(text: widget.line.description);
     _qtyCtrl = TextEditingController(
-        text: widget.line.quantity.toInt().toString());
+      text: widget.line.quantity.toInt().toString(),
+    );
     _priceCtrl = TextEditingController(
-        text: widget.line.unitPrice == 0
-            ? ''
-            : widget.line.unitPrice.toString());
+      text: widget.line.unitPrice == 0 ? '' : widget.line.unitPrice.toString(),
+    );
     _discCtrl = TextEditingController(
-        text: widget.line.discountRate == 0
-            ? ''
-            : widget.line.discountRate.toString());
+      text: widget.line.discountRate == 0
+          ? ''
+          : widget.line.discountRate.toString(),
+    );
   }
 
   @override
@@ -694,64 +753,96 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       final products = productsAsync.asData?.value ?? [];
                       final services = servicesAsync.asData?.value ?? [];
                       if (products.isNotEmpty) {
-                        items.add(PopupMenuItem(
-                          enabled: false,
-                          child: Text('— ARTÍCULOS —',
+                        items.add(
+                          PopupMenuItem(
+                            enabled: false,
+                            child: Text(
+                              '— ARTÍCULOS —',
                               style: TextStyle(
-                                  fontSize: 11,
-                                  color: context.appTextSubtle)),
-                        ));
-                        items.addAll(products.map((p) => PopupMenuItem(
+                                fontSize: 11,
+                                color: context.appTextSubtle,
+                              ),
+                            ),
+                          ),
+                        );
+                        items.addAll(
+                          products.map(
+                            (p) => PopupMenuItem(
                               value: 'p:${p.id}',
-                              child: Text(p.name,
-                                  style:
-                                      TextStyle(color: context.appText)),
-                            )));
+                              child: Text(
+                                p.name,
+                                style: TextStyle(color: context.appText),
+                              ),
+                            ),
+                          ),
+                        );
                       }
                       if (services.isNotEmpty) {
-                        items.add(PopupMenuItem(
-                          enabled: false,
-                          child: Text('— SERVICIOS —',
+                        items.add(
+                          PopupMenuItem(
+                            enabled: false,
+                            child: Text(
+                              '— SERVICIOS —',
                               style: TextStyle(
-                                  fontSize: 11,
-                                  color: context.appTextSubtle)),
-                        ));
-                        items.addAll(services.map((s) => PopupMenuItem(
+                                fontSize: 11,
+                                color: context.appTextSubtle,
+                              ),
+                            ),
+                          ),
+                        );
+                        items.addAll(
+                          services.map(
+                            (s) => PopupMenuItem(
                               value: 's:${s.id}',
-                              child: Text(s.name,
-                                  style:
-                                      TextStyle(color: context.appText)),
-                            )));
+                              child: Text(
+                                s.name,
+                                style: TextStyle(color: context.appText),
+                              ),
+                            ),
+                          ),
+                        );
                       }
                       if (items.isEmpty) {
-                        items.add(PopupMenuItem(
-                          enabled: false,
-                          child: Text('Sin artículos ni servicios',
-                              style:
-                                  TextStyle(color: context.appTextMuted)),
-                        ));
+                        items.add(
+                          PopupMenuItem(
+                            enabled: false,
+                            child: Text(
+                              'Sin artículos ni servicios',
+                              style: TextStyle(color: context.appTextMuted),
+                            ),
+                          ),
+                        );
                       }
                       return items;
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: context.appPrimarySoft,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: context.appPrimary.withValues(alpha: 0.3)),
+                          color: context.appPrimary.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.search,
-                              size: 14, color: context.appPrimary),
+                          Icon(
+                            Icons.search,
+                            size: 14,
+                            color: context.appPrimary,
+                          ),
                           const SizedBox(width: 4),
-                          Text('Artículo / Servicio',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: context.appPrimary)),
+                          Text(
+                            'Artículo / Servicio',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.appPrimary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -759,12 +850,17 @@ class _LineCardState extends ConsumerState<_LineCard> {
                 ),
                 if (widget.canDelete)
                   IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: AppColors.danger, size: 20),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.danger,
+                      size: 20,
+                    ),
                     onPressed: widget.onDelete,
                     padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
                   ),
               ],
             ),
@@ -776,13 +872,17 @@ class _LineCardState extends ConsumerState<_LineCard> {
               decoration: InputDecoration(
                 labelText: 'Descripción *',
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 isDense: true,
               ),
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Descripción requerida' : null,
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? 'Descripción requerida'
+                  : null,
               onChanged: (v) {
                 widget.line.description = v;
                 widget.onChanged();
@@ -798,15 +898,16 @@ class _LineCardState extends ConsumerState<_LineCard> {
                   child: TextFormField(
                     controller: _qtyCtrl,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       labelText: 'Cant.',
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       isDense: true,
                     ),
                     validator: (v) {
@@ -826,19 +927,22 @@ class _LineCardState extends ConsumerState<_LineCard> {
                   child: TextFormField(
                     controller: _priceCtrl,
                     keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Precio *',
                       suffixText: '€',
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       isDense: true,
                     ),
                     validator: (v) {
-                      final n = double.tryParse(
-                          (v ?? '').replaceAll(',', '.'));
+                      final n = double.tryParse((v ?? '').replaceAll(',', '.'));
                       if (n == null || n < 0) return 'Precio no válido';
                       return null;
                     },
@@ -861,9 +965,12 @@ class _LineCardState extends ConsumerState<_LineCard> {
                     decoration: InputDecoration(
                       labelText: widget.taxKind,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       isDense: true,
                     ),
                     child: DropdownButtonHideUnderline(
@@ -871,16 +978,20 @@ class _LineCardState extends ConsumerState<_LineCard> {
                         value: widget.line.taxRate,
                         isDense: true,
                         dropdownColor: context.appSurfaceRaised,
-                        items: (widget.taxKind == 'IVA'
-                                ? [0, 4, 10, 21]
-                                : [0, 0.5, 1, 4, 8, 10, 10.5])
-                            .map((r) => DropdownMenuItem(
-                                  value: r.toDouble(),
-                                  child: Text('$r%',
-                                      style: TextStyle(
-                                          color: context.appText)),
-                                ))
-                            .toList(),
+                        items:
+                            (widget.taxKind == 'IVA'
+                                    ? [0, 4, 10, 21]
+                                    : [0, 0.5, 1, 4, 8, 10, 10.5])
+                                .map(
+                                  (r) => DropdownMenuItem(
+                                    value: r.toDouble(),
+                                    child: Text(
+                                      '$r%',
+                                      style: TextStyle(color: context.appText),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (v) {
                           if (v != null) {
                             widget.line.taxRate = v;
@@ -896,13 +1007,17 @@ class _LineCardState extends ConsumerState<_LineCard> {
                   child: TextFormField(
                     controller: _discCtrl,
                     keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Dto. %',
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       isDense: true,
                     ),
                     onChanged: (v) {
@@ -922,9 +1037,10 @@ class _LineCardState extends ConsumerState<_LineCard> {
               child: Text(
                 'Total: ${fmt.format(widget.line.total)}',
                 style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: context.appText),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: context.appText,
+                ),
               ),
             ),
           ],
@@ -953,9 +1069,10 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 12, color: context.appTextMuted),
           const SizedBox(width: 4),
-          Text(label,
-              style:
-                  TextStyle(fontSize: 11, color: context.appTextMuted)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: context.appTextMuted),
+          ),
         ],
       ),
     );
@@ -992,15 +1109,19 @@ class _TotalsBox extends StatelessWidget {
           const SizedBox(height: 6),
           _row(context, taxKind, fmt.format(totalTax)),
           Divider(height: 16, color: context.appBorder),
-          _row(context, 'TOTAL', fmt.format(total),
-              bold: true, large: true),
+          _row(context, 'TOTAL', fmt.format(total), bold: true, large: true),
         ],
       ),
     );
   }
 
-  Widget _row(BuildContext context, String label, String value,
-      {bool bold = false, bool large = false}) {
+  Widget _row(
+    BuildContext context,
+    String label,
+    String value, {
+    bool bold = false,
+    bool large = false,
+  }) {
     final style = TextStyle(
       fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
       fontSize: large ? 16 : 14,

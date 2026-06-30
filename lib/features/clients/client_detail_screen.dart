@@ -5,14 +5,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 import 'create_client_screen.dart';
 
-final clientDetailProvider =
-    FutureProvider.autoDispose.family<Client, int>((ref, id) async {
+final clientDetailProvider = FutureProvider.autoDispose.family<Client, int>((
+  ref,
+  id,
+) async {
   final endpoints = ref.read(endpointsProvider);
   return endpoints.getClient(id);
 });
@@ -59,8 +60,11 @@ class ClientDetailScreen extends ConsumerWidget {
                   color: context.appSurfaceRaised,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.arrow_back,
-                    size: 18, color: context.appTextMuted),
+                child: Icon(
+                  Icons.arrow_back,
+                  size: 18,
+                  color: context.appTextMuted,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -96,10 +100,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   ),
                   Text(
                     client.taxId,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: context.appTextMuted,
-                    ),
+                    style: TextStyle(fontSize: 13, color: context.appTextMuted),
                   ),
                 ],
               ),
@@ -148,9 +149,19 @@ class ClientDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              _detailRow(context, Icons.badge_outlined, 'NIF/CIF', client.taxId),
+              _detailRow(
+                context,
+                Icons.badge_outlined,
+                'NIF/CIF',
+                client.taxId,
+              ),
               if (client.email != null && client.email!.isNotEmpty)
-                _detailRow(context, Icons.email_outlined, 'Email', client.email!),
+                _detailRow(
+                  context,
+                  Icons.email_outlined,
+                  'Email',
+                  client.email!,
+                ),
               if (client.phone != null && client.phone!.isNotEmpty)
                 _tappableDetailRow(
                   context,
@@ -174,9 +185,10 @@ class ClientDetailScreen extends ConsumerWidget {
                   context,
                   Icons.map_outlined,
                   'Localidad',
-                  [client.postalCode, client.city]
-                      .where((s) => s.isNotEmpty)
-                      .join(', '),
+                  [
+                    client.postalCode,
+                    client.city,
+                  ].where((s) => s.isNotEmpty).join(', '),
                 ),
             ],
           ),
@@ -229,7 +241,11 @@ class ClientDetailScreen extends ConsumerWidget {
   }
 
   Widget _detailRow(
-      BuildContext context, IconData icon, String label, String value) {
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -339,8 +355,10 @@ class ClientDetailScreen extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
                 child: Text(
                   phone,
                   style: TextStyle(
@@ -356,17 +374,26 @@ class ClientDetailScreen extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF25D366).withOpacity(0.12),
+                    color: const Color(0xFF25D366).withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.chat_rounded,
-                      color: Color(0xFF25D366), size: 20),
+                  child: const Icon(
+                    Icons.chat_rounded,
+                    color: Color(0xFF25D366),
+                    size: 20,
+                  ),
                 ),
-                title: Text('WhatsApp',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600, color: ctx.appText)),
-                subtitle: Text(phone,
-                    style: TextStyle(fontSize: 12, color: ctx.appTextMuted)),
+                title: Text(
+                  'WhatsApp',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: ctx.appText,
+                  ),
+                ),
+                subtitle: Text(
+                  phone,
+                  style: TextStyle(fontSize: 12, color: ctx.appTextMuted),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _launchWhatsApp(context, phone);
@@ -380,14 +407,23 @@ class ClientDetailScreen extends ConsumerWidget {
                     color: ctx.appPrimarySoft,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.call_rounded,
-                      color: ctx.appPrimary, size: 20),
+                  child: Icon(
+                    Icons.call_rounded,
+                    color: ctx.appPrimary,
+                    size: 20,
+                  ),
                 ),
-                title: Text('Llamar',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600, color: ctx.appText)),
-                subtitle: Text(phone,
-                    style: TextStyle(fontSize: 12, color: ctx.appTextMuted)),
+                title: Text(
+                  'Llamar',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: ctx.appText,
+                  ),
+                ),
+                subtitle: Text(
+                  phone,
+                  style: TextStyle(fontSize: 12, color: ctx.appTextMuted),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _launchCall(context, phone);
@@ -427,8 +463,9 @@ class ClientDetailScreen extends ConsumerWidget {
 
   Future<void> _launchMaps(BuildContext context, String address) async {
     final encoded = Uri.encodeComponent(address);
-    final uri =
-        Uri.parse('https://www.google.com/maps/search/?api=1&query=$encoded');
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$encoded',
+    );
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -455,7 +492,7 @@ class _QuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withOpacity(0.10),
+      color: color.withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
