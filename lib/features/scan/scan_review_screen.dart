@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/models/expense.dart';
+import '../../core/models/scan_result.dart';
 import '../../core/models/supplier.dart';
 import '../../core/auth/auth_provider.dart';
 import 'scan_provider.dart';
@@ -36,6 +38,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   // Amount fields
   late TextEditingController _totalCtrl;
   late TextEditingController _taxCtrl;
+  late List<_ScanLineDraft> _lineDrafts;
 
   String _taxKind = 'IVA';
   String _status = 'UNPAID';
@@ -79,6 +82,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     _taxCtrl = TextEditingController(
       text: (result?.taxAmount ?? 0).toStringAsFixed(2),
     );
+    _lineDrafts = (result?.lines ?? const <OcrLineItem>[])
+        .map(_ScanLineDraft.fromOcr)
+        .toList();
   }
 
   String _formatDisplayDate(String iso) {
@@ -125,6 +131,31 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   bool _isValidEmail(String v) {
     if (v.isEmpty) return false;
     return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v);
+  }
+
+  void _syncTotalsFromLines() {
+    final tax = _lineDrafts.fold<double>(0, (sum, line) => sum + line.taxAmount);
+    final total = _lineDrafts.fold<double>(0, (sum, line) => sum + line.total);
+    _taxCtrl.text = tax.toStringAsFixed(2);
+    _totalCtrl.text = total.toStringAsFixed(2);
+  }
+
+  void _onLineChanged() {
+    setState(_syncTotalsFromLines);
+  }
+
+  void _addLine() {
+    setState(() {
+      _lineDrafts.add(_ScanLineDraft.empty());
+      _syncTotalsFromLines();
+    });
+  }
+
+  void _removeLine(int index) {
+    setState(() {
+      _lineDrafts.removeAt(index).dispose();
+      _syncTotalsFromLines();
+    });
   }
 
   /// Normaliza un CIF/NIF quitando espacios, guiones y puntos para comparar.
@@ -220,19 +251,16 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     final state = ref.read(scanProvider);
     if (state.imageBytes == null) return;
 
-    final scanResult = state.result;
-    final lines =
-        scanResult?.lines
-            .map(
-              (l) => <String, dynamic>{
-                'description': l.description,
-                'base': l.unitPrice * l.quantity,
-                'taxRate': l.taxRate,
-                'taxAmount': l.unitPrice * l.quantity * l.taxRate / 100,
-              },
-            )
-            .toList() ??
-        <Map<String, dynamic>>[];
+    final lines = _lineDrafts
+        .map(
+          (l) => <String, dynamic>{
+            'description': l.description,
+            'base': l.base,
+            'taxRate': l.taxRate,
+            'taxAmount': l.taxAmount,
+          },
+        )
+        .toList();
 
     final dueDateText = _dueDateCtrl.text.trim();
 
@@ -290,6 +318,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     _dueDateCtrl.dispose();
     _totalCtrl.dispose();
     _taxCtrl.dispose();
+    for (final line in _lineDrafts) {
+      line.dispose();
+    }
     super.dispose();
   }
 
@@ -606,46 +637,46 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   ),
                 ),
 
-                // ── Líneas detectadas (read-only) ──────────────────────────────
-                if (state.result != null && state.result!.lines.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _SectionTitle(
-                    'Líneas detectadas (${state.result!.lines.length})',
-                  ),
-                  const SizedBox(height: 8),
-                  ...state.result!.lines.map(
-                    (line) => Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.gray50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.gray200),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              line.description,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.gray700,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${line.total.toStringAsFixed(2)} EUR',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.gray800,
-                            ),
-                          ),
-                        ],
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _SectionTitle(
+                        'Líneas detectadas (${_lineDrafts.length})',
                       ),
                     ),
+                    TextButton.icon(
+                      onPressed: state.isConfirming ? null : _addLine,
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Añadir'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (_lineDrafts.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.gray50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.gray200),
+                    ),
+                    child: const Text(
+                      'No se detectaron líneas. Puedes añadirlas manualmente.',
+                      style: TextStyle(fontSize: 13, color: AppColors.gray600),
+                    ),
+                  )
+                else
+                  ..._lineDrafts.asMap().entries.map(
+                    (entry) => _ScanLineEditor(
+                      key: ValueKey('scan-line-editor-${entry.key}'),
+                      index: entry.key,
+                      line: entry.value,
+                      canDelete: _lineDrafts.length > 1,
+                      onChanged: _onLineChanged,
+                      onDelete: () => _removeLine(entry.key),
+                    ),
                   ),
-                ],
 
                 const SizedBox(height: 32),
 
@@ -694,6 +725,215 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       onChanged: onChanged,
     );
   }
+}
+
+class _ScanLineDraft {
+  _ScanLineDraft({
+    required String description,
+    required double quantity,
+    required double unitPrice,
+    required double taxRate,
+  })  : descriptionCtrl = TextEditingController(text: description),
+        quantityCtrl = TextEditingController(text: _formatNumber(quantity)),
+        unitPriceCtrl = TextEditingController(text: _formatNumber(unitPrice)),
+        taxRateCtrl = TextEditingController(text: _formatNumber(taxRate));
+
+  factory _ScanLineDraft.fromOcr(OcrLineItem item) => _ScanLineDraft(
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        taxRate: item.taxRate,
+      );
+
+  factory _ScanLineDraft.empty() => _ScanLineDraft(
+        description: '',
+        quantity: 1,
+        unitPrice: 0,
+        taxRate: 21,
+      );
+
+  final TextEditingController descriptionCtrl;
+  final TextEditingController quantityCtrl;
+  final TextEditingController unitPriceCtrl;
+  final TextEditingController taxRateCtrl;
+
+  String get description => descriptionCtrl.text.trim();
+  double get quantity => _parseDecimal(quantityCtrl.text, fallback: 1);
+  double get unitPrice => _parseDecimal(unitPriceCtrl.text);
+  double get taxRate => _parseDecimal(taxRateCtrl.text);
+  double get base => quantity * unitPrice;
+  double get taxAmount => base * taxRate / 100;
+  double get total => base + taxAmount;
+
+  static double _parseDecimal(String value, {double fallback = 0}) =>
+      double.tryParse(value.trim().replaceAll(',', '.')) ?? fallback;
+
+  static String _formatNumber(double value) {
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value.toStringAsFixed(2);
+  }
+
+  void dispose() {
+    descriptionCtrl.dispose();
+    quantityCtrl.dispose();
+    unitPriceCtrl.dispose();
+    taxRateCtrl.dispose();
+  }
+}
+
+class _ScanLineEditor extends StatelessWidget {
+  const _ScanLineEditor({
+    super.key,
+    required this.index,
+    required this.line,
+    required this.canDelete,
+    required this.onChanged,
+    required this.onDelete,
+  });
+
+  final int index;
+  final _ScanLineDraft line;
+  final bool canDelete;
+  final VoidCallback onChanged;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.gray50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.gray200),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Línea ${index + 1}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gray800,
+                  ),
+                ),
+              ),
+              Text(
+                '${line.total.toStringAsFixed(2)} EUR',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+              if (canDelete) ...[
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'Eliminar línea',
+                  onPressed: onDelete,
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.danger,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            key: ValueKey('scan-line-description-$index'),
+            controller: line.descriptionCtrl,
+            decoration: InputDecoration(
+              labelText: 'Descripción',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              isDense: true,
+            ),
+            validator: (v) =>
+                v == null || v.trim().isEmpty ? 'Descripción requerida' : null,
+            onChanged: (_) => onChanged(),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _numberField(
+                  key: ValueKey('scan-line-quantity-$index'),
+                  controller: line.quantityCtrl,
+                  label: 'Cant.',
+                  validator: (value) {
+                    final n = _parseDecimal(value);
+                    if (n <= 0) return 'Mín. 0,01';
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _numberField(
+                  key: ValueKey('scan-line-unit-price-$index'),
+                  controller: line.unitPriceCtrl,
+                  label: 'Precio',
+                  suffix: 'EUR',
+                  validator: (value) {
+                    final n = _parseDecimal(value);
+                    if (n < 0) return 'No válido';
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _numberField(
+                  key: ValueKey('scan-line-tax-rate-$index'),
+                  controller: line.taxRateCtrl,
+                  label: 'IVA',
+                  suffix: '%',
+                  validator: (value) {
+                    final n = _parseDecimal(value);
+                    if (n < 0 || n > 100) return '0-100';
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _numberField({
+    required Key key,
+    required TextEditingController controller,
+    required String label,
+    String? suffix,
+    required String? Function(String) validator,
+  }) {
+    return TextFormField(
+      key: key,
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: suffix,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        isDense: true,
+      ),
+      validator: (value) => validator(value ?? ''),
+      onChanged: (_) => onChanged(),
+    );
+  }
+
+  static double _parseDecimal(String value) =>
+      double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
 }
 
 class _SectionTitle extends StatelessWidget {
