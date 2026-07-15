@@ -190,9 +190,9 @@ class _PurchaseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPaid = purchase.status == 'PAID';
     final statusLabel = isPaid ? 'Pagada' : 'Pendiente';
-    final statusColor = isPaid ? AppColors.success : AppColors.warning;
+    final statusColor = isPaid ? context.statusSuccess : context.statusWarning;
     final statusBgColor =
-        isPaid ? AppColors.successBg : AppColors.warningBg;
+        isPaid ? context.statusSuccessSoft : context.statusWarningSoft;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

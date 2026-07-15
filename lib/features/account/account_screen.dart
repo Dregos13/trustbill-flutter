@@ -143,14 +143,14 @@ class AccountScreen extends ConsumerWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBg,
+                      color: context.statusInfoSoft,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
-                    child: const Icon(
+                    child: Icon(
                       Icons.admin_panel_settings_outlined,
                       size: 18,
-                      color: AppColors.primary,
+                      color: context.statusInfo,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -196,8 +196,8 @@ class AccountScreen extends ConsumerWidget {
               await ref.read(authProvider.notifier).logout();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.dangerBg,
-              foregroundColor: AppColors.danger,
+              backgroundColor: context.statusDangerSoft,
+              foregroundColor: context.statusDanger,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -568,13 +568,13 @@ class _CompanyCard extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBg,
+                  color: context.statusInfoSoft,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
+                child: Text(
                   'Activa',
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: context.statusInfo,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),

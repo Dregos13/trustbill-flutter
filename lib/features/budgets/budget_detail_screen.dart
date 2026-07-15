@@ -278,18 +278,18 @@ class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.dangerBg,
+                    color: context.statusDangerSoft,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.block, size: 18, color: AppColors.danger),
-                      SizedBox(width: 10),
+                      Icon(Icons.block, size: 18, color: context.statusDanger),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'Presupuesto rechazado. Las reservas de stock se han liberado.',
                           style: TextStyle(
-                              color: AppColors.danger,
+                              color: context.statusDanger,
                               fontWeight: FontWeight.w600,
                               fontSize: 13),
                         ),

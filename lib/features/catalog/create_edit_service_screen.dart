@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/catalog.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
 
@@ -93,8 +92,8 @@ class _CreateEditServiceScreenState extends ConsumerState<CreateEditServiceScree
               if (_error != null) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: AppColors.dangerBg, borderRadius: BorderRadius.circular(8)),
-                  child: Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 13)),
+                  decoration: BoxDecoration(color: context.statusDangerSoft, borderRadius: BorderRadius.circular(8)),
+                  child: Text(_error!, style: TextStyle(color: context.statusDanger, fontSize: 13)),
                 ),
                 const SizedBox(height: 16),
               ],

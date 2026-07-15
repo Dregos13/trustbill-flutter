@@ -6,6 +6,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/client_card.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
@@ -72,12 +73,12 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
+          Text(
             'Clientes',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppColors.gray900,
+              color: context.appText,
             ),
           ),
           const SizedBox(height: 12),

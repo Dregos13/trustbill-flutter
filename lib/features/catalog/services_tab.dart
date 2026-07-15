@@ -258,12 +258,12 @@ class _ServiceCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.successBg,
+              color: context.statusSuccessSoft,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.design_services_outlined,
-              color: AppColors.success,
+              color: context.statusSuccess,
               size: 22,
             ),
           ),

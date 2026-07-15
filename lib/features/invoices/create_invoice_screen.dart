@@ -226,26 +226,26 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.warningBg,
+                    color: context.statusWarningSoft,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.warning.withValues(alpha: 0.4),
+                      color: context.statusWarning.withValues(alpha: 0.4),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(
                         Icons.info_outline,
-                        color: AppColors.warning,
+                        color: context.statusWarning,
                         size: 16,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Las facturas creadas desde móvil se guardan como borrador.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.warning,
+                            color: context.statusWarning,
                           ),
                         ),
                       ),

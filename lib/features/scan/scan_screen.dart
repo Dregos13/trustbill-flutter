@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import 'scan_provider.dart';
 
 class ScanScreen extends ConsumerStatefulWidget {
@@ -334,17 +335,17 @@ class _ErrorView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.dangerBg,
+              color: context.statusDangerSoft,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                const Icon(Icons.error_outline, color: AppColors.danger),
+                Icon(Icons.error_outline, color: context.statusDanger),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     error,
-                    style: const TextStyle(color: AppColors.danger, fontSize: 14),
+                    style: TextStyle(color: context.statusDanger, fontSize: 14),
                   ),
                 ),
               ],

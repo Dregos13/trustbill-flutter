@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
 import '../core/theme/app_theme_tokens.dart';
 
 class StatusBadge extends StatelessWidget {
@@ -34,32 +33,32 @@ class StatusBadge extends StatelessWidget {
       case 'draft':
         return _StatusConfig('BORRADOR', context.appSurfaceRaised, context.appTextMuted);
       case 'confirmed':
-        return _StatusConfig('CONFIRMADA', AppColors.primaryBg, AppColors.primary);
+        return _StatusConfig('CONFIRMADA', context.statusInfoSoft, context.statusInfo);
       case 'final':
-        return _StatusConfig('EMITIDA', AppColors.indigoBg, AppColors.indigo);
+        return _StatusConfig('EMITIDA', context.statusFinalSoft, context.statusFinal);
       case 'paid':
-        return _StatusConfig('PAGADA', AppColors.successBg, AppColors.success);
+        return _StatusConfig('PAGADA', context.statusSuccessSoft, context.statusSuccess);
       case 'canceled':
       case 'cancelled':
-        return _StatusConfig('ANULADA', AppColors.dangerBg, AppColors.danger);
+        return _StatusConfig('ANULADA', context.statusDangerSoft, context.statusDanger);
 
       // ---- Budget quoteStatus ----
       case 'pending':
-        return _StatusConfig('PENDIENTE', AppColors.warningBg, AppColors.warning);
+        return _StatusConfig('PENDIENTE', context.statusWarningSoft, context.statusWarning);
       case 'accepted':
-        return _StatusConfig('ACEPTADO', AppColors.successBg, AppColors.success);
+        return _StatusConfig('ACEPTADO', context.statusSuccessSoft, context.statusSuccess);
       case 'rejected':
-        return _StatusConfig('RECHAZADO', AppColors.dangerBg, AppColors.danger);
+        return _StatusConfig('RECHAZADO', context.statusDangerSoft, context.statusDanger);
 
       // ---- Sale status ----
       case 'open':
-        return _StatusConfig('ABIERTA', AppColors.primaryBg, AppColors.primary);
+        return _StatusConfig('ABIERTA', context.statusInfoSoft, context.statusInfo);
       case 'partially_invoiced':
-        return _StatusConfig('PARCIAL', AppColors.warningBg, AppColors.warning);
+        return _StatusConfig('PARCIAL', context.statusWarningSoft, context.statusWarning);
       case 'closed':
-        return _StatusConfig('CERRADA', AppColors.successBg, AppColors.success);
+        return _StatusConfig('CERRADA', context.statusSuccessSoft, context.statusSuccess);
       case 'lost':
-        return _StatusConfig('PERDIDA', AppColors.dangerBg, AppColors.danger);
+        return _StatusConfig('PERDIDA', context.statusDangerSoft, context.statusDanger);
 
       default:
         return _StatusConfig(
