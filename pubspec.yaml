@@ -1,7 +1,7 @@
 name: trustinfacts_mobile
 description: "TrustInFacts - App de facturacion movil (solo lectura)"
 publish_to: 'none'
-version: 1.2.7+34
+version: 1.2.8+35
 
 environment:
   sdk: ^3.11.1

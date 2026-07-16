@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme_tokens.dart';
 
 /// Shown when a user navigates to a route they don't have permission for.
 class NoPermissionScreen extends StatelessWidget {
@@ -9,7 +9,6 @@ class NoPermissionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -21,31 +20,32 @@ class NoPermissionScreen extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.gray100,
+                    color: context.appSurfaceRaised,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: context.appBorder),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.lock_outline_rounded,
                     size: 40,
-                    color: AppColors.gray400,
+                    color: context.appTextSubtle,
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Sin acceso',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.gray900,
+                    color: context.appText,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'No tienes permiso para acceder a esta sección.\nContacta con tu administrador.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.gray500,
+                    color: context.appTextMuted,
                     height: 1.5,
                   ),
                 ),
@@ -62,8 +62,8 @@ class NoPermissionScreen extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.appPrimary,
+                      foregroundColor: context.onPrimary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

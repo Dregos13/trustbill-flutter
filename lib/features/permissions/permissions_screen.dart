@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/auth/permission_helpers.dart';
 import '../../core/models/user_permissions.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
 
 // ── Providers ──────────────────────────────────────────────────────────────────
@@ -25,7 +25,6 @@ class PermissionsScreen extends ConsumerWidget {
     final usersAsync = ref.watch(_usersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: usersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
@@ -34,25 +33,25 @@ class PermissionsScreen extends ConsumerWidget {
             child: Text(
               friendlyError(e, fallback: 'No se pudieron cargar los usuarios. Intenta de nuevo.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.danger),
+              style: TextStyle(color: context.statusDanger),
             ),
           ),
         ),
         data: (users) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
+            Text(
               'Permisos de usuarios',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: AppColors.gray900,
+                color: context.appText,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Gestiona qué secciones puede usar cada miembro del equipo.',
-              style: TextStyle(fontSize: 13, color: AppColors.gray500),
+              style: TextStyle(fontSize: 13, color: context.appTextMuted),
             ),
             const SizedBox(height: 20),
             ...users.map((user) => _UserPermissionCard(user: user)),
@@ -74,7 +73,7 @@ class _UserPermissionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final initial = user.name.isNotEmpty ? user.name[0].toUpperCase() : '?';
     final roleLabel = _roleLabel(user.role);
-    final roleColor = _roleColor(user.role);
+    final roleColor = _roleColor(context, user.role);
 
     return GestureDetector(
       onTap: user.hasImplicitPermissions
@@ -90,9 +89,9 @@ class _UserPermissionCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.appSurface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.gray200),
+          border: Border.all(color: context.appBorder),
         ),
         child: Row(
           children: [
@@ -101,14 +100,14 @@ class _UserPermissionCard extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppColors.primaryBg,
+                color: context.appPrimarySoft,
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
               child: Text(
                 initial,
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: context.appPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
                 ),
@@ -122,17 +121,17 @@ class _UserPermissionCard extends StatelessWidget {
                 children: [
                   Text(
                     user.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: AppColors.gray900,
+                      color: context.appText,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     user.email,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.gray500),
+                    style: TextStyle(
+                        fontSize: 12, color: context.appTextMuted),
                   ),
                 ],
               ),
@@ -143,7 +142,7 @@ class _UserPermissionCard extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: roleColor.withValues(alpha: 0.1),
+                color: roleColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -157,8 +156,8 @@ class _UserPermissionCard extends StatelessWidget {
             ),
             if (!user.hasImplicitPermissions) ...[
               const SizedBox(width: 6),
-              const Icon(Icons.chevron_right,
-                  size: 18, color: AppColors.gray400),
+              Icon(Icons.chevron_right,
+                  size: 18, color: context.appTextSubtle),
             ],
           ],
         ),
@@ -177,14 +176,14 @@ class _UserPermissionCard extends StatelessWidget {
     }
   }
 
-  Color _roleColor(String role) {
+  Color _roleColor(BuildContext context, String role) {
     switch (role) {
       case 'superadmin':
-        return AppColors.danger;
+        return context.statusDanger;
       case 'admin':
-        return AppColors.warning;
+        return context.statusWarning;
       default:
-        return AppColors.primary;
+        return context.appPrimary;
     }
   }
 }
@@ -224,9 +223,9 @@ class _UserPermissionsDetailState
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Permisos actualizados correctamente.'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: const Text('Permisos actualizados correctamente.'),
+          backgroundColor: context.statusSuccess,
         ),
       );
       Navigator.of(context).pop();
@@ -235,7 +234,7 @@ class _UserPermissionsDetailState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(friendlyError(e, fallback: 'No se pudieron guardar los permisos. Intenta de nuevo.')),
-          backgroundColor: AppColors.danger,
+          backgroundColor: context.statusDanger,
         ),
       );
     } finally {
@@ -246,14 +245,14 @@ class _UserPermissionsDetailState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.appSurface,
+        foregroundColor: context.appText,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new,
-              size: 18, color: AppColors.gray700),
+          icon: Icon(Icons.arrow_back_ios_new,
+              size: 18, color: context.appTextMuted),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Column(
@@ -261,16 +260,16 @@ class _UserPermissionsDetailState
           children: [
             Text(
               widget.user.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.gray900,
+                color: context.appText,
               ),
             ),
             Text(
               widget.user.email,
-              style: const TextStyle(
-                  fontSize: 11, color: AppColors.gray500),
+              style: TextStyle(
+                  fontSize: 11, color: context.appTextMuted),
             ),
           ],
         ),
@@ -286,21 +285,21 @@ class _UserPermissionsDetailState
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBg,
+                    color: context.appPrimarySoft,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2)),
+                        color: context.appPrimary.withValues(alpha: 0.2)),
                   ),
                   child: Row(
-                    children: const [
+                    children: [
                       Icon(Icons.info_outline,
-                          size: 16, color: AppColors.primary),
-                      SizedBox(width: 8),
+                          size: 16, color: context.appPrimary),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Los cambios tienen efecto en el próximo inicio de sesión del usuario.',
                           style: TextStyle(
-                              fontSize: 12, color: AppColors.primary),
+                              fontSize: 12, color: context.appPrimary),
                         ),
                       ),
                     ],
@@ -337,19 +336,19 @@ class _UserPermissionsDetailState
               child: ElevatedButton(
                 onPressed: _saving ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.appPrimary,
+                  foregroundColor: context.onPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: _saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2, color: context.onPrimary),
                       )
                     : const Text(
                         'Guardar cambios',
@@ -387,19 +386,19 @@ class _PermissionGroupSection extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             group.title.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppColors.gray400,
+              color: context.appTextSubtle,
               letterSpacing: 0.8,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.appSurface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.gray200),
+            border: Border.all(color: context.appBorder),
           ),
           child: Column(
             children: group.permissions.asMap().entries.map((entry) {
@@ -416,19 +415,19 @@ class _PermissionGroupSection extends StatelessWidget {
                         horizontal: 16, vertical: 2),
                     title: Text(
                       def.label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.gray900,
+                        color: context.appText,
                       ),
                     ),
                     value: isOn,
-                    activeThumbColor: AppColors.primary,
-                    activeTrackColor: AppColors.primaryBg,
+                    activeThumbColor: context.appPrimary,
+                    activeTrackColor: context.appPrimarySoft,
                     onChanged: (v) => onToggle(def.key, v),
                   ),
                   if (!isLast)
-                    const Divider(
-                        height: 1, indent: 16, color: AppColors.gray100),
+                    Divider(
+                        height: 1, indent: 16, color: context.appBorder),
                 ],
               );
             }).toList(),
