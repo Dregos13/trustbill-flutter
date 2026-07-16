@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+
+/// Bundled variable font — same brand identity on Android & iOS (no runtime fetch).
+const _fontFamily = 'Inter';
 
 const darkBackground = Color(0xFF080D18);
 const darkHeader = Color(0xFF0B1120);
@@ -10,10 +12,11 @@ const darkInputBorder = Color(0xFF334155);
 const darkText = Color(0xFFF8FAFC);
 
 ThemeData buildAppTheme() {
-  final textTheme = GoogleFonts.interTextTheme();
+  final textTheme = ThemeData.light().textTheme.apply(fontFamily: _fontFamily);
 
   return ThemeData(
     useMaterial3: true,
+    fontFamily: _fontFamily,
     colorSchemeSeed: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
     textTheme: textTheme,
@@ -66,11 +69,12 @@ ThemeData buildAppTheme() {
 }
 
 ThemeData buildDarkAppTheme() {
-  final textTheme = GoogleFonts.interTextTheme(ThemeData.dark().textTheme);
+  final textTheme = ThemeData.dark().textTheme.apply(fontFamily: _fontFamily);
 
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
+    fontFamily: _fontFamily,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primaryLight,
       brightness: Brightness.dark,
