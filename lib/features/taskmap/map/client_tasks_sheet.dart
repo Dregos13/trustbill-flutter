@@ -60,8 +60,8 @@ class ClientTasksSheet extends ConsumerWidget {
           icon: const Icon(Icons.directions_rounded, size: 18),
           label: const Text('Cómo llegar'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: TmColors.accent,
-            side: BorderSide(color: TmColors.glassBorder),
+            foregroundColor: context.tm.accent,
+            side: BorderSide(color: context.tm.glassBorder),
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
         ),
@@ -107,7 +107,7 @@ List<Widget> _buildGrouped(BuildContext context, List<FieldTask> tasks) {
     final group = groups[status];
     if (group == null || group.isEmpty) continue;
     if (widgets.isNotEmpty) {
-      widgets.add(Divider(color: TmColors.glassBorder, height: TmSpacing.lg));
+      widgets.add(Divider(color: context.tm.glassBorder, height: TmSpacing.lg));
     }
     widgets.add(
       Padding(
@@ -116,7 +116,7 @@ List<Widget> _buildGrouped(BuildContext context, List<FieldTask> tasks) {
           children: [
             Icon(status.icon, size: 13, color: status.color),
             const SizedBox(width: 5),
-            Text(status.label, style: TmType.label.copyWith(color: status.color, fontWeight: FontWeight.w600)),
+            Text(status.label, style: TmType.label(context).copyWith(color: status.color, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -153,11 +153,11 @@ class _SheetShell extends StatelessWidget {
     final maxHeight = MediaQuery.of(context).size.height * 0.7;
     return Container(
       decoration: BoxDecoration(
-        color: TmColors.surface,
+        color: context.tm.surface,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(TmRadii.xl),
         ),
-        border: Border(top: BorderSide(color: TmColors.glassBorder)),
+        border: Border(top: BorderSide(color: context.tm.glassBorder)),
       ),
       child: SafeArea(
         top: false,
@@ -177,7 +177,7 @@ class _SheetShell extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: TmColors.glassBorder,
+                    color: context.tm.glassBorder,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -185,16 +185,16 @@ class _SheetShell extends StatelessWidget {
               const SizedBox(height: TmSpacing.md),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.place_rounded,
-                    color: TmColors.accent,
+                    color: context.tm.accent,
                     size: 20,
                   ),
                   const SizedBox(width: TmSpacing.sm),
                   Expanded(
                     child: Text(
                       title,
-                      style: TmType.h2,
+                      style: TmType.h2(context),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

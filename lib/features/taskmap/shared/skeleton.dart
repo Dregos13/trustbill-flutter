@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 
 import 'glass_card.dart';
+import 'tm_colors.dart';
 import 'tm_spacing.dart';
 
 /// Subtle pulsing placeholder block. Honors the platform "reduce motion" setting.
@@ -54,7 +55,7 @@ class _SkeletonBoxState extends State<SkeletonBox>
     width: widget.width,
     height: widget.height,
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: alpha),
+      color: context.tm.skeletonBase.withValues(alpha: alpha),
       borderRadius: BorderRadius.circular(widget.radius),
     ),
   );

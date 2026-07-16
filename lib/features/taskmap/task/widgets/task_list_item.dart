@@ -40,15 +40,15 @@ class TaskListItem extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.event_rounded,
                       size: 13,
-                      color: TmColors.textMuted,
+                      color: context.tm.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       formatDay(task.scheduledAt!),
-                      style: TmType.label.copyWith(color: TmColors.textMuted),
+                      style: TmType.label(context).copyWith(color: context.tm.textMuted),
                     ),
                   ],
                 ),
@@ -57,7 +57,7 @@ class TaskListItem extends StatelessWidget {
           const SizedBox(height: TmSpacing.sm),
           Text(
             task.title,
-            style: TmType.title,
+            style: TmType.title(context),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -65,16 +65,16 @@ class TaskListItem extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.place_rounded,
                   size: 14,
-                  color: TmColors.textSecondary,
+                  color: context.tm.textSecondary,
                 ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     task.client.name,
-                    style: TmType.body,
+                    style: TmType.body(context),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -87,22 +87,22 @@ class TaskListItem extends StatelessWidget {
             Row(
               children: [
                 if (bill != null) ...[
-                  const Icon(
+                  Icon(
                     Icons.receipt_long_rounded,
                     size: 14,
-                    color: TmColors.textMuted,
+                    color: context.tm.textMuted,
                   ),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
                       bill.number,
-                      style: TmType.label.copyWith(color: TmColors.textMuted),
+                      style: TmType.label(context).copyWith(color: context.tm.textMuted),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: TmSpacing.sm),
-                  MoneyText(bill.total, style: TmType.title),
+                  MoneyText(bill.total, style: TmType.title(context)),
                 ],
                 const Spacer(),
                 ?trailing,

@@ -246,27 +246,32 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   Widget build(BuildContext context) {
     final client = _selectedClient;
     final missingLocation = client != null && !client.hasLocation;
+    final tm = context.tm;
+    // Foreground that reads on the accent-filled primary button in each mode.
+    final onAccent = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF06212E)
+        : Colors.white;
 
     return Theme(
-      data: _tmDark(context),
+      data: _tmTheme(context),
       child: Scaffold(
-        backgroundColor: TmColors.bg,
+        backgroundColor: tm.bg,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          foregroundColor: TmColors.textPrimary,
+          foregroundColor: tm.textPrimary,
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(widget.isEditing ? 'Editar tarea' : 'Nueva tarea'),
         ),
         body: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: TmColors.backgroundGradient,
+          decoration: BoxDecoration(
+            gradient: tm.backgroundGradient,
           ),
           child: SafeArea(
             child: _loading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                      color: TmColors.accent,
+                      color: tm.accent,
                     ),
                   )
                 : ListView(
@@ -284,8 +289,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                           controller: _title,
                           enabled: !_saving,
                           maxLength: 200,
-                          style: TmType.body.copyWith(
-                            color: TmColors.textPrimary,
+                          style: TmType.body(context).copyWith(
+                            color: tm.textPrimary,
                           ),
                           decoration: const InputDecoration(
                             hintText: 'Instalar caldera, revisión anual…',
@@ -313,15 +318,15 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                           // ignore: deprecated_member_use
                           value: _documentId,
                           isExpanded: true,
-                          dropdownColor: TmColors.surface,
-                          style: TmType.body.copyWith(
-                            color: TmColors.textPrimary,
+                          dropdownColor: tm.surface,
+                          style: TmType.body(context).copyWith(
+                            color: tm.textPrimary,
                           ),
                           decoration: const InputDecoration(),
                           hint: Text(
                             'Sin factura',
-                            style: TmType.body.copyWith(
-                              color: TmColors.textMuted,
+                            style: TmType.body(context).copyWith(
+                              color: tm.textMuted,
                             ),
                           ),
                           onChanged: (_saving || client == null)
@@ -332,8 +337,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                               value: null,
                               child: Text(
                                 'Sin factura',
-                                style: TmType.body.copyWith(
-                                  color: TmColors.textMuted,
+                                style: TmType.body(context).copyWith(
+                                  color: tm.textMuted,
                                 ),
                               ),
                             ),
@@ -343,8 +348,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                                 child: Text(
                                   '${i.number} · ${i.total} €',
                                   overflow: TextOverflow.ellipsis,
-                                  style: TmType.body.copyWith(
-                                    color: TmColors.textPrimary,
+                                  style: TmType.body(context).copyWith(
+                                    color: tm.textPrimary,
                                   ),
                                 ),
                               ),
@@ -371,15 +376,15 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                           // ignore: deprecated_member_use
                           value: _assignedToId,
                           isExpanded: true,
-                          dropdownColor: TmColors.surface,
-                          style: TmType.body.copyWith(
-                            color: TmColors.textPrimary,
+                          dropdownColor: tm.surface,
+                          style: TmType.body(context).copyWith(
+                            color: tm.textPrimary,
                           ),
                           decoration: const InputDecoration(),
                           hint: Text(
                             'Sin asignar',
-                            style: TmType.body.copyWith(
-                              color: TmColors.textMuted,
+                            style: TmType.body(context).copyWith(
+                              color: tm.textMuted,
                             ),
                           ),
                           onChanged: _saving
@@ -390,8 +395,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                               value: null,
                               child: Text(
                                 'Sin asignar',
-                                style: TmType.body.copyWith(
-                                  color: TmColors.textMuted,
+                                style: TmType.body(context).copyWith(
+                                  color: tm.textMuted,
                                 ),
                               ),
                             ),
@@ -401,8 +406,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                                 child: Text(
                                   u.name,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TmType.body.copyWith(
-                                    color: TmColors.textPrimary,
+                                  style: TmType.body(context).copyWith(
+                                    color: tm.textPrimary,
                                   ),
                                 ),
                               ),
@@ -425,8 +430,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                           minLines: 3,
                           maxLines: 6,
                           maxLength: 2000,
-                          style: TmType.body.copyWith(
-                            color: TmColors.textPrimary,
+                          style: TmType.body(context).copyWith(
+                            color: tm.textPrimary,
                           ),
                           decoration: const InputDecoration(
                             hintText:
@@ -440,23 +445,23 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                         const SizedBox(height: TmSpacing.sm),
                         Text(
                           _error!,
-                          style: TmType.label.copyWith(color: TmColors.danger),
+                          style: TmType.label(context).copyWith(color: tm.danger),
                         ),
                       ],
                       const SizedBox(height: TmSpacing.lg),
                       FilledButton(
                         onPressed: _saving ? null : _save,
                         style: FilledButton.styleFrom(
-                          backgroundColor: TmColors.accent,
-                          foregroundColor: const Color(0xFF06212E),
+                          backgroundColor: tm.accent,
+                          foregroundColor: onAccent,
                         ),
                         child: _saving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.4,
-                                  color: Color(0xFF06212E),
+                                  color: onAccent,
                                 ),
                               )
                             : Text(
@@ -467,15 +472,15 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                         const SizedBox(height: TmSpacing.sm),
                         TextButton.icon(
                           onPressed: _saving ? null : _delete,
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.delete_outline_rounded,
-                            color: TmColors.danger,
+                            color: tm.danger,
                           ),
                           label: Text(
                             _confirmDelete
                                 ? 'Confirmar eliminación'
                                 : 'Eliminar',
-                            style: const TextStyle(color: TmColors.danger),
+                            style: TextStyle(color: tm.danger),
                           ),
                         ),
                       ],
@@ -488,34 +493,44 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   }
 }
 
-// ── Dark theme for form fields ─────────────────────────────────────────────────
+// ── Adaptive theme for form fields (matches active brightness) ─────────────────
 
-ThemeData _tmDark(BuildContext context) {
+ThemeData _tmTheme(BuildContext context) {
+  final tm = context.tm;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final scheme = isDark
+      ? ColorScheme.dark(
+          primary: tm.accent,
+          secondary: tm.accent,
+          surface: tm.surface,
+          error: tm.danger,
+        )
+      : ColorScheme.light(
+          primary: tm.accent,
+          secondary: tm.accent,
+          surface: tm.surface,
+          error: tm.danger,
+        );
   return ThemeData(
-    colorScheme: const ColorScheme.dark(
-      primary: TmColors.accent,
-      secondary: TmColors.accent,
-      surface: TmColors.surface,
-      error: TmColors.danger,
-    ),
-    scaffoldBackgroundColor: TmColors.bg,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: tm.bg,
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: TmColors.glassFill,
+      fillColor: tm.glassFill,
       border: OutlineInputBorder(
         borderRadius: TmRadii.brMd,
-        borderSide: BorderSide(color: TmColors.glassBorder),
+        borderSide: BorderSide(color: tm.glassBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: TmRadii.brMd,
-        borderSide: BorderSide(color: TmColors.glassBorder),
+        borderSide: BorderSide(color: tm.glassBorder),
       ),
-      focusedBorder: const OutlineInputBorder(
+      focusedBorder: OutlineInputBorder(
         borderRadius: TmRadii.brMd,
-        borderSide: BorderSide(color: TmColors.accent, width: 1.5),
+        borderSide: BorderSide(color: tm.accent, width: 1.5),
       ),
-      hintStyle: TmType.body.copyWith(color: TmColors.textMuted),
-      iconColor: TmColors.textMuted,
+      hintStyle: TmType.body(context).copyWith(color: tm.textMuted),
+      iconColor: tm.textMuted,
     ),
   );
 }
@@ -542,11 +557,11 @@ class _Field extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(label.toUpperCase(), style: TmType.overline),
+              Text(label.toUpperCase(), style: TmType.overline(context)),
               if (required)
                 Text(
                   ' *',
-                  style: TmType.overline.copyWith(color: TmColors.accent),
+                  style: TmType.overline(context).copyWith(color: context.tm.accent),
                 ),
             ],
           ),
@@ -590,8 +605,8 @@ class _PickerField extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TmType.body.copyWith(
-            color: placeholder ? TmColors.textMuted : TmColors.textPrimary,
+          style: TmType.body(context).copyWith(
+            color: placeholder ? context.tm.textMuted : context.tm.textPrimary,
           ),
         ),
       ),
@@ -606,34 +621,35 @@ class _LocationWarning extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tm = context.tm;
     return Container(
       padding: const EdgeInsets.all(TmSpacing.md),
       decoration: BoxDecoration(
-        color: TmColors.statusPending.withValues(alpha: 0.12),
+        color: tm.statusPending.withValues(alpha: 0.12),
         borderRadius: TmRadii.brMd,
         border: Border.all(
-          color: TmColors.statusPending.withValues(alpha: 0.4),
+          color: tm.statusPending.withValues(alpha: 0.4),
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.location_off_rounded,
-            color: TmColors.statusPending,
+            color: tm.statusPending,
             size: 20,
           ),
           const SizedBox(width: TmSpacing.sm),
           Expanded(
             child: Text(
               'Sin ubicación: no aparecerá en el mapa.',
-              style: TmType.label.copyWith(color: TmColors.textSecondary),
+              style: TmType.label(context).copyWith(color: tm.textSecondary),
             ),
           ),
           TextButton(
             onPressed: onSet,
-            child: const Text(
+            child: Text(
               'Fijar',
-              style: TextStyle(color: TmColors.accent),
+              style: TextStyle(color: tm.accent),
             ),
           ),
         ],
@@ -689,6 +705,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tm = context.tm;
     final color = status.color;
     return InkWell(
       onTap: onTap,
@@ -701,10 +718,10 @@ class _StatusChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? color.withValues(alpha: 0.18)
-              : TmColors.bg.withValues(alpha: 0.4),
+              : tm.bg.withValues(alpha: 0.4),
           borderRadius: TmRadii.brSm,
           border: Border.all(
-            color: selected ? color : TmColors.glassBorder,
+            color: selected ? color : tm.glassBorder,
           ),
         ),
         child: Row(
@@ -713,13 +730,13 @@ class _StatusChip extends StatelessWidget {
             Icon(
               status.icon,
               size: 16,
-              color: selected ? color : TmColors.textMuted,
+              color: selected ? color : tm.textMuted,
             ),
             const SizedBox(width: 6),
             Text(
               status.label,
-              style: TmType.label.copyWith(
-                color: selected ? color : TmColors.textSecondary,
+              style: TmType.label(context).copyWith(
+                color: selected ? color : tm.textSecondary,
               ),
             ),
           ],
@@ -744,6 +761,7 @@ class _ClientPickerSheetState extends State<_ClientPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final tm = context.tm;
     final q = _query.trim().toLowerCase();
     final results = (q.isEmpty
             ? widget.clients
@@ -756,11 +774,11 @@ class _ClientPickerSheetState extends State<_ClientPickerSheet> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
-          color: TmColors.surface,
+          color: tm.surface,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(TmRadii.xl),
           ),
-          border: Border(top: BorderSide(color: TmColors.glassBorder)),
+          border: Border(top: BorderSide(color: tm.glassBorder)),
         ),
         child: SafeArea(
           top: false,
@@ -778,7 +796,7 @@ class _ClientPickerSheetState extends State<_ClientPickerSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: TmColors.glassBorder,
+                      color: tm.glassBorder,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -786,7 +804,7 @@ class _ClientPickerSheetState extends State<_ClientPickerSheet> {
                 const SizedBox(height: TmSpacing.md),
                 TextField(
                   autofocus: true,
-                  style: TmType.body.copyWith(color: TmColors.textPrimary),
+                  style: TmType.body(context).copyWith(color: tm.textPrimary),
                   decoration: const InputDecoration(
                     hintText: 'Buscar cliente…',
                     prefixIcon: Icon(Icons.search_rounded),
@@ -799,8 +817,8 @@ class _ClientPickerSheetState extends State<_ClientPickerSheet> {
                       ? Center(
                           child: Text(
                             'Sin clientes',
-                            style: TmType.body.copyWith(
-                              color: TmColors.textMuted,
+                            style: TmType.body(context).copyWith(
+                              color: tm.textMuted,
                             ),
                           ),
                         )
@@ -809,20 +827,20 @@ class _ClientPickerSheetState extends State<_ClientPickerSheet> {
                           itemBuilder: (_, i) {
                             final c = results[i];
                             return ListTile(
-                              title: Text(c.name, style: TmType.body),
+                              title: Text(c.name, style: TmType.body(context)),
                               subtitle: c.hasLocation
                                   ? null
                                   : Text(
                                       'Sin ubicación',
-                                      style: TmType.label.copyWith(
-                                        color: TmColors.textMuted,
+                                      style: TmType.label(context).copyWith(
+                                        color: tm.textMuted,
                                       ),
                                     ),
                               trailing: c.hasLocation
-                                  ? const Icon(
+                                  ? Icon(
                                       Icons.place_rounded,
                                       size: 18,
-                                      color: TmColors.accent,
+                                      color: tm.accent,
                                     )
                                   : null,
                               onTap: () => Navigator.of(context).pop(c),

@@ -32,9 +32,9 @@ class GlassCard extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: strong ? TmColors.glassFillStrong : TmColors.glassFill,
+            color: strong ? context.tm.glassFillStrong : context.tm.glassFill,
             borderRadius: borderRadius,
-            border: Border.all(color: borderColor ?? TmColors.glassBorder),
+            border: Border.all(color: borderColor ?? context.tm.glassBorder),
           ),
           child: Padding(padding: padding, child: child),
         ),

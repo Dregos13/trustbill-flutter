@@ -18,17 +18,17 @@ class LoadingView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 28,
             height: 28,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              color: TmColors.accent,
+              color: context.tm.accent,
             ),
           ),
           if (message != null) ...[
             const SizedBox(height: TmSpacing.md),
-            Text(message!, style: TmType.label),
+            Text(message!, style: TmType.label(context)),
           ],
         ],
       ),
@@ -47,7 +47,7 @@ class ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return InfoPane(
       icon: Icons.cloud_off_rounded,
-      accent: TmColors.danger,
+      accent: context.tm.danger,
       title: 'Algo ha fallado',
       subtitle: friendlyError(error),
       action: onRetry == null

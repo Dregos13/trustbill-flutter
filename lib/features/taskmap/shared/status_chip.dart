@@ -31,7 +31,7 @@ class StatusChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             status.label.toUpperCase(),
-            style: TmType.overline.copyWith(color: color, letterSpacing: 0.8),
+            style: TmType.overline(context).copyWith(color: color, letterSpacing: 0.8),
           ),
         ],
       ),

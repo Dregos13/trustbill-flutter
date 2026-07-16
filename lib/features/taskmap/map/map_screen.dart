@@ -96,12 +96,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               initialZoom: 5.3,
               minZoom: 3,
               maxZoom: 18,
-              backgroundColor: TmColors.bg,
+              backgroundColor: context.tm.bg,
             ),
             children: [
               TileLayer(
                 urlTemplate:
-                    'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                    'https://a.basemaps.cartocdn.com/${context.tm.mapTilesLight ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png',
                 userAgentPackageName: 'com.trustinfacts.mobile',
                 retinaMode: RetinaMode.isHighDensity(context),
               ),
@@ -156,7 +156,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         if (clientsAsync.hasError)
           Positioned.fill(
             child: ColoredBox(
-              color: TmColors.bg.withValues(alpha: 0.45),
+              color: context.tm.bg.withValues(alpha: 0.45),
               child: ErrorView(
                 error: clientsAsync.error!,
                 onRetry: () => ref.invalidate(mapClientsProvider),
@@ -205,25 +205,25 @@ class _MapHeader extends StatelessWidget {
             vertical: TmSpacing.md,
           ),
           decoration: BoxDecoration(
-            color: TmColors.surface.withValues(alpha: 0.72),
+            color: context.tm.surface.withValues(alpha: 0.72),
             borderRadius: TmRadii.brLg,
-            border: Border.all(color: TmColors.glassBorder),
+            border: Border.all(color: context.tm.glassBorder),
           ),
           child: Row(
             children: [
-              const Icon(Icons.map_rounded, color: TmColors.accent, size: 20),
+              Icon(Icons.map_rounded, color: context.tm.accent, size: 20),
               const SizedBox(width: TmSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Mapa de trabajos', style: TmType.title),
+                    Text('Mapa de trabajos', style: TmType.title(context)),
                     Text(
                       loading
                           ? 'Cargando…'
                           : '$count cliente${count == 1 ? '' : 's'} con tareas',
-                      style: TmType.label.copyWith(color: TmColors.textMuted),
+                      style: TmType.label(context).copyWith(color: context.tm.textMuted),
                     ),
                   ],
                 ),
@@ -233,17 +233,17 @@ class _MapHeader extends StatelessWidget {
                 onPressed: locating ? null : onLocate,
                 tooltip: 'Mi ubicación',
                 icon: locating
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: TmColors.accent,
+                          color: context.tm.accent,
                         ),
                       )
-                    : const Icon(
+                    : Icon(
                         Icons.my_location_rounded,
-                        color: TmColors.accent,
+                        color: context.tm.accent,
                         size: 20,
                       ),
               ),
@@ -252,17 +252,17 @@ class _MapHeader extends StatelessWidget {
                 onPressed: loading ? null : onRefresh,
                 tooltip: 'Actualizar',
                 icon: loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: TmColors.accent,
+                          color: context.tm.accent,
                         ),
                       )
-                    : const Icon(
+                    : Icon(
                         Icons.refresh_rounded,
-                        color: TmColors.textSecondary,
+                        color: context.tm.textSecondary,
                         size: 20,
                       ),
               ),

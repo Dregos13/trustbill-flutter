@@ -103,11 +103,11 @@ class _LocationChoiceSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: TmColors.surface,
+        color: context.tm.surface,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(TmRadii.xl),
         ),
-        border: Border(top: BorderSide(color: TmColors.glassBorder)),
+        border: Border(top: BorderSide(color: context.tm.glassBorder)),
       ),
       child: SafeArea(
         top: false,
@@ -117,11 +117,11 @@ class _LocationChoiceSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Fijar ubicación del cliente', style: TmType.h2),
+              Text('Fijar ubicación del cliente', style: TmType.h2(context)),
               const SizedBox(height: TmSpacing.xs),
               Text(
                 'Para que sus tareas aparezcan en el mapa.',
-                style: TmType.label.copyWith(color: TmColors.textMuted),
+                style: TmType.label(context).copyWith(color: context.tm.textMuted),
               ),
               const SizedBox(height: TmSpacing.lg),
               _Option(
@@ -166,27 +166,27 @@ class _Option extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(TmSpacing.md),
         decoration: BoxDecoration(
-          color: TmColors.bg.withValues(alpha: 0.4),
+          color: context.tm.bg.withValues(alpha: 0.4),
           borderRadius: TmRadii.brMd,
-          border: Border.all(color: TmColors.glassBorder),
+          border: Border.all(color: context.tm.glassBorder),
         ),
         child: Row(
           children: [
-            Icon(icon, color: TmColors.accent),
+            Icon(icon, color: context.tm.accent),
             const SizedBox(width: TmSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TmType.body),
+                  Text(title, style: TmType.body(context)),
                   Text(
                     subtitle,
-                    style: TmType.label.copyWith(color: TmColors.textMuted),
+                    style: TmType.label(context).copyWith(color: context.tm.textMuted),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: TmColors.textMuted),
+            Icon(Icons.chevron_right_rounded, color: context.tm.textMuted),
           ],
         ),
       ),
@@ -223,7 +223,7 @@ class _LocationPickerScreenState extends State<_LocationPickerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TmColors.bg,
+      backgroundColor: context.tm.bg,
       appBar: AppBar(
         title: Text(
           widget.clientName,
@@ -241,24 +241,24 @@ class _LocationPickerScreenState extends State<_LocationPickerScreen> {
               initialZoom: widget.initial != null ? 16 : 5.3,
               minZoom: 3,
               maxZoom: 19,
-              backgroundColor: TmColors.bg,
+              backgroundColor: context.tm.bg,
             ),
             children: [
               TileLayer(
                 urlTemplate:
-                    'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                    'https://a.basemaps.cartocdn.com/${context.tm.mapTilesLight ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png',
                 userAgentPackageName: 'com.trustinfacts.mobile',
                 retinaMode: RetinaMode.isHighDensity(context),
               ),
             ],
           ),
-          const IgnorePointer(
+          IgnorePointer(
             child: Padding(
-              padding: EdgeInsets.only(bottom: 36),
+              padding: const EdgeInsets.only(bottom: 36),
               child: Icon(
                 Icons.location_on,
                 size: 44,
-                color: TmColors.accent,
+                color: context.tm.accent,
               ),
             ),
           ),
@@ -298,14 +298,14 @@ class _PickerHint extends StatelessWidget {
         vertical: TmSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: TmColors.surface.withValues(alpha: 0.85),
+        color: context.tm.surface.withValues(alpha: 0.85),
         borderRadius: TmRadii.brMd,
-        border: Border.all(color: TmColors.glassBorder),
+        border: Border.all(color: context.tm.glassBorder),
       ),
       child: Text(
         'Mueve el mapa para centrar el punto sobre la ubicación del cliente.',
         textAlign: TextAlign.center,
-        style: TmType.label.copyWith(color: TmColors.textSecondary),
+        style: TmType.label(context).copyWith(color: context.tm.textSecondary),
       ),
     );
   }

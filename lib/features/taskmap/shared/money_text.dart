@@ -12,7 +12,7 @@ class MoneyText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(format(amount, symbol: symbol), style: style ?? TmType.money);
+    return Text(format(amount, symbol: symbol), style: style ?? TmType.money(context));
   }
 
   static String format(num? amount, {String symbol = '€'}) {

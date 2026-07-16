@@ -29,10 +29,10 @@ class TaskDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: TmColors.bg,
+      backgroundColor: context.tm.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        foregroundColor: TmColors.textPrimary,
+        foregroundColor: context.tm.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -54,7 +54,7 @@ class TaskDetailScreen extends ConsumerWidget {
         ],
       ),
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: TmColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: context.tm.backgroundGradient),
         child: SafeArea(
           child: async.when(
             loading: () => const LoadingView(),
@@ -92,7 +92,7 @@ class _DetailBody extends StatelessWidget {
             children: [
               StatusChip(task.status),
               const SizedBox(height: TmSpacing.md),
-              Text(task.title, style: TmType.display),
+              Text(task.title, style: TmType.display(context)),
               const SizedBox(height: TmSpacing.md),
               _MetaRow(icon: Icons.place_rounded, text: task.client.name),
               if (task.scheduledAt != null) ...[
@@ -109,10 +109,10 @@ class _DetailBody extends StatelessWidget {
                   (task.notes?.isNotEmpty ?? false)
                       ? task.notes!
                       : 'Sin notas.',
-                  style: TmType.body.copyWith(
+                  style: TmType.body(context).copyWith(
                     color: (task.notes?.isNotEmpty ?? false)
-                        ? TmColors.textPrimary
-                        : TmColors.textMuted,
+                        ? context.tm.textPrimary
+                        : context.tm.textMuted,
                   ),
                 ),
               ),
@@ -150,9 +150,9 @@ class _MetaRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: TmColors.textSecondary),
+        Icon(icon, size: 16, color: context.tm.textSecondary),
         const SizedBox(width: 6),
-        Expanded(child: Text(text, style: TmType.body)),
+        Expanded(child: Text(text, style: TmType.body(context))),
       ],
     );
   }
@@ -170,7 +170,7 @@ class _SectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title.toUpperCase(), style: TmType.overline),
+          Text(title.toUpperCase(), style: TmType.overline(context)),
           const SizedBox(height: TmSpacing.sm),
           child,
         ],
@@ -191,13 +191,13 @@ class _BillCard extends StatelessWidget {
       return GlassCard(
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.receipt_long_rounded,
-              color: TmColors.textMuted,
+              color: context.tm.textMuted,
               size: 18,
             ),
             const SizedBox(width: TmSpacing.sm),
-            Text('Sin factura asociada', style: TmType.body),
+            Text('Sin factura asociada', style: TmType.body(context)),
           ],
         ),
       );
@@ -208,21 +208,21 @@ class _BillCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('FACTURA', style: TmType.overline),
+              Text('FACTURA', style: TmType.overline(context)),
               const SizedBox(width: TmSpacing.sm),
               Text(
                 bill.number,
-                style: TmType.label.copyWith(color: TmColors.textSecondary),
+                style: TmType.label(context).copyWith(color: context.tm.textSecondary),
               ),
               const Spacer(),
-              Text(bill.status.toUpperCase(), style: TmType.overline),
+              Text(bill.status.toUpperCase(), style: TmType.overline(context)),
             ],
           ),
           const SizedBox(height: TmSpacing.sm),
-          MoneyText(bill.total, style: TmType.moneyLg),
+          MoneyText(bill.total, style: TmType.moneyLg(context)),
           if (bill.lines.isNotEmpty) ...[
             const SizedBox(height: TmSpacing.md),
-            Divider(color: TmColors.hairline, height: 1),
+            Divider(color: context.tm.hairline, height: 1),
             const SizedBox(height: TmSpacing.sm),
             for (final line in bill.lines)
               Padding(
@@ -232,8 +232,8 @@ class _BillCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '${line.quantity > 1 ? '${line.quantity}× ' : ''}${line.description}',
-                        style: TmType.body.copyWith(
-                          color: TmColors.textPrimary,
+                        style: TmType.body(context).copyWith(
+                          color: context.tm.textPrimary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -242,8 +242,8 @@ class _BillCard extends StatelessWidget {
                     const SizedBox(width: TmSpacing.sm),
                     MoneyText(
                       line.total,
-                      style: TmType.label.copyWith(
-                        color: TmColors.textPrimary,
+                      style: TmType.label(context).copyWith(
+                        color: context.tm.textPrimary,
                       ),
                     ),
                   ],
@@ -266,15 +266,17 @@ class _TimelineCard extends StatelessWidget {
     final rows = <Widget>[
       if (task.startedAt != null)
         _row(
+          context,
           Icons.bolt_rounded,
-          TmColors.statusInProgress,
+          context.tm.statusInProgress,
           'Iniciada',
           formatDayTime(task.startedAt!),
         ),
       if (task.completedAt != null)
         _row(
+          context,
           Icons.check_circle_rounded,
-          TmColors.statusDone,
+          context.tm.statusDone,
           'Completada',
           formatDayTime(task.completedAt!),
         ),
@@ -283,7 +285,7 @@ class _TimelineCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('ACTIVIDAD', style: TmType.overline),
+          Text('ACTIVIDAD', style: TmType.overline(context)),
           const SizedBox(height: TmSpacing.sm),
           ...rows,
         ],
@@ -291,7 +293,7 @@ class _TimelineCard extends StatelessWidget {
     );
   }
 
-  Widget _row(IconData icon, Color color, String label, String when) {
+  Widget _row(BuildContext context, IconData icon, Color color, String label, String when) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -300,10 +302,10 @@ class _TimelineCard extends StatelessWidget {
           const SizedBox(width: TmSpacing.sm),
           Text(
             label,
-            style: TmType.body.copyWith(color: TmColors.textPrimary),
+            style: TmType.body(context).copyWith(color: context.tm.textPrimary),
           ),
           const Spacer(),
-          Text(when, style: TmType.label.copyWith(color: TmColors.textMuted)),
+          Text(when, style: TmType.label(context).copyWith(color: context.tm.textMuted)),
         ],
       ),
     );

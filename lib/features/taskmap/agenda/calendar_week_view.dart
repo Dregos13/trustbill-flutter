@@ -136,15 +136,15 @@ class _WeekNav extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.chevron_left, color: TmColors.textSecondary),
+            icon: Icon(Icons.chevron_left, color: context.tm.textSecondary),
             onPressed: onPrev,
             visualDensity: VisualDensity.compact,
           ),
           Expanded(
-            child: Text(label, style: TmType.h2, textAlign: TextAlign.center),
+            child: Text(label, style: TmType.h2(context), textAlign: TextAlign.center),
           ),
           IconButton(
-            icon: const Icon(Icons.chevron_right, color: TmColors.textSecondary),
+            icon: Icon(Icons.chevron_right, color: context.tm.textSecondary),
             onPressed: onNext,
             visualDensity: VisualDensity.compact,
           ),
@@ -195,7 +195,7 @@ class _WeekPage extends StatelessWidget {
             }),
           ],
         ),
-        Divider(height: 1, color: TmColors.glassBorder),
+        Divider(height: 1, color: context.tm.glassBorder),
         // Scrollable time grid
         Expanded(
           child: SingleChildScrollView(
@@ -252,21 +252,21 @@ class _DayHeader extends StatelessWidget {
       children: [
         Text(
           _dayNames[date.weekday - 1],
-          style: TmType.label.copyWith(color: isToday ? TmColors.accent : TmColors.textMuted),
+          style: TmType.label(context).copyWith(color: isToday ? context.tm.accent : context.tm.textMuted),
         ),
         const SizedBox(height: 2),
         Container(
           width: 28,
           height: 28,
           decoration: isToday
-              ? const BoxDecoration(color: TmColors.accent, shape: BoxShape.circle)
+              ? BoxDecoration(color: context.tm.accent, shape: BoxShape.circle)
               : null,
           alignment: Alignment.center,
           child: Text(
             '${date.day}',
-            style: TmType.body.copyWith(
+            style: TmType.body(context).copyWith(
               fontWeight: FontWeight.w700,
-              color: isToday ? TmColors.bg : TmColors.textPrimary,
+              color: isToday ? context.tm.surface : context.tm.textPrimary,
             ),
           ),
         ),
@@ -292,7 +292,7 @@ class _TimeLabel extends StatelessWidget {
           padding: const EdgeInsets.only(right: 6, top: 2),
           child: Text(
             hour == 0 ? '' : '${hour.toString().padLeft(2, '0')}:00',
-            style: TmType.label.copyWith(color: TmColors.textMuted, fontSize: 10),
+            style: TmType.label(context).copyWith(color: context.tm.textMuted, fontSize: 10),
           ),
         ),
       ),
@@ -331,11 +331,11 @@ class _DayColumn extends StatelessWidget {
                 height: _kHourH,
                 decoration: BoxDecoration(
                   color: isToday
-                      ? TmColors.accent.withValues(alpha: 0.04)
+                      ? context.tm.accent.withValues(alpha: 0.04)
                       : Colors.transparent,
                   border: Border(
-                    top: BorderSide(color: TmColors.hairline, width: 0.5),
-                    left: BorderSide(color: TmColors.glassBorder, width: 0.5),
+                    top: BorderSide(color: context.tm.hairline, width: 0.5),
+                    left: BorderSide(color: context.tm.glassBorder, width: 0.5),
                   ),
                 ),
               ),
@@ -380,7 +380,7 @@ class _TaskChip extends StatelessWidget {
       ),
       child: Text(
         task.title,
-        style: TmType.label.copyWith(color: color, fontSize: 10, height: 1.2),
+        style: TmType.label(context).copyWith(color: color, fontSize: 10, height: 1.2),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),

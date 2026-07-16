@@ -26,7 +26,7 @@ class TaskPin extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: TmColors.bg.withValues(alpha: 0.92),
+            color: context.tm.bg.withValues(alpha: 0.92),
             shape: BoxShape.circle,
             border: Border.all(color: color, width: 2.2),
             boxShadow: [
@@ -64,12 +64,12 @@ class ClusterBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: TmColors.bg.withValues(alpha: 0.92),
+        color: context.tm.bg.withValues(alpha: 0.92),
         shape: BoxShape.circle,
-        border: Border.all(color: TmColors.accent, width: 2.4),
+        border: Border.all(color: context.tm.accent, width: 2.4),
         boxShadow: [
           BoxShadow(
-            color: TmColors.accent.withValues(alpha: 0.5),
+            color: context.tm.accent.withValues(alpha: 0.5),
             blurRadius: 16,
             spreadRadius: 1,
           ),
@@ -78,8 +78,8 @@ class ClusterBadge extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         '$count',
-        style: const TextStyle(
-          color: TmColors.accent,
+        style: TextStyle(
+          color: context.tm.accent,
           fontWeight: FontWeight.w800,
           fontSize: 16,
         ),

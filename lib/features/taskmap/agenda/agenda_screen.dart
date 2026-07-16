@@ -37,15 +37,15 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     }
 
     return DecoratedBox(
-      decoration: const BoxDecoration(gradient: TmColors.backgroundGradient),
+      decoration: BoxDecoration(gradient: context.tm.backgroundGradient),
       child: SafeArea(
         top: false,
         bottom: false,
         child: _calendarMode
             ? _buildCalendar(context, async)
             : RefreshIndicator(
-                color: TmColors.accent,
-                backgroundColor: TmColors.surface,
+                color: context.tm.accent,
+                backgroundColor: context.tm.surface,
                 onRefresh: refresh,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -105,7 +105,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         const SizedBox(height: TmSpacing.sm),
         Expanded(
           child: async.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: TmColors.accent)),
+            loading: () => Center(child: CircularProgressIndicator(color: context.tm.accent)),
             error: (e, _) => Padding(
               padding: const EdgeInsets.all(TmSpacing.lg),
               child: ErrorView(
@@ -234,9 +234,9 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('TASKMAP', style: TmType.overline),
+              Text('TASKMAP', style: TmType.overline(context)),
               const SizedBox(height: 2),
-              Text('Agenda', style: TmType.display),
+              Text('Agenda', style: TmType.display(context)),
             ],
           ),
         ),
@@ -266,39 +266,39 @@ class _ViewToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: TmColors.surface.withValues(alpha: 0.7),
+        color: context.tm.surface.withValues(alpha: 0.7),
         borderRadius: TmRadii.brSm,
-        border: Border.all(color: TmColors.glassBorder),
+        border: Border.all(color: context.tm.glassBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _item(Icons.list_rounded, 'Lista', !calendarMode, () => onToggle(false)),
-          _item(Icons.calendar_view_week_rounded, 'Calendario', calendarMode, () => onToggle(true)),
+          _item(context, Icons.list_rounded, 'Lista', !calendarMode, () => onToggle(false)),
+          _item(context, Icons.calendar_view_week_rounded, 'Calendario', calendarMode, () => onToggle(true)),
         ],
       ),
     );
   }
 
-  Widget _item(IconData icon, String label, bool selected, VoidCallback onTap) {
+  Widget _item(BuildContext context, IconData icon, String label, bool selected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: selected ? TmColors.accent.withValues(alpha: 0.16) : Colors.transparent,
+          color: selected ? context.tm.accent.withValues(alpha: 0.16) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: selected ? TmColors.accent : TmColors.textMuted),
+            Icon(icon, size: 14, color: selected ? context.tm.accent : context.tm.textMuted),
             const SizedBox(width: 4),
             Text(
               label,
-              style: TmType.label.copyWith(
-                color: selected ? TmColors.accent : TmColors.textMuted,
+              style: TmType.label(context).copyWith(
+                color: selected ? context.tm.accent : context.tm.textMuted,
               ),
             ),
           ],
@@ -319,21 +319,21 @@ class _Segmented extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: TmColors.surface.withValues(alpha: 0.7),
+        color: context.tm.surface.withValues(alpha: 0.7),
         borderRadius: TmRadii.brSm,
-        border: Border.all(color: TmColors.glassBorder),
+        border: Border.all(color: context.tm.glassBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _segItem('Abiertas', !includeDone, () => onToggle(false)),
-          _segItem('Todas', includeDone, () => onToggle(true)),
+          _segItem(context, 'Abiertas', !includeDone, () => onToggle(false)),
+          _segItem(context, 'Todas', includeDone, () => onToggle(true)),
         ],
       ),
     );
   }
 
-  Widget _segItem(String label, bool selected, VoidCallback onTap) {
+  Widget _segItem(BuildContext context, String label, bool selected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -341,14 +341,14 @@ class _Segmented extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: selected
-              ? TmColors.accent.withValues(alpha: 0.16)
+              ? context.tm.accent.withValues(alpha: 0.16)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           label,
-          style: TmType.label.copyWith(
-            color: selected ? TmColors.accent : TmColors.textMuted,
+          style: TmType.label(context).copyWith(
+            color: selected ? context.tm.accent : context.tm.textMuted,
           ),
         ),
       ),
@@ -369,7 +369,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = accent ? TmColors.danger : TmColors.textSecondary;
+    final color = accent ? context.tm.danger : context.tm.textSecondary;
     return Padding(
       padding: const EdgeInsets.only(
         top: TmSpacing.sm,
@@ -378,16 +378,16 @@ class _SectionHeader extends StatelessWidget {
       child: Row(
         children: [
           if (accent) ...[
-            const Icon(
+            Icon(
               Icons.warning_amber_rounded,
               size: 15,
-              color: TmColors.danger,
+              color: context.tm.danger,
             ),
             const SizedBox(width: 6),
           ],
           Text(
             label.toUpperCase(),
-            style: TmType.overline.copyWith(
+            style: TmType.overline(context).copyWith(
               color: color,
               letterSpacing: 1.1,
             ),
@@ -395,7 +395,7 @@ class _SectionHeader extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             '$count',
-            style: TmType.overline.copyWith(color: TmColors.textMuted),
+            style: TmType.overline(context).copyWith(color: context.tm.textMuted),
           ),
         ],
       ),

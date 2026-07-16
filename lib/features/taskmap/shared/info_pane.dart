@@ -12,18 +12,19 @@ class InfoPane extends StatelessWidget {
     required this.icon,
     required this.title,
     this.subtitle,
-    this.accent = TmColors.accent,
+    this.accent,
     this.action,
   });
 
   final IconData icon;
   final String title;
   final String? subtitle;
-  final Color accent;
+  final Color? accent;
   final Widget? action;
 
   @override
   Widget build(BuildContext context) {
+    final accent = this.accent ?? context.tm.accent;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(TmSpacing.xl),
@@ -43,12 +44,12 @@ class InfoPane extends StatelessWidget {
                 child: Icon(icon, color: accent, size: 26),
               ),
               const SizedBox(height: TmSpacing.lg),
-              Text(title, style: TmType.h2, textAlign: TextAlign.center),
+              Text(title, style: TmType.h2(context), textAlign: TextAlign.center),
               if (subtitle != null) ...[
                 const SizedBox(height: TmSpacing.sm),
                 Text(
                   subtitle!,
-                  style: TmType.body,
+                  style: TmType.body(context),
                   textAlign: TextAlign.center,
                 ),
               ],

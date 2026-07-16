@@ -98,8 +98,10 @@ class AppShell extends ConsumerWidget {
         }
         return FloatingActionButton.extended(
           onPressed: () => context.push('/task/new'),
-          backgroundColor: TmColors.accent,
-          foregroundColor: const Color(0xFF06212E),
+          backgroundColor: context.tm.accent,
+          foregroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF06212E)
+              : Colors.white,
           icon: const Icon(Icons.add_rounded),
           label: const Text('Nueva tarea'),
         );
