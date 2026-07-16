@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../../core/models/expense.dart';
 import '../../core/models/scan_result.dart';
 import '../../core/models/supplier.dart';
@@ -344,7 +344,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(msg),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.statusSuccess,
               duration: const Duration(seconds: 3),
             ),
           );
@@ -358,8 +358,6 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         Scaffold(
           appBar: AppBar(
             title: const Text('Revisar factura'),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
           ),
           body: Form(
             key: _formKey,
@@ -377,13 +375,13 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.dangerBg,
+                      color: context.statusDangerSoft,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       state.error!,
-                      style: const TextStyle(
-                        color: AppColors.danger,
+                      style: TextStyle(
+                        color: context.statusDanger,
                         fontSize: 13,
                       ),
                     ),
@@ -404,31 +402,31 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.successBg,
+                      color: context.statusSuccessSoft,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle,
-                          color: AppColors.success,
+                          color: context.statusSuccess,
                           size: 16,
                         ),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Proveedor encontrado en tu base de datos',
                             style: TextStyle(
-                              color: AppColors.success,
+                              color: context.statusSuccess,
                               fontSize: 13,
                             ),
                           ),
                         ),
                         GestureDetector(
                           onTap: () => setState(() => _matchedSupplier = null),
-                          child: const Icon(
+                          child: Icon(
                             Icons.close,
-                            color: AppColors.success,
+                            color: context.statusSuccess,
                             size: 16,
                           ),
                         ),
@@ -471,8 +469,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                               icon: const Icon(Icons.search),
                               tooltip: 'Buscar en tu base de datos',
                               style: IconButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
+                                backgroundColor: context.appPrimary,
+                                foregroundColor: context.onPrimary,
                               ),
                             ),
                     ),
@@ -572,9 +570,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   initialValue: _taxKind,
                   decoration: InputDecoration(
                     labelText: 'Régimen fiscal',
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.account_balance_outlined,
-                      color: AppColors.gray400,
+                      color: context.appTextSubtle,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -593,9 +591,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   initialValue: _status,
                   decoration: InputDecoration(
                     labelText: 'Estado',
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.payments_outlined,
-                      color: AppColors.gray400,
+                      color: context.appTextSubtle,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -657,13 +655,13 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.gray50,
+                      color: context.appSurfaceRaised,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.gray200),
+                      border: Border.all(color: context.appBorder),
                     ),
-                    child: const Text(
+                    child: Text(
                       'No se detectaron líneas. Puedes añadirlas manualmente.',
-                      style: TextStyle(fontSize: 13, color: AppColors.gray600),
+                      style: TextStyle(fontSize: 13, color: context.appTextMuted),
                     ),
                   )
                 else
@@ -716,7 +714,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: icon != null ? Icon(icon, color: AppColors.gray400) : null,
+        prefixIcon: icon != null ? Icon(icon, color: context.appTextSubtle) : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
       keyboardType: keyboardType,
@@ -803,9 +801,9 @@ class _ScanLineEditor extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.gray50,
+        color: context.appSurfaceRaised,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.gray200),
+        border: Border.all(color: context.appBorder),
       ),
       child: Column(
         children: [
@@ -814,18 +812,18 @@ class _ScanLineEditor extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Línea ${index + 1}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.gray800,
+                    color: context.appText,
                   ),
                 ),
               ),
               Text(
                 '${line.total.toStringAsFixed(2)} EUR',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: context.appPrimary,
                 ),
               ),
               if (canDelete) ...[
@@ -833,9 +831,9 @@ class _ScanLineEditor extends StatelessWidget {
                 IconButton(
                   tooltip: 'Eliminar línea',
                   onPressed: onDelete,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppColors.danger,
+                    color: context.statusDanger,
                     size: 20,
                   ),
                 ),
@@ -944,10 +942,10 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w700,
-        color: AppColors.gray800,
+        color: context.appText,
       ),
     );
   }
@@ -970,7 +968,7 @@ class _SupplierPickerDialog extends StatelessWidget {
           itemBuilder: (_, i) {
             final s = suppliers[i];
             return ListTile(
-              leading: const Icon(Icons.store, color: AppColors.primary),
+              leading: Icon(Icons.store, color: context.appPrimary),
               title: Text(s.name),
               subtitle: s.taxId != null && s.taxId!.isNotEmpty
                   ? Text(s.taxId!, style: const TextStyle(fontSize: 12))
@@ -1052,7 +1050,7 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
           margin: const EdgeInsets.symmetric(horizontal: 32),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.appSurfaceRaised,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1063,7 +1061,7 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: allDone ? AppColors.success : AppColors.gray800,
+                  color: allDone ? context.statusSuccess : context.appText,
                 ),
               ),
               const SizedBox(height: 24),
@@ -1083,22 +1081,22 @@ class _ConfirmProgressOverlayState extends State<_ConfirmProgressOverlay> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.successBg,
+                    color: context.statusSuccessSoft,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check_circle,
-                        color: AppColors.success,
+                        color: context.statusSuccess,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Todo listo',
                         style: TextStyle(
-                          color: AppColors.success,
+                          color: context.statusSuccess,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -1140,19 +1138,19 @@ class _StepRow extends StatelessWidget {
             width: 28,
             height: 28,
             child: isActive
-                ? const CircularProgressIndicator(
+                ? CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: AppColors.primary,
+                    color: context.appPrimary,
                   )
                 : isDone
-                ? const Icon(
+                ? Icon(
                     Icons.check_circle,
-                    color: AppColors.success,
+                    color: context.statusSuccess,
                     size: 28,
                   )
                 : Icon(
                     Icons.radio_button_unchecked,
-                    color: AppColors.gray300,
+                    color: context.appTextSubtle,
                     size: 28,
                   ),
           ),
@@ -1160,7 +1158,7 @@ class _StepRow extends StatelessWidget {
           Icon(
             icon,
             size: 18,
-            color: isPending ? AppColors.gray300 : AppColors.primary,
+            color: isPending ? context.appTextSubtle : context.appPrimary,
           ),
           const SizedBox(width: 10),
           Text(
@@ -1168,7 +1166,7 @@ class _StepRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-              color: isPending ? AppColors.gray400 : AppColors.gray800,
+              color: isPending ? context.appTextSubtle : context.appText,
             ),
           ),
         ],
@@ -1189,7 +1187,7 @@ class _ConfidenceBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isHigh ? AppColors.successBg : AppColors.warningBg,
+        color: isHigh ? context.statusSuccessSoft : context.statusWarningSoft,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -1197,7 +1195,7 @@ class _ConfidenceBanner extends StatelessWidget {
           Icon(
             isHigh ? Icons.verified : Icons.info_outline,
             size: 18,
-            color: isHigh ? AppColors.success : AppColors.warning,
+            color: isHigh ? context.statusSuccess : context.statusWarning,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -1207,7 +1205,7 @@ class _ConfidenceBanner extends StatelessWidget {
                   : 'Confianza baja ($pct%). Revisa cuidadosamente todos los campos.',
               style: TextStyle(
                 fontSize: 13,
-                color: isHigh ? AppColors.success : AppColors.warning,
+                color: isHigh ? context.statusSuccess : context.statusWarning,
               ),
             ),
           ),
