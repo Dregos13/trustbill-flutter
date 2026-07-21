@@ -9,6 +9,11 @@ import '../../core/models/expense.dart';
 import '../../core/models/scan_result.dart';
 import '../../core/models/supplier.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/utils/date.dart';
+import '../../core/utils/number_parsing.dart';
+import '../dashboard/dashboard_screen.dart';
+import '../purchases/purchases_screen.dart';
+import '../suppliers/suppliers_screen.dart';
 import 'scan_provider.dart';
 
 class ScanReviewScreen extends ConsumerStatefulWidget {
@@ -34,6 +39,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   late TextEditingController _invoiceNumberCtrl;
   late TextEditingController _issueDateCtrl;
   late TextEditingController _dueDateCtrl;
+  late TextEditingController _paidDateCtrl;
 
   // Amount fields
   late TextEditingController _totalCtrl;
@@ -68,13 +74,14 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       text: result?.invoiceNumber ?? '',
     );
     _issueDateCtrl = TextEditingController(
-      text: _formatDisplayDate(
+      text: formatIsoDateForDisplay(
         result?.date ?? DateTime.now().toIso8601String(),
       ),
     );
     _dueDateCtrl = TextEditingController(
-      text: _formatDisplayDate(result?.dueDate ?? ''),
+      text: formatIsoDateForDisplay(result?.dueDate ?? ''),
     );
+    _paidDateCtrl = TextEditingController();
 
     _totalCtrl = TextEditingController(
       text: (result?.total ?? 0).toStringAsFixed(2),
@@ -85,31 +92,6 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     _lineDrafts = (result?.lines ?? const <OcrLineItem>[])
         .map(_ScanLineDraft.fromOcr)
         .toList();
-  }
-
-  String _formatDisplayDate(String iso) {
-    if (iso.isEmpty) return '';
-    try {
-      final dt = DateTime.parse(iso);
-      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
-    } catch (_) {
-      return '';
-    }
-  }
-
-  String _parseDisplayDateToIso(String display) {
-    try {
-      final parts = display.split('/');
-      if (parts.length == 3) {
-        final dt = DateTime(
-          int.parse(parts[2]),
-          int.parse(parts[1]),
-          int.parse(parts[0]),
-        );
-        return dt.toUtc().toIso8601String();
-      }
-    } catch (_) {}
-    return DateTime.now().toUtc().toIso8601String();
   }
 
   Future<void> _pickDate(
@@ -124,7 +106,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       lastDate: allowFuture ? DateTime(2100) : now,
     );
     if (picked != null) {
-      ctrl.text = _formatDisplayDate(picked.toIso8601String());
+      ctrl.text = formatIsoDateForDisplay(picked.toIso8601String());
     }
   }
 
@@ -134,7 +116,10 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
   }
 
   void _syncTotalsFromLines() {
-    final tax = _lineDrafts.fold<double>(0, (sum, line) => sum + line.taxAmount);
+    final tax = _lineDrafts.fold<double>(
+      0,
+      (sum, line) => sum + line.taxAmount,
+    );
     final total = _lineDrafts.fold<double>(0, (sum, line) => sum + line.total);
     _taxCtrl.text = tax.toStringAsFixed(2);
     _totalCtrl.text = total.toStringAsFixed(2);
@@ -142,6 +127,15 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
 
   void _onLineChanged() {
     setState(_syncTotalsFromLines);
+  }
+
+  void _setStatus(String status) {
+    setState(() {
+      _status = status;
+      if (_status == 'PAID' && _paidDateCtrl.text.trim().isEmpty) {
+        _paidDateCtrl.text = _issueDateCtrl.text;
+      }
+    });
   }
 
   void _addLine() {
@@ -263,6 +257,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
         .toList();
 
     final dueDateText = _dueDateCtrl.text.trim();
+    final paidDateText = _paidDateCtrl.text.trim().isNotEmpty
+        ? _paidDateCtrl.text.trim()
+        : _issueDateCtrl.text.trim();
 
     final payload = SupplierInvoiceConfirmPayload(
       supplierId: _matchedSupplier?.id,
@@ -288,20 +285,44 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       invoiceNumber: _invoiceNumberCtrl.text.trim().isNotEmpty
           ? _invoiceNumberCtrl.text.trim()
           : null,
-      issueDate: _parseDisplayDateToIso(_issueDateCtrl.text),
+      issueDate: parseDisplayDateToApiIso(_issueDateCtrl.text),
       dueDate: dueDateText.isNotEmpty
-          ? _parseDisplayDateToIso(dueDateText)
+          ? parseDisplayDateToApiIso(dueDateText)
           : null,
+      paidAt: _status == 'PAID' ? parseDisplayDateToApiIso(paidDateText) : null,
       taxKind: _taxKind,
       status: _status,
-      total: double.tryParse(_totalCtrl.text) ?? 0,
-      tax: double.tryParse(_taxCtrl.text) ?? 0,
+      total: parseLocalizedDecimal(_totalCtrl.text),
+      tax: parseLocalizedDecimal(_taxCtrl.text),
       lines: lines,
       imageBase64: base64Encode(state.imageBytes!),
       imageMimeType: state.imageMimeType ?? 'image/jpeg',
+      attachments: _attachmentPayloads(state),
     );
 
     await ref.read(scanProvider.notifier).confirmExpense(payload);
+  }
+
+  List<SupplierInvoiceAttachmentPayload> _attachmentPayloads(ScanState state) {
+    if (state.pages.isNotEmpty) {
+      return state.pages
+          .map(
+            (page) => SupplierInvoiceAttachmentPayload(
+              imageBase64: base64Encode(page.bytes),
+              imageMimeType: page.mimeType,
+              fileName: page.fileName,
+            ),
+          )
+          .toList();
+    }
+    if (state.imageBytes == null) return const [];
+    return [
+      SupplierInvoiceAttachmentPayload(
+        imageBase64: base64Encode(state.imageBytes!),
+        imageMimeType: state.imageMimeType ?? 'image/jpeg',
+        fileName: 'receipt.jpg',
+      ),
+    ];
   }
 
   @override
@@ -316,6 +337,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     _invoiceNumberCtrl.dispose();
     _issueDateCtrl.dispose();
     _dueDateCtrl.dispose();
+    _paidDateCtrl.dispose();
     _totalCtrl.dispose();
     _taxCtrl.dispose();
     for (final line in _lineDrafts) {
@@ -332,6 +354,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     // Navigate home on success — show success overlay for 2 s first
     ref.listen<ScanState>(scanProvider, (prev, next) {
       if (next.confirmed != null && prev?.confirmed == null) {
+        ref.invalidate(mobileDashboardProvider);
+        ref.invalidate(purchasesProvider);
+        ref.invalidate(suppliersProvider);
         setState(() => _showSuccess = true);
         Future.delayed(const Duration(seconds: 2), () {
           if (!context.mounted) return;
@@ -348,7 +373,12 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
               duration: const Duration(seconds: 3),
             ),
           );
-          context.go('/');
+          final purchaseId = next.confirmed!.invoice['id'];
+          if (purchaseId is int) {
+            context.go('/purchases/$purchaseId');
+          } else {
+            context.go('/purchases');
+          }
         });
       }
     });
@@ -356,9 +386,7 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
     return Stack(
       children: [
         Scaffold(
-          appBar: AppBar(
-            title: const Text('Revisar factura'),
-          ),
+          appBar: AppBar(title: const Text('Revisar factura')),
           body: Form(
             key: _formKey,
             child: ListView(
@@ -603,8 +631,24 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                     DropdownMenuItem(value: 'UNPAID', child: Text('Pendiente')),
                     DropdownMenuItem(value: 'PAID', child: Text('Pagada')),
                   ],
-                  onChanged: (v) => setState(() => _status = v ?? 'UNPAID'),
+                  onChanged: (v) => _setStatus(v ?? 'UNPAID'),
                 ),
+                if (_status == 'PAID') ...[
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () => _pickDate(_paidDateCtrl),
+                    child: AbsorbPointer(
+                      child: _buildField(
+                        controller: _paidDateCtrl,
+                        label: 'Fecha de pago',
+                        icon: Icons.event_available_outlined,
+                        validator: (v) => v == null || v.trim().isEmpty
+                            ? 'Fecha de pago requerida'
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
 
                 // ── Importes ───────────────────────────────────────────────────
                 const SizedBox(height: 24),
@@ -619,8 +663,8 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                     decimal: true,
                   ),
                   validator: (v) {
-                    final n = double.tryParse(v ?? '');
-                    if (n == null || n <= 0) return 'Total requerido';
+                    final n = parseLocalizedDecimal(v ?? '');
+                    if (n <= 0) return 'Total requerido';
                     return null;
                   },
                 ),
@@ -661,7 +705,10 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
                     ),
                     child: Text(
                       'No se detectaron líneas. Puedes añadirlas manualmente.',
-                      style: TextStyle(fontSize: 13, color: context.appTextMuted),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.appTextMuted,
+                      ),
                     ),
                   )
                 else
@@ -714,7 +761,9 @@ class _ScanReviewScreenState extends ConsumerState<ScanReviewScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: icon != null ? Icon(icon, color: context.appTextSubtle) : null,
+        prefixIcon: icon != null
+            ? Icon(icon, color: context.appTextSubtle)
+            : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
       keyboardType: keyboardType,
@@ -731,24 +780,20 @@ class _ScanLineDraft {
     required double quantity,
     required double unitPrice,
     required double taxRate,
-  })  : descriptionCtrl = TextEditingController(text: description),
-        quantityCtrl = TextEditingController(text: _formatNumber(quantity)),
-        unitPriceCtrl = TextEditingController(text: _formatNumber(unitPrice)),
-        taxRateCtrl = TextEditingController(text: _formatNumber(taxRate));
+  }) : descriptionCtrl = TextEditingController(text: description),
+       quantityCtrl = TextEditingController(text: _formatNumber(quantity)),
+       unitPriceCtrl = TextEditingController(text: _formatNumber(unitPrice)),
+       taxRateCtrl = TextEditingController(text: _formatNumber(taxRate));
 
   factory _ScanLineDraft.fromOcr(OcrLineItem item) => _ScanLineDraft(
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        taxRate: item.taxRate,
-      );
+    description: item.description,
+    quantity: item.quantity,
+    unitPrice: item.unitPrice,
+    taxRate: item.taxRate,
+  );
 
-  factory _ScanLineDraft.empty() => _ScanLineDraft(
-        description: '',
-        quantity: 1,
-        unitPrice: 0,
-        taxRate: 21,
-      );
+  factory _ScanLineDraft.empty() =>
+      _ScanLineDraft(description: '', quantity: 1, unitPrice: 0, taxRate: 21);
 
   final TextEditingController descriptionCtrl;
   final TextEditingController quantityCtrl;
@@ -764,7 +809,7 @@ class _ScanLineDraft {
   double get total => base + taxAmount;
 
   static double _parseDecimal(String value, {double fallback = 0}) =>
-      double.tryParse(value.trim().replaceAll(',', '.')) ?? fallback;
+      parseLocalizedDecimal(value, fallback: fallback);
 
   static String _formatNumber(double value) {
     if (value == value.roundToDouble()) return value.toInt().toString();
@@ -851,6 +896,7 @@ class _ScanLineEditor extends StatelessWidget {
               ),
               isDense: true,
             ),
+            style: TextStyle(color: context.appText),
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Descripción requerida' : null,
             onChanged: (_) => onChanged(),
@@ -861,6 +907,7 @@ class _ScanLineEditor extends StatelessWidget {
               Expanded(
                 child: _numberField(
                   key: ValueKey('scan-line-quantity-$index'),
+                  context: context,
                   controller: line.quantityCtrl,
                   label: 'Cant.',
                   validator: (value) {
@@ -874,6 +921,7 @@ class _ScanLineEditor extends StatelessWidget {
               Expanded(
                 child: _numberField(
                   key: ValueKey('scan-line-unit-price-$index'),
+                  context: context,
                   controller: line.unitPriceCtrl,
                   label: 'Precio',
                   suffix: 'EUR',
@@ -888,6 +936,7 @@ class _ScanLineEditor extends StatelessWidget {
               Expanded(
                 child: _numberField(
                   key: ValueKey('scan-line-tax-rate-$index'),
+                  context: context,
                   controller: line.taxRateCtrl,
                   label: 'IVA',
                   suffix: '%',
@@ -907,6 +956,7 @@ class _ScanLineEditor extends StatelessWidget {
 
   Widget _numberField({
     required Key key,
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     String? suffix,
@@ -916,22 +966,20 @@ class _ScanLineEditor extends StatelessWidget {
       key: key,
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-      ],
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))],
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         isDense: true,
       ),
+      style: TextStyle(color: context.appText),
       validator: (value) => validator(value ?? ''),
       onChanged: (_) => onChanged(),
     );
   }
 
-  static double _parseDecimal(String value) =>
-      double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
+  static double _parseDecimal(String value) => parseLocalizedDecimal(value);
 }
 
 class _SectionTitle extends StatelessWidget {

@@ -52,7 +52,11 @@ void main() {
       '10',
     );
 
-    await tester.ensureVisible(find.text('Registrar factura'));
+    await tester.scrollUntilVisible(
+      find.text('Registrar factura'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Registrar factura'));
     await tester.pump();
 
@@ -62,6 +66,116 @@ void main() {
     expect(submitted!.lines.first['base'], 25);
     expect(submitted!.lines.first['taxRate'], 10);
     expect(submitted!.lines.first['taxAmount'], 2.5);
+  });
+
+  testWidgets('parses European thousands and decimal separators in amounts', (
+    tester,
+  ) async {
+    SupplierInvoiceConfirmPayload? submitted;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          scanProvider.overrideWith(
+            () => _ReviewScanNotifier(
+              onConfirm: (payload) => submitted = payload,
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: ScanReviewScreen()),
+      ),
+    );
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(TextFormField, 'Total'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Total'),
+      '1.234,56',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Impuesto / IVA'),
+      '234,56',
+    );
+    await tester.scrollUntilVisible(
+      find.text('Líneas detectadas (1)'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('scan-line-quantity-0')),
+      '1',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('scan-line-unit-price-0')),
+      '1.234,56',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('scan-line-tax-rate-0')),
+      '21',
+    );
+
+    await tester.scrollUntilVisible(
+      find.text('Registrar factura'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Registrar factura'));
+    await tester.pump();
+
+    expect(submitted, isNotNull);
+    expect(submitted!.total, 1493.82);
+    expect(submitted!.tax, 259.26);
+    expect(submitted!.lines.first['base'], 1234.56);
+  });
+
+  testWidgets('sends payment date when OCR expense is marked as paid', (
+    tester,
+  ) async {
+    SupplierInvoiceConfirmPayload? submitted;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          scanProvider.overrideWith(
+            () => _ReviewScanNotifier(
+              onConfirm: (payload) => submitted = payload,
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: ScanReviewScreen()),
+      ),
+    );
+
+    await tester.scrollUntilVisible(
+      find.text('Pendiente'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pendiente').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pagada').last);
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextFormField, 'Fecha de pago'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Registrar factura'),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Registrar factura'));
+    await tester.pump();
+
+    expect(submitted, isNotNull);
+    expect(submitted!.status, 'PAID');
+    expect(submitted!.paidAt, '2026-07-10T12:00:00.000Z');
   });
 }
 
@@ -75,6 +189,7 @@ class _ReviewScanNotifier extends ScanNotifier {
     result: const ScanResult(
       supplierName: 'Proveedor Test',
       invoiceNumber: 'F-1',
+      date: '2026-07-10T12:00:00.000Z',
       lines: [
         OcrLineItem(
           description: 'Tornillo OCR',

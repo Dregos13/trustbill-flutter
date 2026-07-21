@@ -4,8 +4,21 @@ import '../../core/models/scan_result.dart';
 import '../../core/models/expense.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/utils/error_messages.dart';
+import '../../core/api/api_client.dart';
 
 enum ScanType { expense, invoice }
+
+class ScanPage {
+  final Uint8List bytes;
+  final String mimeType;
+  final String fileName;
+
+  const ScanPage({
+    required this.bytes,
+    required this.mimeType,
+    required this.fileName,
+  });
+}
 
 /// Holds the current scan result and image bytes while the user reviews.
 class ScanState {
@@ -13,6 +26,7 @@ class ScanState {
   final ScanResult? result;
   final Uint8List? imageBytes;
   final String? imageMimeType;
+  final List<ScanPage> pages;
   final bool isScanning;
   final bool isConfirming;
   final String? error;
@@ -23,6 +37,7 @@ class ScanState {
     this.result,
     this.imageBytes,
     this.imageMimeType,
+    this.pages = const [],
     this.isScanning = false,
     this.isConfirming = false,
     this.error,
@@ -34,6 +49,7 @@ class ScanState {
     ScanResult? result,
     Uint8List? imageBytes,
     String? imageMimeType,
+    List<ScanPage>? pages,
     bool? isScanning,
     bool? isConfirming,
     String? error,
@@ -44,6 +60,7 @@ class ScanState {
       result: result ?? this.result,
       imageBytes: imageBytes ?? this.imageBytes,
       imageMimeType: imageMimeType ?? this.imageMimeType,
+      pages: pages ?? this.pages,
       isScanning: isScanning ?? this.isScanning,
       isConfirming: isConfirming ?? this.isConfirming,
       error: error,
@@ -61,25 +78,48 @@ class ScanNotifier extends Notifier<ScanState> {
   }
 
   Future<void> scanImage(Uint8List bytes, String mimeType) async {
+    await scanPages([
+      ScanPage(
+        bytes: bytes,
+        mimeType: mimeType,
+        fileName: 'receipt.${mimeType == 'image/png' ? 'png' : 'jpg'}',
+      ),
+    ]);
+  }
+
+  Future<void> scanPages(List<ScanPage> pages) async {
+    if (pages.isEmpty) return;
+
     state = ScanState(
       scanType: state.scanType,
-      imageBytes: bytes,
-      imageMimeType: mimeType,
+      imageBytes: pages.first.bytes,
+      imageMimeType: pages.first.mimeType,
+      pages: pages,
       isScanning: true,
     );
 
     try {
       final endpoints = ref.read(endpointsProvider);
-      final result = await endpoints.scanReceipt(
-        imageBytes: bytes,
-        fileName: 'receipt.${mimeType == 'image/png' ? 'png' : 'jpg'}',
-        mimeType: mimeType,
+      final result = await endpoints.scanReceiptPages(
+        pages
+            .map(
+              (p) => MultipartUploadFile(
+                bytes: p.bytes,
+                fileName: p.fileName,
+                mimeType: p.mimeType,
+              ),
+            )
+            .toList(),
       );
       state = state.copyWith(result: result, isScanning: false);
     } catch (e) {
       state = state.copyWith(
         isScanning: false,
-        error: friendlyError(e, fallback: 'No se pudo analizar la imagen. Intenta con una foto más clara.'),
+        error: friendlyError(
+          e,
+          fallback:
+              'No se pudo analizar la imagen. Intenta con una foto más clara.',
+        ),
       );
     }
   }
@@ -94,7 +134,10 @@ class ScanNotifier extends Notifier<ScanState> {
     } catch (e) {
       state = state.copyWith(
         isConfirming: false,
-        error: friendlyError(e, fallback: 'No se pudo guardar la factura. Intenta de nuevo.'),
+        error: friendlyError(
+          e,
+          fallback: 'No se pudo guardar la factura. Intenta de nuevo.',
+        ),
       );
     }
   }
@@ -104,4 +147,6 @@ class ScanNotifier extends Notifier<ScanState> {
   }
 }
 
-final scanProvider = NotifierProvider<ScanNotifier, ScanState>(ScanNotifier.new);
+final scanProvider = NotifierProvider<ScanNotifier, ScanState>(
+  ScanNotifier.new,
+);

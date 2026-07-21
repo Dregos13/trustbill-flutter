@@ -71,6 +71,20 @@ class Endpoints {
     return DashboardSummary.fromJson(res.data);
   }
 
+  Future<MobileDashboardSummary> getMobileDashboard({
+    String? from,
+    String? to,
+  }) async {
+    final res = await _api.get(
+      '/dashboard/mobile',
+      queryParams: {
+        if (from != null && from.isNotEmpty) 'from': from,
+        if (to != null && to.isNotEmpty) 'to': to,
+      },
+    );
+    return MobileDashboardSummary.fromJson(res.data as Map<String, dynamic>);
+  }
+
   // ---- Clients ----
 
   Future<PaginatedResponse<Client>> getClients({
@@ -407,11 +421,28 @@ class Endpoints {
     required String fileName,
     required String mimeType,
   }) async {
+    return scanReceiptPages([
+      MultipartUploadFile(
+        bytes: imageBytes,
+        fileName: fileName,
+        mimeType: mimeType,
+      ),
+    ]);
+  }
+
+  Future<ScanResult> scanReceiptPages(List<MultipartUploadFile> pages) async {
+    if (pages.length > 1) {
+      final multiRes = await _api.postMultipartFiles(
+        '/receipts/scan',
+        files: pages,
+      );
+      return ScanResult.fromJson(multiRes.data as Map<String, dynamic>);
+    }
     final res = await _api.postMultipart(
       '/receipts/scan',
-      fileBytes: imageBytes,
-      fileName: fileName,
-      mimeType: mimeType,
+      fileBytes: pages.first.bytes,
+      fileName: pages.first.fileName,
+      mimeType: pages.first.mimeType,
     );
     return ScanResult.fromJson(res.data as Map<String, dynamic>);
   }
@@ -440,11 +471,41 @@ class Endpoints {
         .toList();
   }
 
-  Future<Map<String, dynamic>> createSupplier(
+  Future<PaginatedResponse<Supplier>> getSuppliers({
+    int limit = 50,
+    int offset = 0,
+    String? search,
+  }) async {
+    final res = await _api.get(
+      '/suppliers',
+      queryParams: {
+        'limit': limit,
+        'offset': offset,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
+    return PaginatedResponse.fromJson(
+      res.data as Map<String, dynamic>,
+      Supplier.fromJson,
+    );
+  }
+
+  Future<Supplier> getSupplier(int id) async {
+    final res = await _api.get('/suppliers/$id');
+    return Supplier.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<Supplier> createSupplier(Map<String, dynamic> supplierData) async {
+    final res = await _api.post('/suppliers', data: supplierData);
+    return Supplier.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<Supplier> updateSupplier(
+    int id,
     Map<String, dynamic> supplierData,
   ) async {
-    final res = await _api.post('/suppliers', data: supplierData);
-    return res.data as Map<String, dynamic>;
+    final res = await _api.put('/suppliers/$id', data: supplierData);
+    return Supplier.fromJson(res.data as Map<String, dynamic>);
   }
 
   // ---- Purchases ----
@@ -463,6 +524,19 @@ class Endpoints {
       },
     );
     return PaginatedResponse.fromJson(res.data, PurchaseListItem.fromJson);
+  }
+
+  Future<PurchaseDetail> getPurchase(int id) async {
+    final res = await _api.get('/purchases/$id');
+    return PurchaseDetail.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<PurchaseDetail> updatePurchase(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    final res = await _api.patch('/purchases/$id', data: data);
+    return PurchaseDetail.fromJson(res.data as Map<String, dynamic>);
   }
 
   // ---- Tax returns ----

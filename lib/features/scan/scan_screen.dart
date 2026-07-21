@@ -26,21 +26,87 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     });
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    final file = await _picker.pickImage(
-      source: source,
+  Future<void> _pickGalleryPages() async {
+    final files = await _picker.pickMultiImage(
       maxWidth: 2000,
       maxHeight: 2000,
       imageQuality: 90,
     );
-    if (file == null) return;
+    if (files.isEmpty) return;
 
-    final bytes = await file.readAsBytes();
-    final mimeType = file.name.toLowerCase().endsWith('.png')
-        ? 'image/png'
-        : 'image/jpeg';
+    final pages = <ScanPage>[];
+    for (var i = 0; i < files.length; i++) {
+      final file = files[i];
+      pages.add(
+        ScanPage(
+          bytes: await file.readAsBytes(),
+          mimeType: _mimeTypeForName(file.name),
+          fileName: 'receipt-page-${i + 1}.${_extensionForName(file.name)}',
+        ),
+      );
+    }
+    ref.read(scanProvider.notifier).scanPages(pages);
+  }
 
-    ref.read(scanProvider.notifier).scanImage(bytes, mimeType);
+  Future<void> _captureCameraPages() async {
+    final pages = <ScanPage>[];
+    while (mounted) {
+      final file = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 90,
+      );
+      if (file == null) break;
+
+      pages.add(
+        ScanPage(
+          bytes: await file.readAsBytes(),
+          mimeType: _mimeTypeForName(file.name),
+          fileName:
+              'receipt-page-${pages.length + 1}.${_extensionForName(file.name)}',
+        ),
+      );
+
+      if (pages.length >= 5) break;
+      if (!mounted) break;
+      final addAnother = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Añadir otra página'),
+          content: Text('Página ${pages.length} capturada.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Terminar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Otra página'),
+            ),
+          ],
+        ),
+      );
+      if (addAnother != true) break;
+    }
+
+    if (pages.isNotEmpty) {
+      ref.read(scanProvider.notifier).scanPages(pages);
+    }
+  }
+
+  String _mimeTypeForName(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    return 'image/jpeg';
+  }
+
+  String _extensionForName(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.png')) return 'png';
+    if (lower.endsWith('.webp')) return 'webp';
+    return 'jpg';
   }
 
   @override
@@ -57,7 +123,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     });
 
     final typeColor = isExpense ? const Color(0xFF0EA5E9) : AppColors.primary;
-    final typeIcon = isExpense ? Icons.receipt_long : Icons.description_outlined;
+    final typeIcon = isExpense
+        ? Icons.receipt_long
+        : Icons.description_outlined;
     final typeLabel = isExpense ? 'Escanear gasto' : 'Escanear factura emitida';
     final typeSubtitle = isExpense
         ? 'Factura o ticket de proveedor'
@@ -77,22 +145,22 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       body: state.isScanning
           ? _ScanningView(color: typeColor)
           : state.error != null
-              ? _ErrorView(
-                  error: state.error!,
-                  color: typeColor,
-                  onRetry: () {
-                    final type = ref.read(scanProvider).scanType;
-                    ref.read(scanProvider.notifier).reset();
-                    ref.read(scanProvider.notifier).setScanType(type);
-                  },
-                )
-              : _SelectSourceView(
-                  icon: typeIcon,
-                  color: typeColor,
-                  subtitle: typeSubtitle,
-                  onCamera: () => _pickImage(ImageSource.camera),
-                  onGallery: () => _pickImage(ImageSource.gallery),
-                ),
+          ? _ErrorView(
+              error: state.error!,
+              color: typeColor,
+              onRetry: () {
+                final type = ref.read(scanProvider).scanType;
+                ref.read(scanProvider.notifier).reset();
+                ref.read(scanProvider.notifier).setScanType(type);
+              },
+            )
+          : _SelectSourceView(
+              icon: typeIcon,
+              color: typeColor,
+              subtitle: typeSubtitle,
+              onCamera: _captureCameraPages,
+              onGallery: _pickGalleryPages,
+            ),
     );
   }
 }
@@ -133,24 +201,24 @@ class _SelectSourceView extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
             'Haz una foto o selecciona una imagen de tu galería\npara extraer los datos automáticamente.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.gray500,
-                  height: 1.5,
-                ),
+              color: AppColors.gray500,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 48),
           _SourceButton(
             icon: Icons.camera_alt_outlined,
             label: 'Usar cámara',
-            description: 'Haz una foto del documento',
+            description: 'Haz una o varias fotos del documento',
             color: color,
             isPrimary: true,
             onTap: onCamera,
@@ -159,7 +227,7 @@ class _SelectSourceView extends StatelessWidget {
           _SourceButton(
             icon: Icons.photo_library_outlined,
             label: 'Galería',
-            description: 'Selecciona una imagen existente',
+            description: 'Selecciona una o varias páginas',
             color: color,
             isPrimary: false,
             onTap: onGallery,
@@ -175,9 +243,9 @@ class _SelectSourceView extends StatelessWidget {
                 Text(
                   'Los documentos se procesan de forma segura',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.gray400,
-                        fontSize: 11,
-                      ),
+                    color: AppColors.gray400,
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
@@ -216,7 +284,9 @@ class _SourceButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: isPrimary ? color : color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(14),
-          border: isPrimary ? null : Border.all(color: color.withValues(alpha: 0.25)),
+          border: isPrimary
+              ? null
+              : Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
@@ -263,7 +333,9 @@ class _SourceButton extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: isPrimary ? Colors.white.withValues(alpha: 0.7) : color.withValues(alpha: 0.5),
+              color: isPrimary
+                  ? Colors.white.withValues(alpha: 0.7)
+                  : color.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -287,24 +359,21 @@ class _ScanningView extends StatelessWidget {
           SizedBox(
             width: 56,
             height: 56,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              color: color,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 3, color: color),
           ),
           const SizedBox(height: 28),
           Text(
             'Analizando documento...',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Text(
             'El OCR está extrayendo los datos',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.gray500,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.gray500),
           ),
         ],
       ),

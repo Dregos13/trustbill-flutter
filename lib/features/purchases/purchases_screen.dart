@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/purchase.dart';
@@ -17,8 +18,8 @@ class _PurchasesStatusNotifier extends Notifier<String?> {
 
 final _purchasesStatusProvider =
     NotifierProvider.autoDispose<_PurchasesStatusNotifier, String?>(
-  _PurchasesStatusNotifier.new,
-);
+      _PurchasesStatusNotifier.new,
+    );
 
 class _PurchasesOffsetNotifier extends Notifier<int> {
   @override
@@ -28,16 +29,18 @@ class _PurchasesOffsetNotifier extends Notifier<int> {
 
 final _purchasesOffsetProvider =
     NotifierProvider.autoDispose<_PurchasesOffsetNotifier, int>(
-  _PurchasesOffsetNotifier.new,
-);
+      _PurchasesOffsetNotifier.new,
+    );
 
 final purchasesProvider =
-    FutureProvider.autoDispose<PaginatedResponse<PurchaseListItem>>((ref) async {
-  final endpoints = ref.watch(endpointsProvider);
-  final status = ref.watch(_purchasesStatusProvider);
-  final offset = ref.watch(_purchasesOffsetProvider);
-  return endpoints.getPurchases(limit: 50, offset: offset, status: status);
-});
+    FutureProvider.autoDispose<PaginatedResponse<PurchaseListItem>>((
+      ref,
+    ) async {
+      final endpoints = ref.watch(endpointsProvider);
+      final status = ref.watch(_purchasesStatusProvider);
+      final offset = ref.watch(_purchasesOffsetProvider);
+      return endpoints.getPurchases(limit: 50, offset: offset, status: status);
+    });
 
 class PurchasesScreen extends ConsumerWidget {
   const PurchasesScreen({super.key});
@@ -75,12 +78,16 @@ class PurchasesScreen extends ConsumerWidget {
                 isExpanded: true,
                 dropdownColor: context.appSurface,
                 style: TextStyle(color: context.appText, fontSize: 14),
-                icon: Icon(Icons.keyboard_arrow_down, color: context.appTextSubtle),
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: context.appTextSubtle,
+                ),
                 items: const [
                   DropdownMenuItem(
-                      value: null, child: Text('Todos los estados')),
-                  DropdownMenuItem(
-                      value: 'UNPAID', child: Text('Pendiente')),
+                    value: null,
+                    child: Text('Todos los estados'),
+                  ),
+                  DropdownMenuItem(value: 'UNPAID', child: Text('Pendiente')),
                   DropdownMenuItem(value: 'PAID', child: Text('Pagada')),
                 ],
                 onChanged: (value) {
@@ -99,15 +106,20 @@ class PurchasesScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: AppColors.gray400),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: AppColors.gray400,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       err is ApiError
                           ? err.message
                           : 'Error al cargar facturas de compra',
                       style: const TextStyle(
-                          color: AppColors.gray500, fontSize: 14),
+                        color: AppColors.gray500,
+                        fontSize: 14,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
@@ -127,13 +139,18 @@ class PurchasesScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.shopping_bag_outlined,
-                            size: 48, color: AppColors.gray400),
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 48,
+                          color: AppColors.gray400,
+                        ),
                         SizedBox(height: 12),
                         Text(
                           'No hay facturas de compra todavía',
                           style: TextStyle(
-                              color: AppColors.gray400, fontSize: 14),
+                            color: AppColors.gray400,
+                            fontSize: 14,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -143,20 +160,23 @@ class PurchasesScreen extends ConsumerWidget {
               }
               return Column(
                 children: [
-                  ...response.items.map((purchase) =>
-                      _PurchaseCard(purchase: purchase)),
+                  ...response.items.map(
+                    (purchase) => _PurchaseCard(purchase: purchase),
+                  ),
                   PaginationControls(
                     currentPage: response.currentPage,
                     totalPages: response.totalPages,
                     hasPrevious: response.hasPrevious,
                     hasNext: response.hasNext,
                     onPrevious: () {
-                      ref.read(_purchasesOffsetProvider.notifier).set(
-                          ref.read(_purchasesOffsetProvider) - 50);
+                      ref
+                          .read(_purchasesOffsetProvider.notifier)
+                          .set(ref.read(_purchasesOffsetProvider) - 50);
                     },
                     onNext: () {
-                      ref.read(_purchasesOffsetProvider.notifier).set(
-                          ref.read(_purchasesOffsetProvider) + 50);
+                      ref
+                          .read(_purchasesOffsetProvider.notifier)
+                          .set(ref.read(_purchasesOffsetProvider) + 50);
                     },
                   ),
                 ],
@@ -173,6 +193,10 @@ class _PurchaseCard extends StatelessWidget {
   final PurchaseListItem purchase;
 
   const _PurchaseCard({required this.purchase});
+
+  void _openEditor(BuildContext context) {
+    context.push('/purchases/${purchase.id}');
+  }
 
   String _formatDate(String isoDate) {
     try {
@@ -191,121 +215,147 @@ class _PurchaseCard extends StatelessWidget {
     final isPaid = purchase.status == 'PAID';
     final statusLabel = isPaid ? 'Pagada' : 'Pendiente';
     final statusColor = isPaid ? context.statusSuccess : context.statusWarning;
-    final statusBgColor =
-        isPaid ? context.statusSuccessSoft : context.statusWarningSoft;
+    final statusBgColor = isPaid
+        ? context.statusSuccessSoft
+        : context.statusWarningSoft;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: context.appSurface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: context.appBorder),
-        boxShadow: [
-          BoxShadow(
-            color: context.appShadow,
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return InkWell(
+      onTap: () => _openEditor(context),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: context.appSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: context.appBorder),
+          boxShadow: [
+            BoxShadow(
+              color: context.appShadow,
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          purchase.supplierName,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: context.appText,
+                          ),
+                        ),
+                        if (purchase.supplierTaxId.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            purchase.supplierTaxId,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.appTextMuted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        purchase.supplierName,
+                        '${purchase.total.toStringAsFixed(2)} €',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: context.appText,
                         ),
                       ),
-                      if (purchase.supplierTaxId.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      IconButton.filledTonal(
+                        onPressed: () => _openEditor(context),
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        tooltip: 'Editar gasto',
+                        style: IconButton.styleFrom(
+                          backgroundColor: context.appPrimarySoft,
+                          foregroundColor: context.appPrimary,
+                          minimumSize: const Size(36, 36),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          purchase.invoiceNumber != null &&
+                                  purchase.invoiceNumber!.isNotEmpty
+                              ? purchase.invoiceNumber!
+                              : 'Sin número',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color:
+                                purchase.invoiceNumber != null &&
+                                    purchase.invoiceNumber!.isNotEmpty
+                                ? context.appTextMuted
+                                : context.appTextSubtle,
+                            fontStyle:
+                                purchase.invoiceNumber != null &&
+                                    purchase.invoiceNumber!.isNotEmpty
+                                ? FontStyle.normal
+                                : FontStyle.italic,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Text(
-                          purchase.supplierTaxId,
+                          _formatDate(purchase.issueDate),
                           style: TextStyle(
                             fontSize: 12,
                             color: context.appTextMuted,
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${purchase.total.toStringAsFixed(2)} €',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: context.appText,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        purchase.invoiceNumber != null &&
-                                purchase.invoiceNumber!.isNotEmpty
-                            ? purchase.invoiceNumber!
-                            : 'Sin número',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: purchase.invoiceNumber != null &&
-                                  purchase.invoiceNumber!.isNotEmpty
-                              ? context.appTextMuted
-                              : context.appTextSubtle,
-                          fontStyle: purchase.invoiceNumber != null &&
-                                  purchase.invoiceNumber!.isNotEmpty
-                              ? FontStyle.normal
-                              : FontStyle.italic,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _formatDate(purchase.issueDate),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.appTextMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: statusBgColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusLabel,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

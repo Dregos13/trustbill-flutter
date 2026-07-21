@@ -76,6 +76,19 @@ class AppShell extends ConsumerWidget {
           label: const Text('Nueva venta'),
         );
 
+      // ── /suppliers → "Nuevo proveedor" (requires expenses.write) ─────────
+      case '/suppliers':
+        if (!ref.watch(hasPermissionProvider(Permissions.expensesWrite))) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () => context.push('/suppliers/new'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.storefront_outlined),
+          label: const Text('Nuevo proveedor'),
+        );
+
       // ── Inicio + Compras → scanner FAB (requires expenses.write) ───────────
       case '/':
       case '/purchases':
@@ -179,16 +192,16 @@ class _ScanTypeSheet extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             '¿Qué quieres escanear?',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
             'Elige el tipo de documento para escanear',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.gray500,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.gray500),
           ),
           const SizedBox(height: 24),
           _TypeCard(
@@ -264,16 +277,16 @@ class _TypeCard extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: color,
-                        ),
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.gray500,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppColors.gray500),
                   ),
                 ],
               ),

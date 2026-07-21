@@ -15,6 +15,9 @@ import '../../features/account/account_screen.dart';
 import '../../features/scan/scan_screen.dart';
 import '../../features/scan/scan_review_screen.dart';
 import '../../features/purchases/purchases_screen.dart';
+import '../../features/purchases/purchase_detail_screen.dart';
+import '../../features/suppliers/supplier_form_screen.dart';
+import '../../features/suppliers/suppliers_screen.dart';
 import '../../features/tax/tax_returns_screen.dart';
 import '../../features/clients/create_client_screen.dart';
 import '../../features/invoices/create_invoice_screen.dart';
@@ -48,6 +51,8 @@ const _routePermissions = <String, String>{
   '/budgets/new': Permissions.documentsWrite,
   '/sales/new': Permissions.documentsWrite,
   '/scan': Permissions.expensesWrite,
+  '/suppliers/new': Permissions.expensesWrite,
+  '/suppliers/': Permissions.expensesWrite,
   '/tax': Permissions.reportsRead,
   '/catalog/products/new': Permissions.productsWrite,
   '/catalog/products/': Permissions.productsWrite,
@@ -62,8 +67,7 @@ String? _requiredPermission(String location) {
   return null;
 }
 
-bool _isSuperadminRoute(String location) =>
-    location.startsWith('/permissions');
+bool _isSuperadminRoute(String location) => location.startsWith('/permissions');
 
 // ── Router ─────────────────────────────────────────────────────────────────────
 
@@ -112,8 +116,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         final required = _requiredPermission(loc);
         if (required != null) {
           final category = required.split('.').first;
-          final has =
-              perms.contains(required) || perms.contains('$category.*');
+          final has = perms.contains(required) || perms.contains('$category.*');
           if (!has) return '/no-permission';
         }
       }
@@ -121,14 +124,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/setup',
-        builder: (context, _) => const SetupScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, _) => const LoginScreen(),
-      ),
+      GoRoute(path: '/setup', builder: (context, _) => const SetupScreen()),
+      GoRoute(path: '/login', builder: (context, _) => const LoginScreen()),
       GoRoute(
         path: '/no-permission',
         builder: (context, _) => const NoPermissionScreen(),
@@ -157,9 +154,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/invoices/:id/edit',
-        builder: (_, state) => EditInvoiceScreen(
-          id: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (_, state) =>
+            EditInvoiceScreen(id: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/budgets/new',
@@ -167,9 +163,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/budgets/:id',
-        builder: (_, state) => BudgetDetailScreen(
-          id: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (_, state) =>
+            BudgetDetailScreen(id: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/sales/new',
@@ -184,9 +179,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/sales/:id',
-        builder: (_, state) => SaleDetailScreen(
-          id: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (_, state) =>
+            SaleDetailScreen(id: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/catalog/products/new',
@@ -201,9 +195,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/catalog/products/:id',
-        builder: (_, state) => ProductDetailScreen(
-          id: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (_, state) =>
+            ProductDetailScreen(id: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/catalog/services/new',
@@ -215,6 +208,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           final service = state.extra as dynamic;
           return CreateEditServiceScreen(existing: service);
         },
+      ),
+      GoRoute(
+        path: '/suppliers/new',
+        builder: (_, _) => const SupplierFormScreen(),
+      ),
+      GoRoute(
+        path: '/suppliers/:id/edit',
+        builder: (_, state) =>
+            SupplierFormScreen(id: int.parse(state.pathParameters['id']!)),
       ),
       // ── Task routes (full-screen, own Scaffold, no shell) ──────────────────
       GoRoute(
@@ -228,21 +230,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/task/:id/edit',
-        builder: (_, state) => TaskFormScreen(
-          taskId: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (_, state) =>
+            TaskFormScreen(taskId: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/task/:id',
-        builder: (_, state) => TaskDetailScreen(
-          taskId: int.parse(state.pathParameters['id']!),
-        ),
+        builder: (_, state) =>
+            TaskDetailScreen(taskId: int.parse(state.pathParameters['id']!)),
       ),
 
-      GoRoute(
-        path: '/scan',
-        builder: (context, _) => const ScanScreen(),
-      ),
+      GoRoute(path: '/scan', builder: (context, _) => const ScanScreen()),
       GoRoute(
         path: '/scan/review',
         builder: (context, _) => const ScanReviewScreen(),
@@ -261,19 +258,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: child,
         ),
         routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, _) => const DashboardScreen(),
-          ),
+          GoRoute(path: '/', builder: (context, _) => const DashboardScreen()),
           GoRoute(
             path: '/clients',
             builder: (context, _) => const ClientsScreen(),
           ),
           GoRoute(
             path: '/clients/:id',
-            builder: (_, state) => ClientDetailScreen(
-              id: int.parse(state.pathParameters['id']!),
-            ),
+            builder: (_, state) =>
+                ClientDetailScreen(id: int.parse(state.pathParameters['id']!)),
           ),
           GoRoute(
             path: '/invoices',
@@ -281,21 +274,28 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/invoices/:id',
-            builder: (_, state) => InvoiceDetailScreen(
-              id: int.parse(state.pathParameters['id']!),
-            ),
+            builder: (_, state) =>
+                InvoiceDetailScreen(id: int.parse(state.pathParameters['id']!)),
           ),
           GoRoute(
             path: '/budgets',
             builder: (context, _) => const BudgetsScreen(),
           ),
-          GoRoute(
-            path: '/sales',
-            builder: (context, _) => const SalesScreen(),
-          ),
+          GoRoute(path: '/sales', builder: (context, _) => const SalesScreen()),
           GoRoute(
             path: '/purchases',
             builder: (context, _) => const PurchasesScreen(),
+          ),
+          GoRoute(
+            path: '/suppliers',
+            builder: (context, _) => const SuppliersScreen(),
+          ),
+          GoRoute(
+            path: '/purchases/:id',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+              return PurchaseDetailScreen(id: id);
+            },
           ),
           GoRoute(
             path: '/tax',
@@ -313,10 +313,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/tasks',
             builder: (context, _) => const AgendaScreen(),
           ),
-          GoRoute(
-            path: '/map',
-            builder: (context, _) => const MapScreen(),
-          ),
+          GoRoute(path: '/map', builder: (context, _) => const MapScreen()),
         ],
       ),
     ],

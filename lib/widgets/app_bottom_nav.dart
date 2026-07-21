@@ -13,8 +13,10 @@ class _TabDef {
   final IconData icon;
   final IconData activeIcon;
   final String label;
+
   /// null = always visible (no permission required)
   final String? requiredPermission;
+
   /// null = no module gate; non-null = module must be in user.modules
   final String? requiredModule;
 
@@ -60,6 +62,14 @@ const _allTabs = [
     icon: Icons.shopping_bag_outlined,
     activeIcon: Icons.shopping_bag,
     label: 'Compras',
+    requiredPermission: Permissions.expensesRead,
+  ),
+  _TabDef(
+    route: '/suppliers',
+    routePrefix: '/suppliers',
+    icon: Icons.storefront_outlined,
+    activeIcon: Icons.storefront,
+    label: 'Proveedores',
     requiredPermission: Permissions.expensesRead,
   ),
   _TabDef(
@@ -191,13 +201,15 @@ class AppBottomNav extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              ...pinned.asMap().entries.map((entry) => _NavItem(
-                    icon: entry.value.icon,
-                    activeIcon: entry.value.activeIcon,
-                    label: entry.value.label,
-                    isActive: entry.key == activeIdx,
-                    onTap: () => onNavigate(entry.value.route),
-                  )),
+              ...pinned.asMap().entries.map(
+                (entry) => _NavItem(
+                  icon: entry.value.icon,
+                  activeIcon: entry.value.activeIcon,
+                  label: entry.value.label,
+                  isActive: entry.key == activeIdx,
+                  onTap: () => onNavigate(entry.value.route),
+                ),
+              ),
               if (overflow.isNotEmpty)
                 _NavItem(
                   icon: Icons.more_horiz,
@@ -263,8 +275,10 @@ class _MoreSheet extends StatelessWidget {
             return InkWell(
               onTap: () => onNavigate(tab.route),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
                 child: Row(
                   children: [
                     Icon(
@@ -277,8 +291,7 @@ class _MoreSheet extends StatelessWidget {
                       tab.label,
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight:
-                            active ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                         color: color,
                       ),
                     ),
@@ -333,11 +346,7 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              color: color,
-              size: 24,
-            ),
+            Icon(isActive ? activeIcon : icon, color: color, size: 24),
             const SizedBox(height: 3),
             Text(
               label,

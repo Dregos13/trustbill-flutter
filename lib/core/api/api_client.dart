@@ -6,6 +6,18 @@ import 'api_error.dart';
 String buildBaseUrl(String clientId) =>
     'https://app.$clientId.trustinfacts.com/api';
 
+class MultipartUploadFile {
+  final Uint8List bytes;
+  final String fileName;
+  final String mimeType;
+
+  const MultipartUploadFile({
+    required this.bytes,
+    required this.fileName,
+    required this.mimeType,
+  });
+}
+
 enum _RefreshOutcome { success, authFailure, networkFailure }
 
 class ApiClient {
@@ -34,80 +46,88 @@ class ApiClient {
     Dio? dio,
     Dio? refreshDio,
     Duration retryBaseDelay = const Duration(milliseconds: 500),
-  })  : _storage = storage ?? const FlutterSecureStorage(),
-        _retryBaseDelay = retryBaseDelay,
-        _dio = dio ??
-            Dio(BaseOptions(
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 15),
-            )),
-        _refreshDio = refreshDio ??
-            Dio(BaseOptions(
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 10),
-            )) {
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
-        if (_accessToken != null) {
-          options.headers['Authorization'] = 'Bearer $_accessToken';
-        }
-        handler.next(options);
-      },
-      onError: (error, handler) async {
-        if (error.response?.statusCode == 401 && _accessToken != null) {
-          // Guarda anti-bucle: una request solo puede disparar UN ciclo de
-          // refresh+retry. Si tras refrescar vuelve a dar 401, es un 401 real
-          // (no de token caducado) → no refrescamos en bucle.
-          if (error.requestOptions.extra['__retried'] == true) {
-            onAuthError?.call();
-            return handler.next(error);
+  }) : _storage = storage ?? const FlutterSecureStorage(),
+       _retryBaseDelay = retryBaseDelay,
+       _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               connectTimeout: const Duration(seconds: 10),
+               receiveTimeout: const Duration(seconds: 15),
+             ),
+           ),
+       _refreshDio =
+           refreshDio ??
+           Dio(
+             BaseOptions(
+               connectTimeout: const Duration(seconds: 10),
+               receiveTimeout: const Duration(seconds: 10),
+             ),
+           ) {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (_accessToken != null) {
+            options.headers['Authorization'] = 'Bearer $_accessToken';
           }
-
-          _refreshFuture ??= _attemptRefresh().whenComplete(() {
-            _refreshFuture = null;
-          });
-
-          final outcome = await _refreshFuture!;
-          if (outcome == _RefreshOutcome.success) {
-            error.requestOptions.extra['__retried'] = true;
-            error.requestOptions.headers['Authorization'] =
-                'Bearer $_accessToken';
-            try {
-              final retry = await _dio.fetch(error.requestOptions);
-              return handler.resolve(retry);
-            } catch (retryError) {
-              if (retryError is DioException) {
-                return handler.next(retryError);
-              }
+          handler.next(options);
+        },
+        onError: (error, handler) async {
+          if (error.response?.statusCode == 401 && _accessToken != null) {
+            // Guarda anti-bucle: una request solo puede disparar UN ciclo de
+            // refresh+retry. Si tras refrescar vuelve a dar 401, es un 401 real
+            // (no de token caducado) → no refrescamos en bucle.
+            if (error.requestOptions.extra['__retried'] == true) {
+              onAuthError?.call();
+              return handler.next(error);
             }
-          } else if (outcome == _RefreshOutcome.authFailure) {
-            onAuthError?.call();
+
+            _refreshFuture ??= _attemptRefresh().whenComplete(() {
+              _refreshFuture = null;
+            });
+
+            final outcome = await _refreshFuture!;
+            if (outcome == _RefreshOutcome.success) {
+              error.requestOptions.extra['__retried'] = true;
+              error.requestOptions.headers['Authorization'] =
+                  'Bearer $_accessToken';
+              try {
+                final retry = await _dio.fetch(error.requestOptions);
+                return handler.resolve(retry);
+              } catch (retryError) {
+                if (retryError is DioException) {
+                  return handler.next(retryError);
+                }
+              }
+            } else if (outcome == _RefreshOutcome.authFailure) {
+              onAuthError?.call();
+              return handler.next(error);
+            }
+            // networkFailure: pass error through without logging out — transient issue
             return handler.next(error);
           }
-          // networkFailure: pass error through without logging out — transient issue
-          return handler.next(error);
-        }
 
-        final data = error.response?.data;
-        if (data is Map<String, dynamic>) {
-          return handler.reject(
-            DioException(
-              requestOptions: error.requestOptions,
-              response: error.response,
-              error: ApiError(
-                status: error.response?.statusCode ?? 0,
-                code: data['error'] as String? ?? 'UNKNOWN',
-                message: data['message'] as String? ?? 'Error desconocido',
-                retryAfter: data['retryAfter'] as int?,
+          final data = error.response?.data;
+          if (data is Map<String, dynamic>) {
+            return handler.reject(
+              DioException(
+                requestOptions: error.requestOptions,
+                response: error.response,
+                error: ApiError(
+                  status: error.response?.statusCode ?? 0,
+                  code: data['error'] as String? ?? 'UNKNOWN',
+                  message: data['message'] as String? ?? 'Error desconocido',
+                  retryAfter: data['retryAfter'] as int?,
+                ),
+                type: DioExceptionType.badResponse,
               ),
-              type: DioExceptionType.badResponse,
-            ),
-          );
-        }
+            );
+          }
 
-        handler.next(error);
-      },
-    ));
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   FlutterSecureStorage get storage => _storage;
@@ -199,7 +219,8 @@ class ApiClient {
         }
 
         // Solo seguro reintentar si NO se estableció conexión con el server.
-        final safeToRetry = e.type == DioExceptionType.connectionTimeout ||
+        final safeToRetry =
+            e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.connectionError;
         if (safeToRetry && attempt < maxAttempts - 1) {
           await Future.delayed(_retryBaseDelay * (attempt + 1));
@@ -208,7 +229,8 @@ class ApiClient {
 
         // Cualquier fallo de red (incluido receiveTimeout, donde el server pudo
         // haber rotado el token): tratar como transitorio, NO cerrar sesion.
-        final isNetworkError = e.type == DioExceptionType.connectionTimeout ||
+        final isNetworkError =
+            e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.receiveTimeout ||
             e.type == DioExceptionType.sendTimeout ||
             e.type == DioExceptionType.connectionError;
@@ -225,22 +247,28 @@ class ApiClient {
   Future<Response> get(String path, {Map<String, dynamic>? queryParams}) =>
       _dio.get(path, queryParameters: queryParams);
 
-  Future<Response> post(String path, {dynamic data}) => _dio.post(path,
-      data: data,
-      // Only declare a JSON body when we actually send one. Forcing
-      // application/json on a body-less POST (confirm/finalize/cancel, budget
-      // accept/reject) makes Fastify reject it with "Body cannot be empty".
-      options: Options(
-        headers: data == null ? null : {'Content-Type': 'application/json'},
-      ));
+  Future<Response> post(String path, {dynamic data}) => _dio.post(
+    path,
+    data: data,
+    // Only declare a JSON body when we actually send one. Forcing
+    // application/json on a body-less POST (confirm/finalize/cancel, budget
+    // accept/reject) makes Fastify reject it with "Body cannot be empty".
+    options: Options(
+      headers: data == null ? null : {'Content-Type': 'application/json'},
+    ),
+  );
 
-  Future<Response> put(String path, {dynamic data}) => _dio.put(path,
-      data: data,
-      options: Options(headers: {'Content-Type': 'application/json'}));
+  Future<Response> put(String path, {dynamic data}) => _dio.put(
+    path,
+    data: data,
+    options: Options(headers: {'Content-Type': 'application/json'}),
+  );
 
-  Future<Response> patch(String path, {dynamic data}) => _dio.patch(path,
-      data: data,
-      options: Options(headers: {'Content-Type': 'application/json'}));
+  Future<Response> patch(String path, {dynamic data}) => _dio.patch(
+    path,
+    data: data,
+    options: Options(headers: {'Content-Type': 'application/json'}),
+  );
 
   Future<Response> delete(String path) => _dio.delete(path);
 
@@ -260,9 +288,31 @@ class ApiClient {
     return _dio.post(
       path,
       data: formData,
-      options: Options(
-        receiveTimeout: const Duration(seconds: 60),
-      ),
+      options: Options(receiveTimeout: const Duration(seconds: 60)),
+    );
+  }
+
+  Future<Response> postMultipartFiles(
+    String path, {
+    required List<MultipartUploadFile> files,
+  }) {
+    final formData = FormData();
+    for (final file in files) {
+      formData.files.add(
+        MapEntry(
+          'file',
+          MultipartFile.fromBytes(
+            file.bytes,
+            filename: file.fileName,
+            contentType: DioMediaType.parse(file.mimeType),
+          ),
+        ),
+      );
+    }
+    return _dio.post(
+      path,
+      data: formData,
+      options: Options(receiveTimeout: const Duration(seconds: 90)),
     );
   }
 
@@ -275,9 +325,9 @@ class ApiClient {
     return Uint8List.fromList(res.data ?? []);
   }
 
-  Future<Response> download(String path, String savePath) =>
-      _dio.download(path, savePath,
-          options: Options(headers: {
-            'Authorization': 'Bearer $_accessToken',
-          }));
+  Future<Response> download(String path, String savePath) => _dio.download(
+    path,
+    savePath,
+    options: Options(headers: {'Authorization': 'Bearer $_accessToken'}),
+  );
 }
