@@ -89,19 +89,30 @@ class AppShell extends ConsumerWidget {
           label: const Text('Nuevo proveedor'),
         );
 
-      // ── Inicio + Compras → scanner FAB (requires expenses.write) ───────────
+      // ── Inicio + Compras → hub de acciones (Asistente IA + escanear) ───────
+      // Aparece si el usuario puede escanear (expenses.write) O usar el
+      // asistente (documents.read). Cada acción se muestra según su permiso.
       case '/':
       case '/purchases':
-        if (!ref.watch(hasPermissionProvider(Permissions.expensesWrite))) {
-          return null;
+        {
+          final canScan =
+              ref.watch(hasPermissionProvider(Permissions.expensesWrite));
+          final canAssistant =
+              ref.watch(hasPermissionProvider(Permissions.documentsRead));
+          if (!canScan && !canAssistant) return null;
+          return FloatingActionButton(
+            onPressed: () => _showActionHub(
+              context,
+              ref,
+              canScan: canScan,
+              canAssistant: canAssistant,
+            ),
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 4,
+            child: const Icon(Icons.auto_awesome),
+          );
         }
-        return FloatingActionButton(
-          onPressed: () => _showScanTypeSheet(context, ref),
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          child: const Icon(Icons.document_scanner),
-        );
 
       // ── /tasks + /map → "Nueva tarea" (requires tasks.write) ──────────────
       case '/tasks':
@@ -125,12 +136,20 @@ class AppShell extends ConsumerWidget {
     }
   }
 
-  void _showScanTypeSheet(BuildContext context, WidgetRef ref) {
+  void _showActionHub(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool canScan,
+    required bool canAssistant,
+  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ScanTypeSheet(
-        onSelected: (type) {
+      builder: (_) => _ActionHubSheet(
+        canScan: canScan,
+        canAssistant: canAssistant,
+        onAssistant: () => context.push('/assistant'),
+        onScan: (type) {
           ref.read(scanProvider.notifier).setScanType(type);
           context.push('/scan');
         },
@@ -164,11 +183,20 @@ class AppShell extends ConsumerWidget {
   }
 }
 
-// ── Scan type bottom sheet ────────────────────────────────────────────────────
+// ── Action hub bottom sheet (Asistente IA + escanear) ─────────────────────────
 
-class _ScanTypeSheet extends StatelessWidget {
-  final void Function(ScanType) onSelected;
-  const _ScanTypeSheet({required this.onSelected});
+class _ActionHubSheet extends StatelessWidget {
+  final bool canScan;
+  final bool canAssistant;
+  final VoidCallback onAssistant;
+  final void Function(ScanType) onScan;
+
+  const _ActionHubSheet({
+    required this.canScan,
+    required this.canAssistant,
+    required this.onAssistant,
+    required this.onScan,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -180,52 +208,166 @@ class _ScanTypeSheet extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.gray300,
-              borderRadius: BorderRadius.circular(2),
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.gray300,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            '¿Qué quieres escanear?',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          Center(
+            child: Text(
+              '¿Qué necesitas?',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Elige el tipo de documento para escanear',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.gray500),
-          ),
-          const SizedBox(height: 24),
-          _TypeCard(
-            icon: Icons.receipt_long,
-            color: const Color(0xFF0EA5E9),
-            title: 'Gasto',
-            subtitle: 'Facturas y tickets de proveedores',
-            onTap: () {
-              Navigator.of(context).pop();
-              onSelected(ScanType.expense);
-            },
-          ),
-          const SizedBox(height: 12),
-          _TypeCard(
-            icon: Icons.description_outlined,
-            color: AppColors.primary,
-            title: 'Factura emitida',
-            subtitle: 'Facturas que has emitido a clientes',
-            onTap: () {
-              Navigator.of(context).pop();
-              onSelected(ScanType.invoice);
-            },
-          ),
+          const SizedBox(height: 20),
+
+          // ── Asistente IA (héroe) ───────────────────────────────────────────
+          if (canAssistant) ...[
+            _AssistantHeroCard(
+              onTap: () {
+                Navigator.of(context).pop();
+                onAssistant();
+              },
+            ),
+            if (canScan) const SizedBox(height: 22),
+          ],
+
+          // ── Escanear documento ─────────────────────────────────────────────
+          if (canScan) ...[
+            Text(
+              'Escanear documento',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.gray500,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            _TypeCard(
+              icon: Icons.receipt_long,
+              color: const Color(0xFF0EA5E9),
+              title: 'Gasto',
+              subtitle: 'Facturas y tickets de proveedores',
+              onTap: () {
+                Navigator.of(context).pop();
+                onScan(ScanType.expense);
+              },
+            ),
+            const SizedBox(height: 12),
+            _TypeCard(
+              icon: Icons.description_outlined,
+              color: AppColors.primary,
+              title: 'Factura emitida',
+              subtitle: 'Facturas que has emitido a clientes',
+              onTap: () {
+                Navigator.of(context).pop();
+                onScan(ScanType.invoice);
+              },
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _AssistantHeroCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AssistantHeroCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.primary, AppColors.primaryLight],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 26),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Asistente IA',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'NUEVO',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Pídemelo hablando o escribiendo',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white),
+          ],
+        ),
       ),
     );
   }

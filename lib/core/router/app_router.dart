@@ -39,6 +39,7 @@ import '../../features/taskmap/agenda/agenda_screen.dart';
 import '../../features/taskmap/map/map_screen.dart';
 import '../../features/taskmap/task/task_detail_screen.dart';
 import '../../features/taskmap/task/task_form_screen.dart';
+import '../../features/assistant/assistant_screen.dart';
 
 // ── Route permission requirements ──────────────────────────────────────────────
 
@@ -51,6 +52,7 @@ const _routePermissions = <String, String>{
   '/budgets/new': Permissions.documentsWrite,
   '/sales/new': Permissions.documentsWrite,
   '/scan': Permissions.expensesWrite,
+  '/assistant': Permissions.documentsRead,
   '/suppliers/new': Permissions.expensesWrite,
   '/suppliers/': Permissions.expensesWrite,
   '/tax': Permissions.reportsRead,
@@ -240,6 +242,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       GoRoute(path: '/scan', builder: (context, _) => const ScanScreen()),
+      GoRoute(
+        path: '/assistant',
+        builder: (context, _) => const AssistantScreen(),
+      ),
       GoRoute(
         path: '/scan/review',
         builder: (context, _) => const ScanReviewScreen(),

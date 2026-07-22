@@ -16,6 +16,7 @@ import '../models/tax_return.dart';
 import '../models/catalog.dart';
 import '../models/budget.dart';
 import '../models/sale.dart';
+import '../models/assistant.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -683,5 +684,21 @@ class Endpoints {
         if (reason != null && reason.isNotEmpty) 'reason': reason,
       },
     );
+  }
+
+  // ---- Asistente IA ----
+
+  /// Un turno de conversación con el asistente. Se reenvía `history` (opaco)
+  /// devuelto por la respuesta anterior para mantener el contexto sin estado
+  /// en el servidor.
+  Future<AssistantChatResponse> assistantChat({
+    required String message,
+    required List<dynamic> history,
+  }) async {
+    final res = await _api.post(
+      '/assistant/chat',
+      data: {'message': message, 'history': history},
+    );
+    return AssistantChatResponse.fromJson(res.data as Map<String, dynamic>);
   }
 }
