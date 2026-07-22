@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/sale.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -14,10 +17,20 @@ import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 import 'sales_screen.dart' show saleStatusLabels;
 
+/// Detalle de venta con stale-while-revalidate (cacheado por id).
 final saleDetailProvider =
-    FutureProvider.autoDispose.family<SaleDetail, int>((ref, id) async {
+    StreamProvider.autoDispose.family<SaleDetail, int>((ref, id) {
   final endpoints = ref.watch(endpointsProvider);
-  return endpoints.getSale(id);
+  final cache = ref.watch(cacheRepositoryProvider);
+  final scope = ref.watch(cacheScopeProvider);
+  return swrStream<SaleDetail>(
+    cache: cache,
+    key: '${CacheKeys.saleDetail}$scope:$id',
+    cacheable: true,
+    encode: (d) => jsonEncode(d.toJson()),
+    decode: (s) => SaleDetail.fromJson(jsonDecode(s) as Map<String, dynamic>),
+    fetch: () => endpoints.getSale(id),
+  );
 });
 
 class SaleDetailScreen extends ConsumerStatefulWidget {

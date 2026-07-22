@@ -4,10 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/invoice.dart';
 import '../../core/models/payment.dart';
 import '../../core/theme/app_colors.dart';
@@ -19,10 +22,20 @@ import '../../widgets/status_badge.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 
+/// Detalle de factura con stale-while-revalidate (cacheado por id).
 final invoiceDetailProvider =
-    FutureProvider.autoDispose.family<InvoiceDetail, int>((ref, id) async {
+    StreamProvider.autoDispose.family<InvoiceDetail, int>((ref, id) {
   final endpoints = ref.watch(endpointsProvider);
-  return endpoints.getInvoice(id);
+  final cache = ref.watch(cacheRepositoryProvider);
+  final scope = ref.watch(cacheScopeProvider);
+  return swrStream<InvoiceDetail>(
+    cache: cache,
+    key: '${CacheKeys.invoiceDetail}$scope:$id',
+    cacheable: true,
+    encode: (d) => jsonEncode(d.toJson()),
+    decode: (s) => InvoiceDetail.fromJson(jsonDecode(s) as Map<String, dynamic>),
+    fetch: () => endpoints.getInvoice(id),
+  );
 });
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
@@ -45,8 +58,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     setState(() => _actionInFlight = true);
     try {
       await ref.read(endpointsProvider).confirmInvoice(widget.id);
-      ref.invalidate(invoiceDetailProvider(widget.id));
       await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
+      ref.invalidate(invoiceDetailProvider(widget.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Factura confirmada')),
@@ -92,8 +105,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     setState(() => _actionInFlight = true);
     try {
       await ref.read(endpointsProvider).finalizeInvoice(widget.id);
-      ref.invalidate(invoiceDetailProvider(widget.id));
       await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
+      ref.invalidate(invoiceDetailProvider(widget.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Factura emitida con número legal')),
@@ -139,8 +152,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     setState(() => _actionInFlight = true);
     try {
       await ref.read(endpointsProvider).cancelInvoice(widget.id);
-      ref.invalidate(invoiceDetailProvider(widget.id));
       await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
+      ref.invalidate(invoiceDetailProvider(widget.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Factura anulada')),
@@ -221,8 +234,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     setState(() => _savingPayment = true);
     try {
       await ref.read(endpointsProvider).createPayment(widget.id, data);
-      ref.invalidate(invoiceDetailProvider(widget.id));
       await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
+      ref.invalidate(invoiceDetailProvider(widget.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pago registrado')),

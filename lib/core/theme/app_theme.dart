@@ -19,6 +19,15 @@ ThemeData buildAppTheme() {
     fontFamily: _fontFamily,
     colorSchemeSeed: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
+    // El zoom de Android pinta colorScheme.surface como fondo de la transición;
+    // lo fijamos al fondo real del scaffold para que no haya flash de color.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android:
+            ZoomPageTransitionsBuilder(backgroundColor: AppColors.background),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
     textTheme: textTheme,
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.primary,
@@ -81,6 +90,15 @@ ThemeData buildDarkAppTheme() {
       surface: darkSurface,
     ),
     scaffoldBackgroundColor: darkBackground,
+    // Evita el flash de fondo claro durante la transición de página en Android:
+    // fijamos el fondo del zoom al fondo oscuro real (si no, usa el surface claro).
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android:
+            ZoomPageTransitionsBuilder(backgroundColor: darkBackground),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
     textTheme: textTheme.apply(
       bodyColor: darkText,
       displayColor: darkText,

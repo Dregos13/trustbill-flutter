@@ -107,6 +107,22 @@ class PurchaseDetail {
   int? get supplierId => supplier['id'] as int?;
   String get supplierName => supplier['name'] as String? ?? '—';
   String get supplierTaxId => supplier['taxId'] as String? ?? '';
+
+  /// Round-trip con [fromJson] para poder cachear el detalle en disco.
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'invoiceNumber': invoiceNumber,
+        'issueDate': issueDate,
+        'dueDate': dueDate,
+        'paidAt': paidAt,
+        'total': total,
+        'tax': tax,
+        'taxKind': taxKind,
+        'status': status,
+        'supplier': supplier,
+        'lines': lines.map((e) => e.toJson()).toList(),
+        'attachments': attachments,
+      };
 }
 
 class PurchaseLine {
@@ -131,4 +147,12 @@ class PurchaseLine {
     taxRate: double.parse(json['taxRate'].toString()),
     taxAmount: double.parse(json['taxAmount'].toString()),
   );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'description': description,
+        'base': base,
+        'taxRate': taxRate,
+        'taxAmount': taxAmount,
+      };
 }

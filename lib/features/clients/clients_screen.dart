@@ -37,10 +37,10 @@ final _clientsOffsetProvider =
   _ClientsOffsetNotifier.new,
 );
 
-/// Borra la caché de clientes. Llamar tras crear/editar un cliente para que la
-/// siguiente carga traiga datos frescos sin flash stale.
+/// Borra la caché de clientes (lista + fichas de detalle). Llamar tras
+/// crear/editar un cliente para que la siguiente carga traiga datos frescos.
 Future<void> invalidateClientsCache(WidgetRef ref) async {
-  await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.clients);
+  await bustClientCaches(ref.read(cacheRepositoryProvider));
 }
 
 /// Lista de clientes con stale-while-revalidate. Solo la vista por defecto

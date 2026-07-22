@@ -3,9 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dart:convert';
+
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/purchase.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/date.dart';
@@ -16,9 +19,21 @@ import '../dashboard/dashboard_screen.dart';
 import '../suppliers/suppliers_screen.dart';
 import 'purchases_screen.dart';
 
-final purchaseDetailProvider = FutureProvider.autoDispose
-    .family<PurchaseDetail, int>((ref, id) async {
-      return ref.watch(endpointsProvider).getPurchase(id);
+/// Detalle de compra con stale-while-revalidate (cacheado por id).
+final purchaseDetailProvider = StreamProvider.autoDispose
+    .family<PurchaseDetail, int>((ref, id) {
+      final endpoints = ref.watch(endpointsProvider);
+      final cache = ref.watch(cacheRepositoryProvider);
+      final scope = ref.watch(cacheScopeProvider);
+      return swrStream<PurchaseDetail>(
+        cache: cache,
+        key: '${CacheKeys.purchaseDetail}$scope:$id',
+        cacheable: true,
+        encode: (d) => jsonEncode(d.toJson()),
+        decode: (s) =>
+            PurchaseDetail.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        fetch: () => endpoints.getPurchase(id),
+      );
     });
 
 class PurchaseDetailScreen extends ConsumerStatefulWidget {
@@ -185,13 +200,13 @@ class _PurchaseDetailScreenState extends ConsumerState<PurchaseDetailScreen> {
             .toList(),
       });
 
+      // Compra editada → borra caché ANTES de invalidar (evita flash stale).
+      await bustPurchaseCaches(ref.read(cacheRepositoryProvider));
+      await bustSupplierCaches(ref.read(cacheRepositoryProvider));
       ref.invalidate(purchaseDetailProvider(widget.id));
       ref.invalidate(purchasesProvider);
       ref.invalidate(suppliersProvider);
       ref.invalidate(mobileDashboardProvider);
-      // Compra editada → invalida compras, proveedores y dashboard en caché.
-      await bustPurchaseCaches(ref.read(cacheRepositoryProvider));
-      await bustSupplierCaches(ref.read(cacheRepositoryProvider));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

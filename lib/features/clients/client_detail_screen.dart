@@ -1,21 +1,34 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/client.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
 import 'create_client_screen.dart';
 
-final clientDetailProvider = FutureProvider.autoDispose.family<Client, int>((
-  ref,
-  id,
-) async {
-  final endpoints = ref.read(endpointsProvider);
-  return endpoints.getClient(id);
+/// Detalle de cliente con stale-while-revalidate (cacheado por id).
+final clientDetailProvider =
+    StreamProvider.autoDispose.family<Client, int>((ref, id) {
+  final endpoints = ref.watch(endpointsProvider);
+  final cache = ref.watch(cacheRepositoryProvider);
+  final scope = ref.watch(cacheScopeProvider);
+  return swrStream<Client>(
+    cache: cache,
+    key: '${CacheKeys.clientDetail}$scope:$id',
+    cacheable: true,
+    encode: (c) => jsonEncode(c.toJson()),
+    decode: (s) => Client.fromJson(jsonDecode(s) as Map<String, dynamic>),
+    fetch: () => endpoints.getClient(id),
+  );
 });
 
 class ClientDetailScreen extends ConsumerWidget {

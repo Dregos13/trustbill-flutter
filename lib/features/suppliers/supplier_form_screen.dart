@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dart:convert';
+
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/supplier.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -13,9 +16,20 @@ import '../../widgets/loading_indicator.dart';
 import '../purchases/purchases_screen.dart';
 import 'suppliers_screen.dart';
 
-final supplierDetailProvider = FutureProvider.autoDispose.family<Supplier, int>(
-  (ref, id) async {
-    return ref.watch(endpointsProvider).getSupplier(id);
+/// Detalle de proveedor con stale-while-revalidate (cacheado por id).
+final supplierDetailProvider = StreamProvider.autoDispose.family<Supplier, int>(
+  (ref, id) {
+    final endpoints = ref.watch(endpointsProvider);
+    final cache = ref.watch(cacheRepositoryProvider);
+    final scope = ref.watch(cacheScopeProvider);
+    return swrStream<Supplier>(
+      cache: cache,
+      key: '${CacheKeys.supplierDetail}$scope:$id',
+      cacheable: true,
+      encode: (d) => jsonEncode(d.toJson()),
+      decode: (s) => Supplier.fromJson(jsonDecode(s) as Map<String, dynamic>),
+      fetch: () => endpoints.getSupplier(id),
+    );
   },
 );
 
