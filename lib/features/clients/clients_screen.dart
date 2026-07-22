@@ -1,11 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/client.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
@@ -37,80 +37,30 @@ final _clientsOffsetProvider =
   _ClientsOffsetNotifier.new,
 );
 
-/// Contador que fuerza saltarse la caché (pull-to-refresh). Al incrementar,
-/// el provider vuelve a ejecutarse y va directo a red en vez de emitir caché.
-class _ClientsRefreshNotifier extends Notifier<int> {
-  @override
-  int build() => 0;
-  void bump() => state++;
-}
-
-final _clientsRefreshProvider =
-    NotifierProvider.autoDispose<_ClientsRefreshNotifier, int>(
-  _ClientsRefreshNotifier.new,
-);
-
-/// Clave de caché de la lista de clientes (solo la vista por defecto: primera
-/// página, sin búsqueda). Incluye el scope tenant:empresa.
-String _clientsCacheKey(String scope) => 'clients:$scope';
-
-String _encodeClients(PaginatedResponse<Client> r) => jsonEncode({
-      'items': r.items.map((c) => c.toJson()).toList(),
-      'total': r.total,
-      'limit': r.limit,
-      'offset': r.offset,
-    });
-
-PaginatedResponse<Client> _decodeClients(String s) =>
-    PaginatedResponse.fromJson(
-      jsonDecode(s) as Map<String, dynamic>,
-      Client.fromJson,
-    );
-
-/// Borra la caché de clientes del scope actual. Llamar tras crear/editar un
-/// cliente para que la siguiente carga traiga datos frescos sin flash stale.
+/// Borra la caché de clientes. Llamar tras crear/editar un cliente para que la
+/// siguiente carga traiga datos frescos sin flash stale.
 Future<void> invalidateClientsCache(WidgetRef ref) async {
-  final scope = ref.read(cacheScopeProvider);
-  await ref.read(cacheRepositoryProvider).delete(_clientsCacheKey(scope));
+  await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.clients);
 }
 
-/// Lista de clientes con estrategia stale-while-revalidate:
-/// 1. Si la vista es cacheable (1ª página, sin búsqueda) emite la caché al
-///    instante → la pantalla pinta sin spinner.
-/// 2. Lanza el GET, guarda la respuesta y emite los datos frescos.
-/// 3. Si la red falla pero ya servimos caché, se mantiene lo cacheado (modo
-///    tolerante a fallos/offline). Sin caché previa, propaga el error.
+/// Lista de clientes con stale-while-revalidate. Solo la vista por defecto
+/// (1ª página, sin búsqueda) se cachea; búsqueda/paginación van directo a red.
 final clientsProvider =
-    StreamProvider.autoDispose<PaginatedResponse<Client>>((ref) async* {
+    StreamProvider.autoDispose<PaginatedResponse<Client>>((ref) {
   final endpoints = ref.watch(endpointsProvider);
   final cache = ref.watch(cacheRepositoryProvider);
   final scope = ref.watch(cacheScopeProvider);
   final search = ref.watch(_clientsSearchProvider);
   final offset = ref.watch(_clientsOffsetProvider);
-  final forceNetwork = ref.watch(_clientsRefreshProvider) > 0;
 
-  final cacheable = search.isEmpty && offset == 0;
-  final key = _clientsCacheKey(scope);
-
-  var servedCache = false;
-  if (cacheable && !forceNetwork) {
-    final entry = await cache.read(key);
-    if (entry != null) {
-      yield _decodeClients(entry.payload);
-      servedCache = true;
-    }
-  }
-
-  try {
-    final fresh =
-        await endpoints.getClients(limit: 50, offset: offset, search: search);
-    if (cacheable) await cache.write(key, _encodeClients(fresh));
-    yield fresh;
-  } catch (e) {
-    // Con caché ya mostrada, la mantenemos (no rompemos la pantalla por un
-    // fallo de red). Sin caché, propagamos para mostrar el error.
-    if (!servedCache) rethrow;
-  }
+  return swrStream<PaginatedResponse<Client>>(
+    cache: cache,
+    key: '${CacheKeys.clients}$scope',
+    cacheable: search.isEmpty && offset == 0,
+    encode: (r) => encodePaginated(r, (c) => c.toJson()),
+    decode: (s) => decodePaginated(s, Client.fromJson),
+    fetch: () => endpoints.getClients(limit: 50, offset: offset, search: search),
+  );
 });
 
 class ClientsScreen extends ConsumerStatefulWidget {
@@ -141,8 +91,9 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
-        // Pull-to-refresh: fuerza red (ignora caché) y espera datos frescos.
-        ref.read(_clientsRefreshProvider.notifier).bump();
+        // Pull-to-refresh: borra la caché (fuerza red) y espera datos frescos.
+        await invalidateClientsCache(ref);
+        ref.invalidate(clientsProvider);
         await ref.read(clientsProvider.future);
       },
       child: ListView(

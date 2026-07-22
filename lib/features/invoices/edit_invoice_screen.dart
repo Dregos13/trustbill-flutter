@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/product.dart';
 import '../../core/models/service.dart';
 import '../../core/theme/app_colors.dart';
@@ -123,6 +125,7 @@ class _EditInvoiceScreenState extends ConsumerState<EditInvoiceScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(endpointsProvider).updateInvoiceContent(widget.id, body);
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
       if (!mounted) return;
       ref.invalidate(invoiceDetailProvider(widget.id));
       messenger.showSnackBar(

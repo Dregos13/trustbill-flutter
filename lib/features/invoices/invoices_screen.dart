@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/invoice.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
@@ -35,12 +38,24 @@ final _invoicesOffsetProvider =
   _InvoicesOffsetNotifier.new,
 );
 
+/// Lista de facturas con stale-while-revalidate. Solo la vista por defecto
+/// (1ª página, sin filtro de estado) se cachea.
 final invoicesProvider =
-    FutureProvider.autoDispose<PaginatedResponse<InvoiceListItem>>((ref) async {
+    StreamProvider.autoDispose<PaginatedResponse<InvoiceListItem>>((ref) {
   final endpoints = ref.watch(endpointsProvider);
+  final cache = ref.watch(cacheRepositoryProvider);
+  final scope = ref.watch(cacheScopeProvider);
   final status = ref.watch(_invoicesStatusProvider);
   final offset = ref.watch(_invoicesOffsetProvider);
-  return endpoints.getInvoices(limit: 50, offset: offset, status: status);
+
+  return swrStream<PaginatedResponse<InvoiceListItem>>(
+    cache: cache,
+    key: '${CacheKeys.invoices}$scope',
+    cacheable: status == null && offset == 0,
+    encode: (r) => encodePaginated(r, (e) => e.toJson()),
+    decode: (s) => decodePaginated(s, InvoiceListItem.fromJson),
+    fetch: () => endpoints.getInvoices(limit: 50, offset: offset, status: status),
+  );
 });
 
 class InvoicesScreen extends ConsumerWidget {
@@ -53,7 +68,11 @@ class InvoicesScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.refresh(invoicesProvider.future),
+      onRefresh: () async {
+        await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.invoices);
+        ref.invalidate(invoicesProvider);
+        await ref.read(invoicesProvider.future);
+      },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,9 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/auth/auth_state.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/dashboard.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -93,14 +98,28 @@ final dashboardRangeProvider =
       DashboardRangeNotifier.new,
     );
 
+/// Resumen del dashboard con stale-while-revalidate. Se cachea por rango
+/// (from:to) dentro del scope tenant:empresa. Cualquier mutación de facturas
+/// invalida esta caché (ver [bustInvoiceCaches]).
 final mobileDashboardProvider =
-    FutureProvider.autoDispose<MobileDashboardSummary>((ref) async {
+    StreamProvider.autoDispose<MobileDashboardSummary>((ref) {
       final auth = ref.watch(authProvider);
       if (auth is! AuthAuthenticated) throw StateError('Not authenticated');
+      final endpoints = ref.watch(endpointsProvider);
+      final cache = ref.watch(cacheRepositoryProvider);
+      final scope = ref.watch(cacheScopeProvider);
       final range = ref.watch(dashboardRangeProvider);
-      return ref
-          .read(endpointsProvider)
-          .getMobileDashboard(from: range.apiFrom, to: range.apiTo);
+
+      return swrStream<MobileDashboardSummary>(
+        cache: cache,
+        key: '${CacheKeys.dashboard}$scope:${range.apiFrom}:${range.apiTo}',
+        cacheable: true,
+        encode: (s) => jsonEncode(s.toJson()),
+        decode: (j) =>
+            MobileDashboardSummary.fromJson(jsonDecode(j) as Map<String, dynamic>),
+        fetch: () =>
+            endpoints.getMobileDashboard(from: range.apiFrom, to: range.apiTo),
+      );
     });
 
 class DashboardScreen extends ConsumerWidget {
@@ -113,7 +132,11 @@ class DashboardScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.refresh(mobileDashboardProvider.future),
+      onRefresh: () async {
+        await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.dashboard);
+        ref.invalidate(mobileDashboardProvider);
+        await ref.read(mobileDashboardProvider.future);
+      },
       child: dashboardAsync.when(
         loading: () => const LoadingIndicator(),
         error: (err, _) => ListView(

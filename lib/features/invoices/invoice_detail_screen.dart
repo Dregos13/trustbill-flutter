@@ -6,6 +6,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/invoice.dart';
 import '../../core/models/payment.dart';
 import '../../core/theme/app_colors.dart';
@@ -44,6 +46,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     try {
       await ref.read(endpointsProvider).confirmInvoice(widget.id);
       ref.invalidate(invoiceDetailProvider(widget.id));
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Factura confirmada')),
@@ -90,6 +93,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     try {
       await ref.read(endpointsProvider).finalizeInvoice(widget.id);
       ref.invalidate(invoiceDetailProvider(widget.id));
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Factura emitida con número legal')),
@@ -136,6 +140,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     try {
       await ref.read(endpointsProvider).cancelInvoice(widget.id);
       ref.invalidate(invoiceDetailProvider(widget.id));
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Factura anulada')),
@@ -217,6 +222,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     try {
       await ref.read(endpointsProvider).createPayment(widget.id, data);
       ref.invalidate(invoiceDetailProvider(widget.id));
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pago registrado')),

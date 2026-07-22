@@ -68,6 +68,14 @@ class MobileDashboardSummary {
         )
         .toList(),
   );
+
+  /// Round-trip con [fromJson] para poder cachear el resumen en disco.
+  Map<String, dynamic> toJson() => {
+        'month': month.toJson(),
+        'history': history.map((e) => e.toJson()).toList(),
+        'upcoming': upcoming.map((e) => e.toJson()).toList(),
+        'topClients': topClients.map((e) => e.toJson()).toList(),
+      };
 }
 
 class MobileDashboardMonth {
@@ -99,6 +107,16 @@ class MobileDashboardMonth {
         gastos: toDouble(json['gastos']),
         facturasCount: json['facturasCount'] as int? ?? 0,
       );
+
+  Map<String, dynamic> toJson() => {
+        'label': label,
+        'facturado': facturado,
+        'facturadoPrev': facturadoPrev,
+        'cobrado': cobrado,
+        'pendiente': pendiente,
+        'gastos': gastos,
+        'facturasCount': facturasCount,
+      };
 }
 
 class MobileDashboardHistoryItem {
@@ -118,6 +136,13 @@ class MobileDashboardHistoryItem {
         ingresos: toDouble(json['ingresos']),
         gastos: toDouble(json['gastos']),
       );
+
+  // fromJson lee la clave 'm' para el label → toJson debe escribir 'm'.
+  Map<String, dynamic> toJson() => {
+        'm': label,
+        'ingresos': ingresos,
+        'gastos': gastos,
+      };
 }
 
 class MobileDashboardUpcomingItem {
@@ -149,6 +174,16 @@ class MobileDashboardUpcomingItem {
         dueIn: json['dueIn'] as int? ?? 0,
         status: json['status'] as String? ?? 'ok',
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'invoiceId': invoiceId,
+        'client': client,
+        'amount': amount,
+        'dueDate': dueDate,
+        'dueIn': dueIn,
+        'status': status,
+      };
 }
 
 class MobileDashboardTopClient {
@@ -171,4 +206,11 @@ class MobileDashboardTopClient {
         amount: toDouble(json['amount']),
         pct: json['pct'] as int? ?? 0,
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'amount': amount,
+        'pct': pct,
+      };
 }

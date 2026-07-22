@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/client.dart';
 import '../../core/models/product.dart';
 import '../../core/models/service.dart';
@@ -131,6 +133,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     try {
       final endpoints = ref.read(endpointsProvider);
       await endpoints.createInvoice(payload);
+      // Nueva factura: invalida lista de facturas y dashboard.
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
 
       if (!mounted) return;
       setState(() {
