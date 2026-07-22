@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/scan_result.dart';
 import '../../core/models/expense.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/utils/error_messages.dart';
 import '../../core/api/api_client.dart';
 
@@ -130,6 +132,9 @@ class ScanNotifier extends Notifier<ScanState> {
     try {
       final endpoints = ref.read(endpointsProvider);
       final response = await endpoints.confirmScan(payload);
+      // Nueva factura de proveedor/gasto → invalida compras, proveedores y dashboard.
+      await bustPurchaseCaches(ref.read(cacheRepositoryProvider));
+      await bustSupplierCaches(ref.read(cacheRepositoryProvider));
       state = state.copyWith(isConfirming: false, confirmed: response);
     } catch (e) {
       state = state.copyWith(

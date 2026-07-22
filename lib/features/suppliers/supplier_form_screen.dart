@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/supplier.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -100,6 +102,7 @@ class _SupplierFormScreenState extends ConsumerState<SupplierFormScreen> {
       }
       ref.invalidate(suppliersProvider);
       ref.invalidate(purchasesProvider);
+      await bustSupplierCaches(ref.read(cacheRepositoryProvider));
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

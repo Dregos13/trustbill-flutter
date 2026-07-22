@@ -56,3 +56,41 @@ PaginatedResponse<T> decodePaginated<T>(
       jsonDecode(json) as Map<String, dynamic>,
       fromJson,
     );
+
+/// SWR para pantallas con estado manual (setState) que cargan una `List<T>`.
+///
+/// Llama [onData] primero con la caché (si [cacheable] y existe) y luego con la
+/// respuesta de red, que además se guarda. [onError] solo se invoca si no había
+/// caché que mostrar (con caché servida, un fallo de red se ignora → offline ok).
+Future<void> swrLoadList<T>({
+  required CacheRepository cache,
+  required String key,
+  required bool cacheable,
+  required Map<String, dynamic> Function(T item) toJson,
+  required T Function(Map<String, dynamic>) fromJson,
+  required Future<List<T>> Function() fetch,
+  required void Function(List<T> items) onData,
+  required void Function(Object error) onError,
+}) async {
+  var served = false;
+  if (cacheable) {
+    final entry = await cache.read(key);
+    if (entry != null) {
+      onData(
+        (jsonDecode(entry.payload) as List)
+            .map((e) => fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+      served = true;
+    }
+  }
+  try {
+    final items = await fetch();
+    if (cacheable) {
+      await cache.write(key, jsonEncode(items.map(toJson).toList()));
+    }
+    onData(items);
+  } catch (e) {
+    if (!served) onError(e);
+  }
+}

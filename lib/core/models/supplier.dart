@@ -65,4 +65,17 @@ class Supplier {
     notes: json['notes'] as String? ?? '',
     purchasesCount: json['purchasesCount'] as int? ?? 0,
   );
+
+  /// Round-trip con [fromJson] para poder cachear la lista en disco.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'taxId': taxId,
+    'email': email,
+    'phone': phone,
+    'address': address,
+    'postalCode': postalCode,
+    'notes': notes,
+    'purchasesCount': purchasesCount,
+  };
 }

@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/budget.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
@@ -35,12 +38,24 @@ final _budgetsOffsetProvider =
   _BudgetsOffsetNotifier.new,
 );
 
+/// Lista de presupuestos con stale-while-revalidate. Solo la vista por defecto
+/// (1ª página, sin filtro de estado) se cachea.
 final budgetsProvider =
-    FutureProvider.autoDispose<PaginatedResponse<BudgetListItem>>((ref) async {
+    StreamProvider.autoDispose<PaginatedResponse<BudgetListItem>>((ref) {
   final endpoints = ref.watch(endpointsProvider);
+  final cache = ref.watch(cacheRepositoryProvider);
+  final scope = ref.watch(cacheScopeProvider);
   final status = ref.watch(_budgetsStatusProvider);
   final offset = ref.watch(_budgetsOffsetProvider);
-  return endpoints.getBudgets(limit: 50, offset: offset, status: status);
+
+  return swrStream<PaginatedResponse<BudgetListItem>>(
+    cache: cache,
+    key: '${CacheKeys.budgets}$scope',
+    cacheable: status == null && offset == 0,
+    encode: (r) => encodePaginated(r, (e) => e.toJson()),
+    decode: (s) => decodePaginated(s, BudgetListItem.fromJson),
+    fetch: () => endpoints.getBudgets(limit: 50, offset: offset, status: status),
+  );
 });
 
 class BudgetsScreen extends ConsumerWidget {
@@ -53,7 +68,11 @@ class BudgetsScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.refresh(budgetsProvider.future),
+      onRefresh: () async {
+        await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.budgets);
+        ref.invalidate(budgetsProvider);
+        await ref.read(budgetsProvider.future);
+      },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [

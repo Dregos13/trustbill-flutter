@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/sale.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -80,6 +82,9 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
     try {
       final endpoints = ref.read(endpointsProvider);
       final res = await endpoints.createInvoiceFromSale(sale.id, payload);
+      // Se creó factura y cambió el estado de la venta: invalida ambas + dashboard.
+      await bustInvoiceCaches(ref.read(cacheRepositoryProvider));
+      await bustSalesCaches(ref.read(cacheRepositoryProvider));
       if (!mounted) return;
       setState(() => _invoicing = false);
       ref.invalidate(saleDetailProvider(sale.id));

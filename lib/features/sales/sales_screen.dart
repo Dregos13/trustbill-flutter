@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/sale.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
@@ -42,12 +45,24 @@ final _salesOffsetProvider =
   _SalesOffsetNotifier.new,
 );
 
+/// Lista de ventas con stale-while-revalidate. Solo la vista por defecto
+/// (1ª página, sin filtro de estado) se cachea.
 final salesProvider =
-    FutureProvider.autoDispose<PaginatedResponse<SaleListItem>>((ref) async {
+    StreamProvider.autoDispose<PaginatedResponse<SaleListItem>>((ref) {
   final endpoints = ref.watch(endpointsProvider);
+  final cache = ref.watch(cacheRepositoryProvider);
+  final scope = ref.watch(cacheScopeProvider);
   final status = ref.watch(_salesStatusProvider);
   final offset = ref.watch(_salesOffsetProvider);
-  return endpoints.getSales(limit: 50, offset: offset, status: status);
+
+  return swrStream<PaginatedResponse<SaleListItem>>(
+    cache: cache,
+    key: '${CacheKeys.sales}$scope',
+    cacheable: status == null && offset == 0,
+    encode: (r) => encodePaginated(r, (e) => e.toJson()),
+    decode: (s) => decodePaginated(s, SaleListItem.fromJson),
+    fetch: () => endpoints.getSales(limit: 50, offset: offset, status: status),
+  );
 });
 
 class SalesScreen extends ConsumerWidget {
@@ -60,7 +75,11 @@ class SalesScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.refresh(salesProvider.future),
+      onRefresh: () async {
+        await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.sales);
+        ref.invalidate(salesProvider);
+        await ref.read(salesProvider.future);
+      },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [

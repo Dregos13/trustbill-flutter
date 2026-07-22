@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/client.dart';
 import '../../core/models/product.dart';
 import '../../core/models/service.dart';
@@ -104,6 +106,7 @@ class _CreateBudgetScreenState extends ConsumerState<CreateBudgetScreen> {
     try {
       final endpoints = ref.read(endpointsProvider);
       await endpoints.createBudget(payload);
+      await bustBudgetCaches(ref.read(cacheRepositoryProvider));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Presupuesto creado.'),

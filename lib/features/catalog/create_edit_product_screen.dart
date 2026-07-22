@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/catalog.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
@@ -61,6 +63,7 @@ class _CreateEditProductScreenState extends ConsumerState<CreateEditProductScree
       } else {
         await ep.createCatalogProduct(data);
       }
+      await bustCatalogCaches(ref.read(cacheRepositoryProvider));
       if (mounted) context.pop(true);
     } catch (e) {
       if (mounted) setState(() { _saving = false; _error = friendlyError(e); });

@@ -40,6 +40,20 @@ class PurchaseListItem {
 
   String get supplierName => supplier['name'] as String? ?? '—';
   String get supplierTaxId => supplier['taxId'] as String? ?? '';
+
+  /// Round-trip con [fromJson] para poder cachear la lista en disco.
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'invoiceNumber': invoiceNumber,
+        'issueDate': issueDate,
+        'dueDate': dueDate,
+        'paidAt': paidAt,
+        'total': total,
+        'tax': tax,
+        'taxKind': taxKind,
+        'status': status,
+        'supplier': supplier,
+      };
 }
 
 class PurchaseDetail {

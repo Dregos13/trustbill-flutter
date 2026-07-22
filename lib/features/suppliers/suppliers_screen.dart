@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/paginated.dart';
 import '../../core/models/supplier.dart';
 import '../../core/theme/app_colors.dart';
@@ -36,12 +39,25 @@ final _suppliersOffsetProvider =
       _SuppliersOffsetNotifier.new,
     );
 
+/// Lista de proveedores con stale-while-revalidate. Solo la vista por defecto
+/// (1ª página, sin búsqueda) se cachea.
 final suppliersProvider =
-    FutureProvider.autoDispose<PaginatedResponse<Supplier>>((ref) async {
+    StreamProvider.autoDispose<PaginatedResponse<Supplier>>((ref) {
       final endpoints = ref.watch(endpointsProvider);
+      final cache = ref.watch(cacheRepositoryProvider);
+      final scope = ref.watch(cacheScopeProvider);
       final search = ref.watch(_suppliersSearchProvider);
       final offset = ref.watch(_suppliersOffsetProvider);
-      return endpoints.getSuppliers(limit: 50, offset: offset, search: search);
+
+      return swrStream<PaginatedResponse<Supplier>>(
+        cache: cache,
+        key: '${CacheKeys.suppliers}$scope',
+        cacheable: search.isEmpty && offset == 0,
+        encode: (r) => encodePaginated(r, (e) => e.toJson()),
+        decode: (s) => decodePaginated(s, Supplier.fromJson),
+        fetch: () =>
+            endpoints.getSuppliers(limit: 50, offset: offset, search: search),
+      );
     });
 
 class SuppliersScreen extends ConsumerStatefulWidget {
@@ -71,7 +87,11 @@ class _SuppliersScreenState extends ConsumerState<SuppliersScreen> {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.refresh(suppliersProvider.future),
+      onRefresh: () async {
+        await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.suppliers);
+        ref.invalidate(suppliersProvider);
+        await ref.read(suppliersProvider.future);
+      },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [

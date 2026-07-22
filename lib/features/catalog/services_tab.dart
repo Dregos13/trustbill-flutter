@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/auth/permission_helpers.dart';
 import '../../core/auth/permission_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/catalog.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -35,27 +38,37 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
   }
 
   Future<void> _load({String? search}) async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final ep = ref.read(endpointsProvider);
-      final items = await ep.getCatalogServices(search: search);
-      if (mounted) {
+    final isDefault = search == null || search.isEmpty;
+    if (_services.isEmpty) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
+    // SWR: pinta la caché al instante (vista por defecto) y revalida por red.
+    await swrLoadList<CatalogService>(
+      cache: ref.read(cacheRepositoryProvider),
+      key: '${CacheKeys.services}${ref.read(cacheScopeProvider)}',
+      cacheable: isDefault,
+      toJson: (s) => s.toJson(),
+      fromJson: CatalogService.fromJson,
+      fetch: () => ref.read(endpointsProvider).getCatalogServices(search: search),
+      onData: (items) {
+        if (!mounted) return;
         setState(() {
           _services = items;
           _loading = false;
+          _error = null;
         });
-      }
-    } catch (e) {
-      if (mounted) {
+      },
+      onError: (e) {
+        if (!mounted) return;
         setState(() {
           _error = friendlyError(e);
           _loading = false;
         });
-      }
-    }
+      },
+    );
   }
 
   Future<void> _delete(CatalogService s) async {
@@ -84,6 +97,7 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
     if (confirmed != true || !mounted) return;
     try {
       await ref.read(endpointsProvider).deleteCatalogService(s.id);
+      await bustCatalogCaches(ref.read(cacheRepositoryProvider));
       await _load(
         search: _searchCtrl.text.trim().isEmpty
             ? null

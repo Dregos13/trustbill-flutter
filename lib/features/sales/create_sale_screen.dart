@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/models/client.dart';
 import '../../core/models/product.dart';
@@ -132,6 +134,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
     try {
       final endpoints = ref.read(endpointsProvider);
       final sale = await endpoints.createSale(payload);
+      await bustSalesCaches(ref.read(cacheRepositoryProvider));
       if (!mounted) return;
       _toast('Venta ${sale.code} creada.', AppColors.success);
       context.go('/sales/${sale.id}');

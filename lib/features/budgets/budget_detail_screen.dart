@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/budget.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -36,6 +38,9 @@ class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
     try {
       await ref.read(endpointsProvider).acceptBudget(widget.id);
       ref.invalidate(budgetDetailProvider(widget.id));
+      // Estado del presupuesto + reserva de stock cambiaron.
+      await bustBudgetCaches(ref.read(cacheRepositoryProvider));
+      await bustCatalogCaches(ref.read(cacheRepositoryProvider));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Presupuesto aceptado')),
@@ -82,6 +87,9 @@ class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
     try {
       await ref.read(endpointsProvider).rejectBudget(widget.id);
       ref.invalidate(budgetDetailProvider(widget.id));
+      // Estado del presupuesto + liberación de stock cambiaron.
+      await bustBudgetCaches(ref.read(cacheRepositoryProvider));
+      await bustCatalogCaches(ref.read(cacheRepositoryProvider));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Presupuesto rechazado')),

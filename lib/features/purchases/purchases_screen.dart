@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
+import '../../core/cache/swr.dart';
 import '../../core/models/purchase.dart';
 import '../../core/models/paginated.dart';
 import '../../core/theme/app_colors.dart';
@@ -32,15 +35,33 @@ final _purchasesOffsetProvider =
       _PurchasesOffsetNotifier.new,
     );
 
+/// Lista de compras con stale-while-revalidate. Solo la vista por defecto
+/// (1ª página, sin filtro de estado) se cachea.
 final purchasesProvider =
-    FutureProvider.autoDispose<PaginatedResponse<PurchaseListItem>>((
-      ref,
-    ) async {
+    StreamProvider.autoDispose<PaginatedResponse<PurchaseListItem>>((ref) {
       final endpoints = ref.watch(endpointsProvider);
+      final cache = ref.watch(cacheRepositoryProvider);
+      final scope = ref.watch(cacheScopeProvider);
       final status = ref.watch(_purchasesStatusProvider);
       final offset = ref.watch(_purchasesOffsetProvider);
-      return endpoints.getPurchases(limit: 50, offset: offset, status: status);
+
+      return swrStream<PaginatedResponse<PurchaseListItem>>(
+        cache: cache,
+        key: '${CacheKeys.purchases}$scope',
+        cacheable: status == null && offset == 0,
+        encode: (r) => encodePaginated(r, (e) => e.toJson()),
+        decode: (s) => decodePaginated(s, PurchaseListItem.fromJson),
+        fetch: () =>
+            endpoints.getPurchases(limit: 50, offset: offset, status: status),
+      );
     });
+
+/// Pull-to-refresh / reintento: borra la caché de compras y espera datos de red.
+Future<void> _forcePurchases(WidgetRef ref) async {
+  await ref.read(cacheRepositoryProvider).deleteByPrefix(CacheKeys.purchases);
+  ref.invalidate(purchasesProvider);
+  await ref.read(purchasesProvider.future);
+}
 
 class PurchasesScreen extends ConsumerWidget {
   const PurchasesScreen({super.key});
@@ -52,7 +73,7 @@ class PurchasesScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.refresh(purchasesProvider.future),
+      onRefresh: () => _forcePurchases(ref),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -124,7 +145,7 @@ class PurchasesScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () => ref.refresh(purchasesProvider.future),
+                      onPressed: () => _forcePurchases(ref),
                       child: const Text('Reintentar'),
                     ),
                   ],

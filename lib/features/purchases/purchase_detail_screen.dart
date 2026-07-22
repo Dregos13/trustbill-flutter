@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_keys.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/purchase.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/date.dart';
@@ -187,6 +189,9 @@ class _PurchaseDetailScreenState extends ConsumerState<PurchaseDetailScreen> {
       ref.invalidate(purchasesProvider);
       ref.invalidate(suppliersProvider);
       ref.invalidate(mobileDashboardProvider);
+      // Compra editada → invalida compras, proveedores y dashboard en caché.
+      await bustPurchaseCaches(ref.read(cacheRepositoryProvider));
+      await bustSupplierCaches(ref.read(cacheRepositoryProvider));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
