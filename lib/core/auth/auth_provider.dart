@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../api/api_error.dart';
 import '../api/endpoints.dart';
+import '../cache/cache_providers.dart';
 import '../models/user.dart';
 import '../utils/error_messages.dart';
 import 'auth_state.dart';
@@ -227,12 +228,14 @@ class AuthNotifier extends Notifier<AuthState> {
       // best-effort
     }
     await _apiClient.clearTokens();
+    await _clearCache();
     state = AuthState.unauthenticated(clientId: clientId);
   }
 
   Future<void> forceLogout() async {
     final clientId = _currentClientId;
     await _apiClient.clearTokens();
+    await _clearCache();
     state = AuthState.unauthenticated(clientId: clientId);
   }
 
@@ -240,7 +243,19 @@ class AuthNotifier extends Notifier<AuthState> {
     await _apiClient.clearAll();
     await _apiClient.storage.delete(key: _keySavedEmail);
     await _apiClient.storage.delete(key: _keySavedPassword);
+    await _clearCache();
     state = const AuthState.needsSetup();
+  }
+
+  /// Vacía la caché en dispositivo. Best-effort: nunca debe bloquear el cierre
+  /// de sesión. Evita que datos cacheados de un tenant/usuario se vean tras
+  /// entrar con otro.
+  Future<void> _clearCache() async {
+    try {
+      await ref.read(cacheRepositoryProvider).clearAll();
+    } catch (_) {
+      // best-effort
+    }
   }
 
   /// Fetches /me/capabilities and merges modules into the current authenticated state.

@@ -16,8 +16,9 @@ class _TrustInFactsAppState extends ConsumerState<TrustInFactsApp> {
   @override
   void initState() {
     super.initState();
+    // El tema ya se lee de forma síncrona en build() (prefs precargadas en
+    // main), así que aquí solo arrancamos la sesión.
     Future.microtask(() {
-      ref.read(themeControllerProvider.notifier).initialize();
       ref.read(authProvider.notifier).initialize();
     });
   }

@@ -11,6 +11,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/error_messages.dart';
+import 'clients_screen.dart';
 
 class CreateClientScreen extends ConsumerStatefulWidget {
   /// If [existingClient] is provided, the screen is in edit mode.
@@ -165,6 +166,9 @@ class _CreateClientScreenState extends ConsumerState<CreateClientScreen> {
       if (_latitude != null && _longitude != null) {
         await endpoints.patchClientLocation(result.id, _latitude!, _longitude!);
       }
+
+      // La lista cambió: invalida la caché para que se recargue fresca al volver.
+      await invalidateClientsCache(ref);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
