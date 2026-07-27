@@ -40,6 +40,8 @@ import '../../features/taskmap/map/map_screen.dart';
 import '../../features/taskmap/task/task_detail_screen.dart';
 import '../../features/taskmap/task/task_form_screen.dart';
 import '../../features/assistant/assistant_screen.dart';
+import '../../features/assistant/conversation_history_screen.dart';
+import '../../features/assistant/conversation_detail_screen.dart';
 
 // ── Route permission requirements ──────────────────────────────────────────────
 
@@ -245,6 +247,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/assistant',
         builder: (context, _) => const AssistantScreen(),
+      ),
+      GoRoute(
+        path: '/assistant/history',
+        builder: (context, _) => const ConversationHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/assistant/history/:id',
+        builder: (context, state) => ConversationDetailScreen(
+          conversationId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/scan/review',

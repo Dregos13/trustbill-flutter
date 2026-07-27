@@ -155,6 +155,11 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Conversaciones anteriores',
+            icon: const Icon(Icons.history_rounded),
+            onPressed: () => context.push('/assistant/history'),
+          ),
           if (!state.isEmpty)
             IconButton(
               tooltip: 'Nueva conversación',

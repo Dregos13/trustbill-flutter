@@ -4,10 +4,17 @@ import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/chat.dart';
 import '../../core/models/confirmation.dart';
+import '../../core/models/conversation_history.dart';
+import '../../core/theme/theme_controller.dart' show sharedPreferencesProvider;
 import '../../core/utils/error_messages.dart';
 import 'assistant_repository.dart';
 
 enum ChatRole { user, assistant }
+
+/// Fase H.2: el id vive también en disco, no solo en memoria del provider,
+/// para que un reinicio en frío de la app pueda recuperar la conversación
+/// (releer su historial cuesta $0, no hay llamada al LLM de por medio).
+const _conversationIdStorageKey = 'assistant_conversation_id';
 
 /// Estado de una confirmación de escritura pendiente en el chat (Fase 8 del
 /// gateway): el usuario ve el resumen y confirma o cancela desde la propia
@@ -122,7 +129,55 @@ class AssistantNotifier extends Notifier<AssistantState> {
   @override
   AssistantState build() {
     _repo = ref.read(assistantRepositoryProvider);
-    return const AssistantState();
+    final storedId = ref
+        .read(sharedPreferencesProvider)
+        .getString(_conversationIdStorageKey);
+    if (storedId == null) return const AssistantState();
+
+    // build() no puede ser async: el id persistido se aplica ya (para que
+    // `send()` continue la conversacion correcta aunque el usuario escriba
+    // antes de que termine de cargar), y las burbujas viejas llegan cuando
+    // responda /api/v1/conversations/{id}.
+    Future.microtask(() => _hydrateFromStorage(storedId));
+    return AssistantState(conversationId: storedId);
+  }
+
+  Future<void> _hydrateFromStorage(String conversationId) async {
+    try {
+      final detail = await _repo.getConversation(conversationId);
+      state = state.copyWith(
+        messages: [..._messagesFrom(detail), ...state.messages],
+        conversationId: detail.conversationId,
+      );
+    } catch (_) {
+      // Best-effort: si la conversacion ya no existe (purgada) o falla la
+      // red, se sigue con el id persistido pero sin burbujas antiguas.
+    }
+  }
+
+  /// Fase H.2: abre una conversación vieja en la pantalla de chat normal
+  /// para seguir escribiendo. Las tarjetas de confirmación de esos mensajes
+  /// no se reconstruyen aquí (su TTL de 600s ya pasó de sobra); si el
+  /// usuario todavía necesita esa operación, se lo puede volver a pedir al
+  /// asistente.
+  Future<void> continueConversation(ConversationDetail detail) async {
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_conversationIdStorageKey, detail.conversationId);
+    state = AssistantState(
+      conversationId: detail.conversationId,
+      messages: _messagesFrom(detail),
+    );
+  }
+
+  List<ChatMessage> _messagesFrom(ConversationDetail detail) {
+    return [
+      for (final message in detail.messages)
+        ChatMessage(
+          role: message.isUser ? ChatRole.user : ChatRole.assistant,
+          text: message.content,
+        ),
+    ];
   }
 
   /// Envía un mensaje del usuario y añade la respuesta del asistente. El
@@ -174,6 +229,13 @@ class AssistantNotifier extends Notifier<AssistantState> {
         sources: res.sources,
         confirmationId: confirmationId,
       );
+
+      final resolvedConversationId = res.conversationId ?? state.conversationId;
+      if (resolvedConversationId != null) {
+        await ref
+            .read(sharedPreferencesProvider)
+            .setString(_conversationIdStorageKey, resolvedConversationId);
+      }
 
       state = state.copyWith(
         messages: [...state.messages, reply],
@@ -241,7 +303,10 @@ class AssistantNotifier extends Notifier<AssistantState> {
   }
 
   /// Empieza una conversación nueva (limpia burbujas, historial y confirmaciones).
-  void reset() => state = const AssistantState();
+  void reset() {
+    ref.read(sharedPreferencesProvider).remove(_conversationIdStorageKey);
+    state = const AssistantState();
+  }
 
   void _setConfirmationStatus(String id, ConfirmationUiStatus status) {
     final current = state.confirmations[id];
