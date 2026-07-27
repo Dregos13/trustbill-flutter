@@ -16,7 +16,6 @@ import '../models/tax_return.dart';
 import '../models/catalog.dart';
 import '../models/budget.dart';
 import '../models/sale.dart';
-import '../models/assistant.dart';
 
 class Endpoints {
   final ApiClient _api;
@@ -686,19 +685,9 @@ class Endpoints {
     );
   }
 
-  // ---- Asistente IA ----
-
-  /// Un turno de conversación con el asistente. Se reenvía `history` (opaco)
-  /// devuelto por la respuesta anterior para mantener el contexto sin estado
-  /// en el servidor.
-  Future<AssistantChatResponse> assistantChat({
-    required String message,
-    required List<dynamic> history,
-  }) async {
-    final res = await _api.post(
-      '/assistant/chat',
-      data: {'message': message, 'history': history},
-    );
-    return AssistantChatResponse.fromJson(res.data as Map<String, dynamic>);
-  }
+  // Nota: el asistente IA ya NO pasa por aquí. Migró de `POST /assistant/chat`
+  // (mobile-api, Gemini directo, historial opaco reenviado por el cliente) a
+  // `POST /api/v1/chat` contra el gateway trustcore-ai — ver
+  // AssistantRepository / AiGatewayClient y la decisión documentada en
+  // TAREAS_VERIFICABLES_TRUSTCORE_AI.md (Fase 11).
 }

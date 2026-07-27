@@ -158,6 +158,23 @@ class ApiClient {
   void setAccessToken(String token) => _accessToken = token;
   void clearAccessToken() => _accessToken = null;
 
+  /// Fuerza (o reutiliza si ya hay uno en curso) un ciclo de refresh y
+  /// devuelve si el token quedó renovado. Pensado para que OTROS clientes
+  /// HTTP (p. ej. el gateway de IA, que vive en un host distinto) puedan
+  /// pedir un token fresco sin duplicar la lógica de rotación de refresh
+  /// token; comparte `_refreshFuture` con el interceptor de este cliente, así
+  /// que dos 401 simultáneos (uno de cada host) solo disparan un refresh.
+  Future<bool> refreshAccessToken() async {
+    _refreshFuture ??= _attemptRefresh().whenComplete(() {
+      _refreshFuture = null;
+    });
+    final outcome = await _refreshFuture!;
+    if (outcome == _RefreshOutcome.authFailure) {
+      onAuthError?.call();
+    }
+    return outcome == _RefreshOutcome.success;
+  }
+
   Future<void> saveRefreshToken(String token) async {
     await _storage.write(key: 'refresh_token', value: token);
   }

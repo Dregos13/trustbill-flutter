@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../api/ai_gateway_client.dart';
 import '../api/api_client.dart';
 import '../api/api_error.dart';
 import '../api/endpoints.dart';
 import '../cache/cache_providers.dart';
 import '../models/user.dart';
 import '../utils/error_messages.dart';
+import '../../features/assistant/assistant_repository.dart';
 import 'auth_state.dart';
 
 const _keySavedEmail = 'saved_email';
@@ -17,6 +19,15 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 
 final endpointsProvider = Provider<Endpoints>((ref) {
   return Endpoints(ref.read(apiClientProvider));
+});
+
+// Gateway de IA (trustcore-ai): host distinto al de la Mobile API, mismo JWT.
+final aiGatewayClientProvider = Provider<AiGatewayClient>((ref) {
+  return AiGatewayClient(ref.read(apiClientProvider));
+});
+
+final assistantRepositoryProvider = Provider<AssistantRepository>((ref) {
+  return AssistantRepository(ref.read(aiGatewayClientProvider));
 });
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);

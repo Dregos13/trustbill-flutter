@@ -1,8 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/models/chat.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import 'assistant_provider.dart';
+
+/// Mapea las pantallas semánticas que puede pedir el gateway
+/// (`app/tools/navigation.py::Screen`) a rutas reales de la app. Si el
+/// gateway añade una pantalla nueva a su enum y esta tabla no se actualiza,
+/// `_routeForGatewayScreen` devuelve null y simplemente no se navega — nunca
+/// un crash por una ruta desconocida.
+String? _routeForGatewayScreen(String screen, String? entityId) {
+  switch (screen) {
+    case 'trustinfacts.dashboard':
+    case 'trustinfacts.reports':
+      return '/';
+    case 'trustinfacts.customers.list':
+      return '/clients';
+    case 'trustinfacts.customers.detail':
+      return entityId != null ? '/clients/$entityId' : '/clients';
+    case 'trustinfacts.invoices.list':
+      return '/invoices';
+    case 'trustinfacts.invoices.create':
+      return '/invoices/new';
+    case 'trustinfacts.invoices.detail':
+      return entityId != null ? '/invoices/$entityId' : '/invoices';
+    // "expenses" en el gateway es el libro de gastos (ExpenseEntry); la
+    // pantalla más cercana en la app es "Compras" (facturas/tickets de
+    // proveedor), que es de donde salen esos gastos. Todavía no existe una
+    // pantalla "/expenses" dedicada.
+    case 'trustinfacts.expenses.list':
+      return '/purchases';
+    case 'trustinfacts.expenses.create':
+      return '/scan';
+    case 'trustinfacts.expenses.detail':
+      return entityId != null ? '/purchases/$entityId' : '/purchases';
+    case 'trustinfacts.settings.taxes':
+      return '/tax';
+    default:
+      return null;
+  }
+}
 
 class AssistantScreen extends ConsumerStatefulWidget {
   const AssistantScreen({super.key});
@@ -19,9 +58,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
 
   static const _suggestions = <String>[
     '¿Cuánto he facturado este mes?',
-    'Mis últimas 5 facturas',
     'Facturas pendientes de cobro',
-    'Buscar un cliente por nombre',
+    'Prepara una factura de 100€ para un cliente',
+    '¿Qué es el IPSI?',
   ];
 
   @override
@@ -65,12 +104,22 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(assistantProvider);
 
-    // Auto-scroll cuando llega un mensaje nuevo o cambia el estado "escribiendo".
+    // Auto-scroll cuando llega un mensaje nuevo, cambia "escribiendo…" o
+    // cambia el estado de una confirmación (para que la tarjeta actualizada
+    // quede visible).
     ref.listen<AssistantState>(assistantProvider, (prev, next) {
       if (prev == null ||
           prev.messages.length != next.messages.length ||
-          prev.sending != next.sending) {
+          prev.sending != next.sending ||
+          prev.confirmations.length != next.confirmations.length) {
         _scrollToBottom();
+      }
+
+      final navigate = next.pendingNavigation;
+      if (navigate != null) {
+        final path = _routeForGatewayScreen(navigate.screen, navigate.entityId);
+        ref.read(assistantProvider.notifier).consumePendingNavigation();
+        if (path != null) context.push(path);
       }
     });
 
@@ -94,7 +143,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                 ),
                 Text(
-                  state.sending ? 'Escribiendo…' : 'IA · consulta tus datos',
+                  state.sending ? 'Escribiendo…' : 'IA · consulta y prepara borradores',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -119,7 +168,14 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           Expanded(
             child: state.isEmpty && !state.sending
                 ? _EmptyState(onSuggestion: _send)
-                : _MessageList(scroll: _scroll, state: state),
+                : _MessageList(
+                    scroll: _scroll,
+                    state: state,
+                    onConfirm: (id) =>
+                        ref.read(assistantProvider.notifier).confirmPending(id),
+                    onCancel: (id) =>
+                        ref.read(assistantProvider.notifier).cancelPending(id),
+                  ),
           ),
           _InputBar(
             controller: _controller,
@@ -177,8 +233,8 @@ class _EmptyState extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Pregúntame en lenguaje natural sobre tus facturas y clientes. '
-          'De momento soy solo lectura.',
+          'Pregúntame en lenguaje natural sobre tus facturas, gastos e impuestos. '
+          'También puedo dejarte lista una factura o un gasto para que los confirmes tú.',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: context.appTextMuted,
@@ -235,7 +291,15 @@ class _SuggestionChip extends StatelessWidget {
 class _MessageList extends StatelessWidget {
   final ScrollController scroll;
   final AssistantState state;
-  const _MessageList({required this.scroll, required this.state});
+  final void Function(String id) onConfirm;
+  final void Function(String id) onCancel;
+
+  const _MessageList({
+    required this.scroll,
+    required this.state,
+    required this.onConfirm,
+    required this.onCancel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +312,15 @@ class _MessageList extends StatelessWidget {
         if (state.sending && i == state.messages.length) {
           return const _TypingBubble();
         }
-        return _MessageBubble(message: state.messages[i]);
+        final message = state.messages[i];
+        final confirmationId = message.confirmationId;
+        return _MessageBubble(
+          message: message,
+          confirmation:
+              confirmationId != null ? state.confirmations[confirmationId] : null,
+          onConfirm: onConfirm,
+          onCancel: onCancel,
+        );
       },
     );
   }
@@ -256,24 +328,20 @@ class _MessageList extends StatelessWidget {
 
 class _MessageBubble extends StatelessWidget {
   final ChatMessage message;
-  const _MessageBubble({required this.message});
+  final PendingConfirmationView? confirmation;
+  final void Function(String id) onConfirm;
+  final void Function(String id) onCancel;
 
-  String? _toolsLabel(List<String> tools) {
-    final groups = <String>{};
-    for (final t in tools) {
-      if (t.contains('invoice')) {
-        groups.add('facturas');
-      } else if (t.contains('client')) {
-        groups.add('clientes');
-      }
-    }
-    return groups.isEmpty ? null : 'Consultó: ${groups.join(', ')}';
-  }
+  const _MessageBubble({
+    required this.message,
+    required this.confirmation,
+    required this.onConfirm,
+    required this.onCancel,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isUser = message.role == ChatRole.user;
-    final toolsLabel = isUser ? null : _toolsLabel(message.toolsUsed);
 
     final bg = isUser
         ? context.appPrimary
@@ -304,7 +372,7 @@ class _MessageBubble extends StatelessWidget {
               Flexible(
                 child: Container(
                   constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.76,
+                    maxWidth: MediaQuery.of(context).size.width * 0.8,
                   ),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -324,26 +392,72 @@ class _MessageBubble extends StatelessWidget {
                                 : context.appBorder,
                           ),
                   ),
-                  child: (isUser || message.isError)
-                      ? Text(
-                          message.text,
-                          style: TextStyle(color: fg, fontSize: 15, height: 1.4),
-                        )
-                      : MarkdownText(text: message.text, color: fg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      (isUser || message.isError)
+                          ? Text(
+                              message.text,
+                              style:
+                                  TextStyle(color: fg, fontSize: 15, height: 1.4),
+                            )
+                          : MarkdownText(text: message.text, color: fg),
+                      // Cuando hay una confirmacion, la tarjeta es el foco: se
+                      // omiten las fuentes RAG (ruido en ese momento).
+                      if (!isUser &&
+                          confirmation == null &&
+                          message.sources.isNotEmpty)
+                        _SourcesRow(sources: message.sources),
+                      if (!isUser && confirmation != null)
+                        _ConfirmationCard(
+                          confirmation: confirmation!,
+                          onConfirm: onConfirm,
+                          onCancel: onCancel,
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          if (toolsLabel != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 40, top: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class _SourcesRow extends StatelessWidget {
+  final List<ChatSource> sources;
+  const _SourcesRow({required this.sources});
+
+  @override
+  Widget build(BuildContext context) {
+    // Varios chunks pueden venir del mismo documento: se agrupan por título
+    // para no repetir la misma fuente varias veces.
+    final titles = <String>{for (final s in sources) s.title};
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final title in titles)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: context.appBackground,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: context.appBorder),
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.search, size: 12, color: context.appTextSubtle),
+                  Icon(Icons.menu_book_outlined,
+                      size: 11, color: context.appTextSubtle),
                   const SizedBox(width: 4),
                   Text(
-                    toolsLabel,
+                    title,
                     style: TextStyle(
                       fontSize: 11,
                       color: context.appTextSubtle,
@@ -353,6 +467,361 @@ class _MessageBubble extends StatelessWidget {
                 ],
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Tarjeta de confirmación (escrituras, Fase 8) ────────────────────────────
+
+/// Tarjeta de confirmación de una escritura. Diseñada para ser inequívoca a
+/// simple vista (letra grande, un solo total destacado, dos botones claros):
+/// el usuario debe entender QUÉ va a crear y decidir sin ambigüedad.
+class _ConfirmationCard extends StatelessWidget {
+  final PendingConfirmationView confirmation;
+  final void Function(String id) onConfirm;
+  final void Function(String id) onCancel;
+
+  const _ConfirmationCard({
+    required this.confirmation,
+    required this.onConfirm,
+    required this.onCancel,
+  });
+
+  bool get _isExpense => confirmation.operation == 'create_expense_draft';
+
+  String get _thing => _isExpense ? 'gasto' : 'factura';
+
+  // Nombre de la contraparte (cliente o proveedor), mostrado en grande arriba.
+  String? get _partyName =>
+      confirmation.summary['customer'] ?? confirmation.summary['supplier'];
+
+  // Filas de detalle: se omite el nombre (ya va en el encabezado), el total
+  // (se muestra destacado aparte) y campos de ruido para una persona mayor.
+  static const _hiddenKeys = {
+    'customer',
+    'supplier',
+    'total',
+    'currency',
+    'line_count',
+  };
+
+  String _label(String key) {
+    return switch (key) {
+      'tax' => 'Impuesto',
+      'tax_amount' => 'Importe del impuesto',
+      'subtotal' => 'Base',
+      'category' => 'Categoría',
+      'issue_date' => 'Fecha',
+      'expense_date' => 'Fecha',
+      'due_date' => 'Vencimiento',
+      _ => key,
+    };
+  }
+
+  // El gateway ya envía el total formateado con símbolo (p. ej. "104,00 €").
+  String _total() => confirmation.summary['total'] ?? '';
+
+  @override
+  Widget build(BuildContext context) {
+    final status = confirmation.status;
+    final resolved = status == ConfirmationUiStatus.confirmed ||
+        status == ConfirmationUiStatus.cancelled;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        color: context.appSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: resolved
+              ? context.appBorder
+              : context.appPrimary.withValues(alpha: 0.4),
+          width: resolved ? 1 : 1.5,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (resolved)
+            _ResolvedHeader(confirmation: confirmation, thing: _thing)
+          else
+            _PendingBody(
+              title: _isExpense ? '¿Registrar este gasto?' : '¿Crear esta factura?',
+              partyName: _partyName,
+              partyLabel: _isExpense ? 'Proveedor' : 'Cliente',
+              detailRows: [
+                for (final entry in confirmation.summary.entries)
+                  if (!_hiddenKeys.contains(entry.key))
+                    (_label(entry.key), entry.value),
+              ],
+              total: _total(),
+              working: status == ConfirmationUiStatus.working,
+              onConfirm: () => onConfirm(confirmation.id),
+              onCancel: () => onCancel(confirmation.id),
+            ),
+          if (status == ConfirmationUiStatus.failed)
+            _FailedBanner(
+              message: confirmation.errorMessage ?? 'No se pudo completar.',
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PendingBody extends StatelessWidget {
+  final String title;
+  final String? partyName;
+  final String partyLabel;
+  final List<(String, String)> detailRows;
+  final String total;
+  final bool working;
+  final VoidCallback onConfirm;
+  final VoidCallback onCancel;
+
+  const _PendingBody({
+    required this.title,
+    required this.partyName,
+    required this.partyLabel,
+    required this.detailRows,
+    required this.total,
+    required this.working,
+    required this.onConfirm,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: context.appText,
+            ),
+          ),
+          if (partyName != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              partyLabel.toUpperCase(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: context.appTextSubtle,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              partyName!,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: context.appText,
+              ),
+            ),
+          ],
+          if (detailRows.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            for (final (label, value) in detailRows)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: context.appTextMuted,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: context.appText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+          if (total.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: context.appPrimarySoft,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: context.appText,
+                    ),
+                  ),
+                  Text(
+                    total,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: context.appPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          // Botón principal grande y explícito; el usuario mayor lee "crear
+          // factura", no un genérico "Confirmar".
+          SizedBox(
+            height: 52,
+            child: FilledButton.icon(
+              onPressed: working ? null : onConfirm,
+              style: FilledButton.styleFrom(
+                backgroundColor: context.appPrimary,
+                textStyle:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              icon: working
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.check_rounded, size: 22),
+              label: Text(
+                working
+                    ? 'Creando…'
+                    : (partyLabel == 'Proveedor'
+                        ? 'Sí, registrar gasto'
+                        : 'Sí, crear factura'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 48,
+            child: TextButton(
+              onPressed: working ? null : onCancel,
+              style: TextButton.styleFrom(
+                foregroundColor: context.appTextMuted,
+                textStyle:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+              child: const Text('No, cancelar'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResolvedHeader extends StatelessWidget {
+  final PendingConfirmationView confirmation;
+  final String thing;
+
+  const _ResolvedHeader({required this.confirmation, required this.thing});
+
+  @override
+  Widget build(BuildContext context) {
+    final confirmed = confirmation.status == ConfirmationUiStatus.confirmed;
+    final color = confirmed ? context.statusSuccess : context.appTextSubtle;
+    final bg = confirmed ? context.statusSuccessSoft : context.appSurfaceRaised;
+
+    return Container(
+      color: bg,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(
+            confirmed ? Icons.check_circle_rounded : Icons.cancel_outlined,
+            size: 28,
+            color: color,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  confirmed
+                      ? (thing == 'gasto' ? 'Gasto registrado' : 'Factura creada')
+                      : 'Cancelado',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: context.appText,
+                  ),
+                ),
+                if (confirmed) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    confirmation.resultLine != null
+                        ? '${confirmation.resultLine} · guardado en tus borradores'
+                        : 'Guardado en tus borradores',
+                    style: TextStyle(fontSize: 13, color: context.appTextMuted),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FailedBanner extends StatelessWidget {
+  final String message;
+  const _FailedBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: context.statusDangerSoft,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 20, color: context.statusDanger),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: context.statusDanger,
+              ),
+            ),
+          ),
         ],
       ),
     );
