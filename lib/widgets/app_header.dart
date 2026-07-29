@@ -96,39 +96,48 @@ class _AvatarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
-    return SizedBox(
-      width: 44,
-      height: 44,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isActive ? Colors.white : Colors.transparent,
-                width: 2,
-              ),
-            ),
-            child: Container(
-              width: 30,
-              height: 30,
-              decoration: const BoxDecoration(
+    // Semantics + Key: sin esto, un GestureDetector desnudo no aparece por
+    // nombre ni en el arbol de accesibilidad (uiautomator/TalkBack) ni en
+    // los finders de integration_test — solo se podia "encontrar" adivinando
+    // coordenadas de pixeles, y ademas era un fallo real de accesibilidad.
+    return Semantics(
+      button: true,
+      label: 'Cuenta',
+      child: SizedBox(
+        key: const Key('app-header-account-button'),
+        width: 44,
+        height: 44,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white,
+                border: Border.all(
+                  color: isActive ? Colors.white : Colors.transparent,
+                  width: 2,
+                ),
               ),
-              child: Center(
-                child: Text(
-                  initial,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    height: 1,
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: Center(
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
                   ),
                 ),
               ),

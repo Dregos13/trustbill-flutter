@@ -268,70 +268,145 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // ── Bottom-nav shell (list + landing destinations) ─────────────────────
-      ShellRoute(
-        builder: (_, state, child) => AppShell(
+      // StatefulShellRoute.indexedStack: cada rama mantiene su propio Navigator
+      // vivo en un IndexedStack. Antes (ShellRoute simple) cada tap en la barra
+      // inferior destruia y reconstruia la pantalla entera -> los providers
+      // autoDispose se recreaban y volvian a pedir red en cada cambio de tab,
+      // y encima jugaba la transicion de pagina de una navegacion normal. Con
+      // esto el cambio de tab es instantaneo y sin refetch (una vez cargada,
+      // la rama queda "caliente"). Los context.go(...) existentes (bottom nav,
+      // DocTypeSwitcher, avatar -> /account) seguian funcionando igual: go_router
+      // resuelve solo a que rama pertenece la ruta.
+      StatefulShellRoute.indexedStack(
+        builder: (_, state, navigationShell) => AppShell(
           // Full request path (not matchedLocation, which collapses sub-routes
           // to their section) so chrome/FAB logic matches the exact screen.
           currentLocation: state.uri.path,
-          child: child,
+          child: navigationShell,
         ),
-        routes: [
-          GoRoute(path: '/', builder: (context, _) => const DashboardScreen()),
-          GoRoute(
-            path: '/clients',
-            builder: (context, _) => const ClientsScreen(),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/', builder: (context, _) => const DashboardScreen()),
+            ],
           ),
-          GoRoute(
-            path: '/clients/:id',
-            builder: (_, state) =>
-                ClientDetailScreen(id: int.parse(state.pathParameters['id']!)),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/clients',
+                builder: (context, _) => const ClientsScreen(),
+              ),
+              GoRoute(
+                path: '/clients/:id',
+                builder: (_, state) => ClientDetailScreen(
+                  id: int.parse(state.pathParameters['id']!),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/invoices',
-            builder: (context, _) => const InvoicesScreen(),
+          // Facturas/Presupuestos/Ventas son 3 vistas del mismo tab
+          // (DocTypeSwitcher conmuta entre ellas con context.go), pero un
+          // IndexedStack solo mantiene viva la pantalla activa DENTRO de una
+          // misma rama — el Navigator de una rama sigue siendo un stack
+          // normal, así que agruparlas en una sola rama no evitaba el
+          // remount al pasar de Facturas a Presupuestos. Cada una necesita
+          // su propia rama para quedarse "caliente" igual que los tabs.
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/invoices',
+                builder: (context, _) => const InvoicesScreen(),
+              ),
+              GoRoute(
+                path: '/invoices/:id',
+                builder: (_, state) => InvoiceDetailScreen(
+                  id: int.parse(state.pathParameters['id']!),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/invoices/:id',
-            builder: (_, state) =>
-                InvoiceDetailScreen(id: int.parse(state.pathParameters['id']!)),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/budgets',
+                builder: (context, _) => const BudgetsScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/budgets',
-            builder: (context, _) => const BudgetsScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/sales',
+                builder: (context, _) => const SalesScreen(),
+              ),
+              GoRoute(
+                path: '/sales/:id',
+                builder: (_, state) => SaleDetailScreen(
+                  id: int.parse(state.pathParameters['id']!),
+                ),
+              ),
+            ],
           ),
-          GoRoute(path: '/sales', builder: (context, _) => const SalesScreen()),
-          GoRoute(
-            path: '/purchases',
-            builder: (context, _) => const PurchasesScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/purchases',
+                builder: (context, _) => const PurchasesScreen(),
+              ),
+              GoRoute(
+                path: '/purchases/:id',
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                  return PurchaseDetailScreen(id: id);
+                },
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/suppliers',
-            builder: (context, _) => const SuppliersScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/suppliers',
+                builder: (context, _) => const SuppliersScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/purchases/:id',
-            builder: (context, state) {
-              final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-              return PurchaseDetailScreen(id: id);
-            },
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/catalog',
+                builder: (context, _) => const CatalogScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/tax',
-            builder: (context, _) => const TaxReturnsScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/tasks',
+                builder: (context, _) => const AgendaScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/account',
-            builder: (context, _) => const AccountScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/map', builder: (context, _) => const MapScreen()),
+            ],
           ),
-          GoRoute(
-            path: '/catalog',
-            builder: (context, _) => const CatalogScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/account',
+                builder: (context, _) => const AccountScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/tasks',
-            builder: (context, _) => const AgendaScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/tax',
+                builder: (context, _) => const TaxReturnsScreen(),
+              ),
+            ],
           ),
-          GoRoute(path: '/map', builder: (context, _) => const MapScreen()),
         ],
       ),
     ],

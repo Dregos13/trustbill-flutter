@@ -130,6 +130,16 @@ class DashboardScreen extends ConsumerWidget {
     final dashboardAsync = ref.watch(mobileDashboardProvider);
     final range = ref.watch(dashboardRangeProvider);
 
+    // El header y el selector de rango se pintan SIEMPRE, fuera del .when():
+    // antes, cambiar de rango disparaba un nuevo mobileDashboardProvider (otra
+    // clave de cache) que pasaba por AsyncLoading, y como todo -incluido el
+    // propio selector- vivia dentro de la rama `data:`, la pantalla entera se
+    // sustituia por un spinner suelto durante el fetch. Si ya hay un resumen
+    // cargado (aunque sea de un rango anterior) lo seguimos mostrando con una
+    // barra de progreso fina encima en vez de vaciar la pantalla.
+    final summary = dashboardAsync.value;
+    final isRefreshing = dashboardAsync.isLoading && summary != null;
+
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
@@ -137,43 +147,63 @@ class DashboardScreen extends ConsumerWidget {
         ref.invalidate(mobileDashboardProvider);
         await ref.read(mobileDashboardProvider.future);
       },
-      child: dashboardAsync.when(
-        loading: () => const LoadingIndicator(),
-        error: (err, _) => ListView(
-          children: [
-            EmptyState(
-              message: err is ApiError
-                  ? err.message
-                  : friendlyError(err, fallback: 'Error al cargar el resumen'),
-            ),
-          ],
-        ),
-        data: (summary) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _Header(range: range),
-            const SizedBox(height: 12),
-            _RangeSelector(range: range),
-            const SizedBox(height: 16),
-            _HeroSummary(summary: summary, range: range),
-            const SizedBox(height: 12),
-            _KpiGrid(summary: summary),
-            const SizedBox(height: 16),
-            _TaxSnapshot(),
-            const SizedBox(height: 24),
-            _SectionHeader(title: 'Agenda de cobros', trailing: '2 semanas'),
-            const SizedBox(height: 10),
-            _UpcomingList(items: summary.upcoming),
-            const SizedBox(height: 24),
-            _SectionHeader(
-              title: 'Top clientes',
-              trailing: 'Ver todos',
-              onTap: () => context.push('/clients'),
-            ),
-            const SizedBox(height: 10),
-            _TopClients(clients: summary.topClients),
-          ],
-        ),
+      child: Column(
+        children: [
+          if (isRefreshing) const LinearProgressIndicator(minHeight: 2),
+          Expanded(
+            child: summary != null
+                ? ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _Header(range: range),
+                      const SizedBox(height: 12),
+                      _RangeSelector(range: range),
+                      const SizedBox(height: 16),
+                      _HeroSummary(summary: summary, range: range),
+                      const SizedBox(height: 12),
+                      _KpiGrid(summary: summary),
+                      const SizedBox(height: 16),
+                      _TaxSnapshot(),
+                      const SizedBox(height: 24),
+                      _SectionHeader(
+                        title: 'Agenda de cobros',
+                        trailing: '2 semanas',
+                      ),
+                      const SizedBox(height: 10),
+                      _UpcomingList(items: summary.upcoming),
+                      const SizedBox(height: 24),
+                      _SectionHeader(
+                        title: 'Top clientes',
+                        trailing: 'Ver todos',
+                        onTap: () => context.push('/clients'),
+                      ),
+                      const SizedBox(height: 10),
+                      _TopClients(clients: summary.topClients),
+                    ],
+                  )
+                : dashboardAsync.when(
+                    loading: () => const LoadingIndicator(),
+                    error: (err, _) => ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        _Header(range: range),
+                        const SizedBox(height: 12),
+                        _RangeSelector(range: range),
+                        const SizedBox(height: 24),
+                        EmptyState(
+                          message: err is ApiError
+                              ? err.message
+                              : friendlyError(
+                                  err,
+                                  fallback: 'Error al cargar el resumen',
+                                ),
+                        ),
+                      ],
+                    ),
+                    data: (_) => const SizedBox.shrink(),
+                  ),
+          ),
+        ],
       ),
     );
   }
