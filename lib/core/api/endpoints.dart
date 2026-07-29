@@ -138,6 +138,8 @@ class Endpoints {
     int? clientId,
     String? from,
     String? to,
+    // true = solo tickets simplificados (F2); por defecto se excluyen.
+    bool? simplified,
   }) async {
     final res = await _api.get(
       '/invoices',
@@ -148,6 +150,7 @@ class Endpoints {
         'clientId': ?clientId,
         'from': ?from,
         'to': ?to,
+        if (simplified == true) 'simplified': true,
       },
     );
     return PaginatedResponse.fromJson(res.data, InvoiceListItem.fromJson);
@@ -156,6 +159,12 @@ class Endpoints {
   Future<InvoiceDetail> getInvoice(int id) async {
     final res = await _api.get('/invoices/$id');
     return InvoiceDetail.fromJson(res.data);
+  }
+
+  /// `{hasVerifactu: false}` o `{hasVerifactu: true, qrImageBase64, qrUrl}`.
+  Future<Map<String, dynamic>> getInvoiceVerifactuQr(int id) async {
+    final res = await _api.get('/invoices/$id/verifactu-qr');
+    return res.data as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> createInvoice(Map<String, dynamic> data) async {
@@ -353,6 +362,17 @@ class Endpoints {
 
   Future<Map<String, dynamic>> getCompanySettings() async {
     final res = await _api.get('/company');
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// Solo datos de contacto/facturacion (nombre, CIF, direccion, email,
+  /// telefono). Deliberadamente SIN campos fiscales (regimen, serie de
+  /// numeracion) ni bancarios — ver el mismo comentario en
+  /// updateCompanySettingsSchema del backend (packages/shared-api).
+  Future<Map<String, dynamic>> updateCompanySettings(
+    Map<String, dynamic> data,
+  ) async {
+    final res = await _api.patch('/company', data: data);
     return res.data as Map<String, dynamic>;
   }
 

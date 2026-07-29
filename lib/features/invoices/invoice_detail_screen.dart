@@ -38,6 +38,15 @@ final invoiceDetailProvider =
   );
 });
 
+/// Solo facturas final/pagadas pueden tener un registro VERI*FACTU ALTA; el
+/// backend ya devuelve {hasVerifactu:false} barato si no aplica, asi que no
+/// hace falta condicionar el fetch en si, solo donde se pinta.
+final _verifactuQrProvider =
+    FutureProvider.autoDispose.family<Map<String, dynamic>, int>((ref, id) {
+  final endpoints = ref.watch(endpointsProvider);
+  return endpoints.getInvoiceVerifactuQr(id);
+});
+
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final int id;
 
@@ -493,6 +502,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             label: Text(_downloadingPdf ? 'Descargando...' : 'Ver PDF'),
           ),
         ),
+
+        // VERI*FACTU QR (solo si la factura esta final/pagada y tiene ALTA)
+        if (invoice.status.toLowerCase() == 'final' ||
+            invoice.status.toLowerCase() == 'paid')
+          _VerifactuQrSection(invoiceId: invoice.id),
 
         // Notes
         if (invoice.publicNotes != null &&
@@ -963,6 +977,65 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       default:
         return method;
     }
+  }
+}
+
+// ── VERI*FACTU QR ────────────────────────────────────────────────────────────
+class _VerifactuQrSection extends ConsumerWidget {
+  final int invoiceId;
+  const _VerifactuQrSection({required this.invoiceId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final qrAsync = ref.watch(_verifactuQrProvider(invoiceId));
+
+    return qrAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (data) {
+        if (data['hasVerifactu'] != true) return const SizedBox.shrink();
+        final qrImageBase64 = data['qrImageBase64'] as String;
+        final qrUrl = data['qrUrl'] as String;
+        final base64Data = qrImageBase64.contains(',')
+            ? qrImageBase64.split(',').last
+            : qrImageBase64;
+        final bytes = base64Decode(base64Data);
+
+        return Container(
+          margin: const EdgeInsets.only(top: 12),
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: context.appSurfaceRaised,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: context.appBorder),
+          ),
+          child: Column(
+            children: [
+              Text(
+                'VERI*FACTU',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: context.appTextSubtle,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Image.memory(bytes, width: 160, height: 160),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () => launchUrl(
+                  Uri.parse(qrUrl),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: const Text('Validar esta factura en la AEAT'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

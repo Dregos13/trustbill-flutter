@@ -27,6 +27,19 @@ final _invoicesStatusProvider =
   _InvoicesStatusNotifier.new,
 );
 
+class _InvoicesSimplifiedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void set(bool v) => state = v;
+}
+
+/// true = solo tickets simplificados (F2); por defecto se excluyen y se ven
+/// solo facturas completas — nunca se mezclan, igual que en escritorio.
+final _invoicesSimplifiedProvider =
+    NotifierProvider.autoDispose<_InvoicesSimplifiedNotifier, bool>(
+  _InvoicesSimplifiedNotifier.new,
+);
+
 class _InvoicesOffsetNotifier extends Notifier<int> {
   @override
   int build() => 0;
@@ -47,14 +60,20 @@ final invoicesProvider =
   final scope = ref.watch(cacheScopeProvider);
   final status = ref.watch(_invoicesStatusProvider);
   final offset = ref.watch(_invoicesOffsetProvider);
+  final simplified = ref.watch(_invoicesSimplifiedProvider);
 
   return swrStream<PaginatedResponse<InvoiceListItem>>(
     cache: cache,
-    key: '${CacheKeys.invoices}$scope',
-    cacheable: status == null && offset == 0,
+    key: '${CacheKeys.invoices}$scope${simplified ? ':tickets' : ''}',
+    cacheable: status == null && offset == 0 && !simplified,
     encode: (r) => encodePaginated(r, (e) => e.toJson()),
     decode: (s) => decodePaginated(s, InvoiceListItem.fromJson),
-    fetch: () => endpoints.getInvoices(limit: 50, offset: offset, status: status),
+    fetch: () => endpoints.getInvoices(
+      limit: 50,
+      offset: offset,
+      status: status,
+      simplified: simplified,
+    ),
   );
 });
 
@@ -65,6 +84,7 @@ class InvoicesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final invoicesAsync = ref.watch(invoicesProvider);
     final currentStatus = ref.watch(_invoicesStatusProvider);
+    final simplified = ref.watch(_invoicesSimplifiedProvider);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -79,12 +99,28 @@ class InvoicesScreen extends ConsumerWidget {
           const DocTypeSwitcher(active: 'invoices'),
           const SizedBox(height: 16),
           Text(
-            'Facturas',
+            simplified ? 'Tickets' : 'Facturas',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: context.appText,
             ),
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<bool>(
+            style: SegmentedButton.styleFrom(
+              selectedBackgroundColor: context.appPrimary,
+              selectedForegroundColor: Colors.white,
+            ),
+            segments: const [
+              ButtonSegment(value: false, label: Text('Facturas')),
+              ButtonSegment(value: true, label: Text('Tickets')),
+            ],
+            selected: {simplified},
+            onSelectionChanged: (selection) {
+              ref.read(_invoicesOffsetProvider.notifier).set(0);
+              ref.read(_invoicesSimplifiedProvider.notifier).set(selection.first);
+            },
           ),
           const SizedBox(height: 12),
           Container(
