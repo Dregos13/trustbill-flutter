@@ -19,12 +19,18 @@ ThemeData buildAppTheme() {
     fontFamily: _fontFamily,
     colorSchemeSeed: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
-    // El zoom de Android pinta colorScheme.surface como fondo de la transición;
-    // lo fijamos al fondo real del scaffold para que no haya flash de color.
+    // ZoomPageTransitionsBuilder (el default de Android) rasteriza ambas rutas
+    // a una textura (snapshot) y anima esa textura — caro en GPUs modestas, y
+    // ademas la snapshot queda "congelada" con el estado que tuviera la
+    // pantalla en ese instante: como nuestras pantallas de detalle pasan de
+    // loading a datos casi inmediatamente tras el push, se notaba como un
+    // salto/lag en cada navegacion (clientes, facturas, ventas, presupuestos).
+    // FadeForwardsPageTransitionsBuilder no usa snapshot (fade+slide en vivo),
+    // mucho mas barato y sin ese problema de contenido desactualizado.
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.android:
-            ZoomPageTransitionsBuilder(backgroundColor: AppColors.background),
+            FadeForwardsPageTransitionsBuilder(backgroundColor: AppColors.background),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
     ),
@@ -90,12 +96,13 @@ ThemeData buildDarkAppTheme() {
       surface: darkSurface,
     ),
     scaffoldBackgroundColor: darkBackground,
-    // Evita el flash de fondo claro durante la transición de página en Android:
-    // fijamos el fondo del zoom al fondo oscuro real (si no, usa el surface claro).
+    // Ver comentario en buildAppTheme(): FadeForwardsPageTransitionsBuilder en
+    // vez de Zoom (sin snapshot, mas barato y sin el salto de contenido
+    // desactualizado en pantallas que pasan de loading a datos al instante).
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.android:
-            ZoomPageTransitionsBuilder(backgroundColor: darkBackground),
+            FadeForwardsPageTransitionsBuilder(backgroundColor: darkBackground),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
     ),
