@@ -571,7 +571,10 @@ as bool,
 /// @nodoc
 mixin _$InventoryMovement {
 
- int get id; String get type; int get quantity; DateTime get occurredAt; String? get notes;
+ int get id; String get type;// La cantidad es decimal desde que el escritorio migro a numeric(14,3):
+// metros de tejido, kilos, litros. toDouble aguanta num y String, que es
+// como Prisma serializa un Decimal.
+@JsonKey(fromJson: toDouble) double get quantity; DateTime get occurredAt; String? get notes;
 /// Create a copy of InventoryMovement
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -604,7 +607,7 @@ abstract mixin class $InventoryMovementCopyWith<$Res>  {
   factory $InventoryMovementCopyWith(InventoryMovement value, $Res Function(InventoryMovement) _then) = _$InventoryMovementCopyWithImpl;
 @useResult
 $Res call({
- int id, String type, int quantity, DateTime occurredAt, String? notes
+ int id, String type,@JsonKey(fromJson: toDouble) double quantity, DateTime occurredAt, String? notes
 });
 
 
@@ -626,7 +629,7 @@ class _$InventoryMovementCopyWithImpl<$Res>
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as int,occurredAt: null == occurredAt ? _self.occurredAt : occurredAt // ignore: cast_nullable_to_non_nullable
+as double,occurredAt: null == occurredAt ? _self.occurredAt : occurredAt // ignore: cast_nullable_to_non_nullable
 as DateTime,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -713,7 +716,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String type,  int quantity,  DateTime occurredAt,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String type, @JsonKey(fromJson: toDouble)  double quantity,  DateTime occurredAt,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InventoryMovement() when $default != null:
 return $default(_that.id,_that.type,_that.quantity,_that.occurredAt,_that.notes);case _:
@@ -734,7 +737,7 @@ return $default(_that.id,_that.type,_that.quantity,_that.occurredAt,_that.notes)
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String type,  int quantity,  DateTime occurredAt,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String type, @JsonKey(fromJson: toDouble)  double quantity,  DateTime occurredAt,  String? notes)  $default,) {final _that = this;
 switch (_that) {
 case _InventoryMovement():
 return $default(_that.id,_that.type,_that.quantity,_that.occurredAt,_that.notes);case _:
@@ -754,7 +757,7 @@ return $default(_that.id,_that.type,_that.quantity,_that.occurredAt,_that.notes)
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String type,  int quantity,  DateTime occurredAt,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String type, @JsonKey(fromJson: toDouble)  double quantity,  DateTime occurredAt,  String? notes)?  $default,) {final _that = this;
 switch (_that) {
 case _InventoryMovement() when $default != null:
 return $default(_that.id,_that.type,_that.quantity,_that.occurredAt,_that.notes);case _:
@@ -769,12 +772,15 @@ return $default(_that.id,_that.type,_that.quantity,_that.occurredAt,_that.notes)
 @JsonSerializable()
 
 class _InventoryMovement implements InventoryMovement {
-  const _InventoryMovement({required this.id, required this.type, required this.quantity, required this.occurredAt, this.notes});
+  const _InventoryMovement({required this.id, required this.type, @JsonKey(fromJson: toDouble) required this.quantity, required this.occurredAt, this.notes});
   factory _InventoryMovement.fromJson(Map<String, dynamic> json) => _$InventoryMovementFromJson(json);
 
 @override final  int id;
 @override final  String type;
-@override final  int quantity;
+// La cantidad es decimal desde que el escritorio migro a numeric(14,3):
+// metros de tejido, kilos, litros. toDouble aguanta num y String, que es
+// como Prisma serializa un Decimal.
+@override@JsonKey(fromJson: toDouble) final  double quantity;
 @override final  DateTime occurredAt;
 @override final  String? notes;
 
@@ -811,7 +817,7 @@ abstract mixin class _$InventoryMovementCopyWith<$Res> implements $InventoryMove
   factory _$InventoryMovementCopyWith(_InventoryMovement value, $Res Function(_InventoryMovement) _then) = __$InventoryMovementCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String type, int quantity, DateTime occurredAt, String? notes
+ int id, String type,@JsonKey(fromJson: toDouble) double quantity, DateTime occurredAt, String? notes
 });
 
 
@@ -833,7 +839,7 @@ class __$InventoryMovementCopyWithImpl<$Res>
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as int,occurredAt: null == occurredAt ? _self.occurredAt : occurredAt // ignore: cast_nullable_to_non_nullable
+as double,occurredAt: null == occurredAt ? _self.occurredAt : occurredAt // ignore: cast_nullable_to_non_nullable
 as DateTime,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

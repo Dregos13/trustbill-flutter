@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../utils/json_helpers.dart';
+
 part 'catalog.freezed.dart';
 part 'catalog.g.dart';
 
@@ -44,7 +46,10 @@ abstract class InventoryMovement with _$InventoryMovement {
   const factory InventoryMovement({
     required int id,
     required String type,
-    required int quantity,
+    // La cantidad es decimal desde que el escritorio migro a numeric(14,3):
+    // metros de tejido, kilos, litros. toDouble aguanta num y String, que es
+    // como Prisma serializa un Decimal.
+    @JsonKey(fromJson: toDouble) required double quantity,
     required DateTime occurredAt,
     String? notes,
   }) = _InventoryMovement;

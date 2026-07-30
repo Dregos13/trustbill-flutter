@@ -313,7 +313,7 @@ class _InventoryEntrySheetState extends ConsumerState<_InventoryEntrySheet> {
     try {
       await ref.read(endpointsProvider).createInventoryEntry(
         productId: widget.productId,
-        quantity: int.parse(_qtyCtrl.text),
+        quantity: double.parse(_qtyCtrl.text.replaceAll(',', '.')),
         unitCost: double.parse(_costCtrl.text.replaceAll(',', '.')),
         notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       );
@@ -337,9 +337,14 @@ class _InventoryEntrySheetState extends ConsumerState<_InventoryEntrySheet> {
         child: Column(children: [
           TextFormField(
             controller: _qtyCtrl,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(labelText: 'Cantidad *', prefixIcon: Icon(Icons.add_box_outlined, size: 18)),
-            validator: (v) => v == null || int.tryParse(v) == null || int.parse(v) <= 0 ? 'Introduce cantidad válida' : null,
+            // La cantidad admite decimales (metros, kilos, litros). Se acepta
+            // coma o punto: en el teclado español la coma es lo natural.
+            validator: (v) {
+              final parsed = v == null ? null : double.tryParse(v.replaceAll(',', '.'));
+              return parsed == null || parsed <= 0 ? 'Introduce cantidad válida' : null;
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(

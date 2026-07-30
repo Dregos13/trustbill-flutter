@@ -675,7 +675,7 @@ class Endpoints {
 
   Future<void> createInventoryEntry({
     required int productId,
-    required int quantity,
+    required double quantity,
     required double unitCost,
     String? notes,
   }) async {

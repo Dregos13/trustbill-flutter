@@ -50,7 +50,7 @@ _InventoryMovement _$InventoryMovementFromJson(Map<String, dynamic> json) =>
     _InventoryMovement(
       id: (json['id'] as num).toInt(),
       type: json['type'] as String,
-      quantity: (json['quantity'] as num).toInt(),
+      quantity: toDouble(json['quantity']),
       occurredAt: DateTime.parse(json['occurredAt'] as String),
       notes: json['notes'] as String?,
     );
