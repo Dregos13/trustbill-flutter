@@ -94,7 +94,11 @@ class _DetailBody extends StatelessWidget {
               const SizedBox(height: TmSpacing.md),
               Text(task.title, style: TmType.display(context)),
               const SizedBox(height: TmSpacing.md),
-              _MetaRow(icon: Icons.place_rounded, text: task.client.name),
+              // Sin cliente es válido: "ir a Hacienda" no es de nadie.
+              _MetaRow(
+                icon: Icons.place_rounded,
+                text: task.client?.name ?? 'Sin cliente',
+              ),
               if (task.scheduledAt != null) ...[
                 const SizedBox(height: 6),
                 _MetaRow(

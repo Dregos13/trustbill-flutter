@@ -82,7 +82,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         final t = await repo.getTask(widget.taskId!);
         _title.text = t.title;
         _notes.text = t.notes ?? '';
-        _clientId = t.client.id;
+        _clientId = t.client?.id;
         _documentId = t.bill?.id;
         _assignedToId = t.assignedToId;
         _status = t.status;

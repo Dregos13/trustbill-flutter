@@ -8,11 +8,110 @@ import '../shared/tm_type.dart';
 /// Pixel height of one hour row.
 const double _kHourH = 56.0;
 
+/// Altura mínima de un bloque. Una tarea de 15 minutos serían 14 px, donde no
+/// cabe ni una línea de texto: por debajo de esto se pinta más alto de lo que
+/// dura, igual que hace cualquier calendario.
+const double _kMinChipH = 22.0;
+
+/// Separación entre bloques que comparten hora, para que se vea el corte.
+const double _kColumnGap = 2.0;
+
 /// Width of the left time-label column.
 const double _kTimeW = 44.0;
 
 /// Hours displayed (0–23).
 const int _kHours = 24;
+
+/// Una tarea colocada en la rejilla: dónde empieza, cuánto ocupa y qué parte
+/// del ancho le toca cuando comparte hora con otras.
+class PlacedTask {
+  const PlacedTask({
+    required this.task,
+    required this.top,
+    required this.height,
+    required this.column,
+    required this.columns,
+  });
+
+  final FieldTask task;
+  final double top;
+  final double height;
+
+  /// Columna que ocupa dentro de su grupo de solape, y cuántas hay en total.
+  final int column;
+  final int columns;
+}
+
+/// Reparte las tareas de un día en columnas para que las que se solapan se
+/// vean todas, en vez de taparse unas a otras.
+///
+/// El reparto es por grupos: se recorren las tareas ordenadas por hora y se
+/// acumula un grupo mientras alguna siga abierta. Dentro de cada grupo, cada
+/// tarea va a la primera columna que ya haya quedado libre. Así dos tareas
+/// consecutivas que no se pisan siguen ocupando el ancho entero, y solo se
+/// parte el ancho donde de verdad hay solape.
+///
+/// Función pura y de nivel de librería: se puede probar sin montar widgets.
+@visibleForTesting
+List<PlacedTask> layoutDayTasks(List<FieldTask> tasks) {
+  final scheduled = tasks.where((t) => t.scheduledAt != null).toList()
+    ..sort((a, b) => a.scheduledAt!.compareTo(b.scheduledAt!));
+  if (scheduled.isEmpty) return const [];
+
+  final placed = <PlacedTask>[];
+
+  // Índice donde empieza el grupo actual y hora de fin más lejana del grupo.
+  var groupStart = 0;
+  DateTime? groupEnd;
+  // Fin de la última tarea de cada columna del grupo actual.
+  final columnEnds = <DateTime>[];
+  final columnOf = <int>[];
+
+  void flushGroup(int endExclusive) {
+    for (var i = groupStart; i < endExclusive; i++) {
+      final task = scheduled[i];
+      final start = task.scheduledAt!.toLocal();
+      final minutes = task.durationMinutes.toDouble();
+      placed.add(
+        PlacedTask(
+          task: task,
+          top: (start.hour + start.minute / 60.0) * _kHourH,
+          height: (minutes / 60.0 * _kHourH).clamp(_kMinChipH, _kHours * _kHourH),
+          column: columnOf[i - groupStart],
+          columns: columnEnds.length,
+        ),
+      );
+    }
+  }
+
+  for (var i = 0; i < scheduled.length; i++) {
+    final task = scheduled[i];
+    final start = task.scheduledAt!.toLocal();
+    final end = task.endsAt!.toLocal();
+
+    // ¿Empieza un grupo nuevo? Solo si no pisa a NINGUNA de las anteriores.
+    if (groupEnd != null && !start.isBefore(groupEnd)) {
+      flushGroup(i);
+      groupStart = i;
+      columnEnds.clear();
+      columnOf.clear();
+      groupEnd = null;
+    }
+
+    var column = columnEnds.indexWhere((e) => !start.isBefore(e));
+    if (column == -1) {
+      columnEnds.add(end);
+      column = columnEnds.length - 1;
+    } else {
+      columnEnds[column] = end;
+    }
+    columnOf.add(column);
+    groupEnd = groupEnd == null || end.isAfter(groupEnd) ? end : groupEnd;
+  }
+  flushGroup(scheduled.length);
+
+  return placed;
+}
 
 /// A Google-Calendar-style week grid. Swipe horizontally to change weeks.
 /// Tapping an empty slot calls [onSlotTap] with the DateTime for that hour.
@@ -342,20 +441,28 @@ class _DayColumn extends StatelessWidget {
             );
           }),
         ),
-        // Task chips overlaid
-        ...tasks.map((t) {
-          final s = t.scheduledAt!.toLocal();
-          final top = (s.hour + s.minute / 60.0) * _kHourH;
-          return Positioned(
-            top: top + 2,
-            left: 2,
-            right: 2,
-            child: GestureDetector(
-              onTap: () => onTaskTap(t),
-              child: _TaskChip(task: t),
-            ),
-          );
-        }),
+        // Bloques encima, con la altura de su duración real y repartidos en
+        // columnas cuando se solapan.
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final ancho = constraints.maxWidth - 4;
+            return Stack(
+              children: layoutDayTasks(tasks).map((p) {
+                final anchoColumna = ancho / p.columns;
+                return Positioned(
+                  top: p.top + 1,
+                  left: 2 + p.column * anchoColumna,
+                  width: anchoColumna - (p.columns > 1 ? _kColumnGap : 0),
+                  height: p.height - 2,
+                  child: GestureDetector(
+                    onTap: () => onTaskTap(p.task),
+                    child: _TaskChip(task: p.task, compacto: p.height < 34),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ],
     );
   }
@@ -364,26 +471,64 @@ class _DayColumn extends StatelessWidget {
 // ── Task chip ─────────────────────────────────────────────────────────────────
 
 class _TaskChip extends StatelessWidget {
-  const _TaskChip({required this.task});
+  const _TaskChip({required this.task, this.compacto = false});
   final FieldTask task;
+
+  /// Bloque tan bajo que solo cabe el título, sin la hora debajo.
+  final bool compacto;
 
   @override
   Widget build(BuildContext context) {
     final color = task.status.color;
+    final inicio = task.scheduledAt?.toLocal();
     return Container(
-      constraints: const BoxConstraints(minHeight: 22),
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 5, vertical: compacto ? 1 : 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.18),
         border: Border.all(color: color.withValues(alpha: 0.6), width: 1),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: Text(
-        task.title,
-        style: TmType.label(context).copyWith(color: color, fontSize: 10, height: 1.2),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+      // ClipRect: la altura la manda la duración, así que el texto que no
+      // quepa se recorta en vez de desbordar sobre el bloque siguiente.
+      child: ClipRect(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              task.title,
+              style: TmType.label(
+                context,
+              ).copyWith(color: color, fontSize: 10, height: 1.2),
+              maxLines: compacto ? 1 : 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (!compacto && inicio != null)
+              Text(
+                '${_dosDigitos(inicio.hour)}:${_dosDigitos(inicio.minute)}'
+                ' · ${_duracionCorta(task.durationMinutes)}',
+                style: TmType.label(context).copyWith(
+                  color: color.withValues(alpha: 0.75),
+                  fontSize: 9,
+                  height: 1.1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+          ],
+        ),
       ),
     );
   }
+}
+
+String _dosDigitos(int n) => n.toString().padLeft(2, '0');
+
+/// "1 h 30", "45 min", "2 h" — corto porque el bloque es estrecho.
+String _duracionCorta(int minutos) {
+  final horas = minutos ~/ 60;
+  final resto = minutos % 60;
+  if (horas == 0) return '$resto min';
+  if (resto == 0) return '$horas h';
+  return '$horas h $resto';
 }

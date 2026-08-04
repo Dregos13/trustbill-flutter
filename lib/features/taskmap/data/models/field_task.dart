@@ -30,13 +30,18 @@ class ClientRef {
 
 /// A field job. Used for both list rows and detail; `notes`/`assignedToId` and
 /// `bill.lines` are populated only by the detail endpoint.
+/// Duración por defecto cuando el backend no la manda (versiones anteriores a
+/// la migración de agenda). Es el mismo default que el esquema.
+const int kDefaultTaskDurationMinutes = 60;
+
 class FieldTask {
   const FieldTask({
     required this.id,
     required this.title,
     required this.status,
-    required this.client,
+    this.client,
     this.scheduledAt,
+    this.durationMinutes = kDefaultTaskDurationMinutes,
     this.startedAt,
     this.completedAt,
     this.notes,
@@ -47,20 +52,33 @@ class FieldTask {
   final int id;
   final String title;
   final TaskStatus status;
-  final ClientRef client;
+
+  /// Opcional: hay tareas que no son de ningún cliente ("ir a Hacienda").
+  /// Las que no lo tienen no salen en el mapa, porque no hay coordenadas.
+  final ClientRef? client;
   final DateTime? scheduledAt;
+
+  /// Cuánto ocupa en la agenda. Es lo que da altura al bloque del calendario.
+  final int durationMinutes;
   final DateTime? startedAt;
   final DateTime? completedAt;
   final String? notes;
   final int? assignedToId;
   final BillSummary? bill;
 
+  /// Fin de la tarea, para pintarla y para detectar solapes.
+  DateTime? get endsAt => scheduledAt?.add(Duration(minutes: durationMinutes));
+
   factory FieldTask.fromJson(Map<String, dynamic> json) => FieldTask(
     id: (json['id'] as num).toInt(),
     title: json['title'] as String? ?? '',
     status: TaskStatus.fromApi(json['status'] as String? ?? 'PENDING'),
-    client: ClientRef.fromJson(json['client'] as Map<String, dynamic>),
+    client: json['client'] == null
+        ? null
+        : ClientRef.fromJson(json['client'] as Map<String, dynamic>),
     scheduledAt: _date(json['scheduledAt']),
+    durationMinutes:
+        (json['durationMinutes'] as num?)?.toInt() ?? kDefaultTaskDurationMinutes,
     startedAt: _date(json['startedAt']),
     completedAt: _date(json['completedAt']),
     notes: json['notes'] as String?,
