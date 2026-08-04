@@ -443,28 +443,36 @@ class _DayColumn extends StatelessWidget {
         ),
         // Bloques encima, con la altura de su duración real y repartidos en
         // columnas cuando se solapan.
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final ancho = constraints.maxWidth - 4;
-            return Stack(
-              children: layoutDayTasks(tasks).map((p) {
-                final anchoColumna = ancho / p.columns;
-                return Positioned(
-                  // Key por id: las pruebas de integracion localizan el bloque
-                  // y miden su rectangulo real, sin adivinar coordenadas.
-                  key: Key('task-chip-${p.task.id}'),
-                  top: p.top + 1,
-                  left: 2 + p.column * anchoColumna,
-                  width: anchoColumna - (p.columns > 1 ? _kColumnGap : 0),
-                  height: p.height - 2,
-                  child: GestureDetector(
-                    onTap: () => onTaskTap(p.task),
-                    child: _TaskChip(task: p.task, compacto: p.height < 34),
-                  ),
-                );
-              }).toList(),
-            );
-          },
+        //
+        // Positioned.fill NO es decorativo: un hijo sin posicionar recibe
+        // constraints holgadas, y un Stack cuyos hijos son TODOS Positioned no
+        // tiene de quién sacar su tamaño, así que se encoge a cero y los
+        // bloques desaparecen sin dar ningún error. La rejilla se seguía
+        // viendo y el calendario salía vacío.
+        Positioned.fill(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final ancho = constraints.maxWidth - 4;
+              return Stack(
+                children: layoutDayTasks(tasks).map((p) {
+                  final anchoColumna = ancho / p.columns;
+                  return Positioned(
+                    // Key por id: las pruebas localizan el bloque y miden su
+                    // rectangulo real, sin adivinar coordenadas.
+                    key: Key('task-chip-${p.task.id}'),
+                    top: p.top + 1,
+                    left: 2 + p.column * anchoColumna,
+                    width: anchoColumna - (p.columns > 1 ? _kColumnGap : 0),
+                    height: p.height - 2,
+                    child: GestureDetector(
+                      onTap: () => onTaskTap(p.task),
+                      child: _TaskChip(task: p.task, compacto: p.height < 34),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
         ),
       ],
     );
