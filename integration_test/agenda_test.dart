@@ -11,6 +11,18 @@
 //     --dart-define=TEST_EMAIL=... \
 //     --dart-define=TEST_PASSWORD=...
 //
+// NO LANZARLO CONTRA UN MOVIL DE USO DIARIO. Esto instala una APK de DEBUG.
+// Si en el telefono hay una de release (firmada con la clave real), Android
+// desinstala primero, y con ella se va la sesion y los datos locales. Peor:
+// si la instalacion se queda a medias, el telefono acaba SIN la app y hay
+// que reinstalarla y volver a entrar a mano. Comprobado por las malas el
+// 2026-08-04.
+//
+// Usar un emulador o un dispositivo de pruebas. Si aun asi hay que usar el
+// telefono bueno, reinstalar despues con:
+//   flutter build apk --release
+//   adb install -r build/app/outputs/flutter-apk/app-release.apk
+//
 // Necesita tareas programadas en la empresa activa para tener algo que medir.
 // Si no hay ninguna en la semana visible, los casos que necesitan datos se
 // saltan en vez de fallar: un tenant vacio no es un fallo del calendario.
@@ -28,6 +40,35 @@ const _testTenant = String.fromEnvironment('TEST_TENANT');
 const _testEmail = String.fromEnvironment('TEST_EMAIL');
 const _testPassword = String.fromEnvironment('TEST_PASSWORD');
 
+enum _AppScreenState { home, setup, login, unknown }
+
+_AppScreenState? _detectScreen() {
+  if (find.byKey(const Key('app-header-account-button')).evaluate().isNotEmpty) {
+    return _AppScreenState.home;
+  }
+  if (find.text('Entrar').evaluate().isNotEmpty) return _AppScreenState.login;
+  if (find.text('Continuar').evaluate().isNotEmpty) return _AppScreenState.setup;
+  return null;
+}
+
+/// go_router puede montar LoginScreen un frame antes de redirigir a Setup (o
+/// al reves), asi que ver la pantalla una vez no basta: hay que verla estable
+/// dos lecturas seguidas antes de actuar. Mismo criterio que app_test.dart —
+/// saltarselo da un "Found 0 widgets" al pulsar algo que ya no esta.
+Future<_AppScreenState> _waitForScreen(
+  WidgetTester tester, {
+  int maxSeconds = 45,
+}) async {
+  _AppScreenState? previous;
+  for (var i = 0; i < maxSeconds; i++) {
+    await tester.pump(const Duration(seconds: 1));
+    final found = _detectScreen();
+    if (found != null && found == previous) return found;
+    previous = found;
+  }
+  return _AppScreenState.unknown;
+}
+
 Future<void> _launchAuthenticatedApp(WidgetTester tester) async {
   await initializeDateFormatting('es_ES', null);
   final prefs = await SharedPreferences.getInstance();
@@ -39,36 +80,38 @@ Future<void> _launchAuthenticatedApp(WidgetTester tester) async {
     ),
   );
 
-  final avatar = find.byKey(const Key('app-header-account-button'));
-  for (var i = 0; i < 45; i++) {
-    await tester.pump(const Duration(seconds: 1));
-    if (avatar.evaluate().isNotEmpty) break;
+  final hayCredenciales = _testEmail.isNotEmpty && _testPassword.isNotEmpty;
+  var state = await _waitForScreen(tester);
 
-    if (find.text('Continuar').evaluate().isNotEmpty &&
-        _testTenant.isNotEmpty) {
-      await tester.enterText(find.byType(TextFormField), _testTenant);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Continuar'));
-      await tester.pump(const Duration(seconds: 1));
-    } else if (find.text('Entrar').evaluate().isNotEmpty &&
-        _testEmail.isNotEmpty) {
-      final campos = find.byType(TextFormField);
-      await tester.enterText(campos.at(0), _testTenant);
-      await tester.enterText(campos.at(1), _testEmail);
-      await tester.enterText(campos.at(2), _testPassword);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Entrar'));
-      await tester.pump(const Duration(seconds: 1));
-    }
+  if (state == _AppScreenState.setup && hayCredenciales) {
+    await tester.enterText(find.byType(TextFormField), _testTenant);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pump(const Duration(seconds: 1));
+    state = await _waitForScreen(tester);
   }
 
+  if (state == _AppScreenState.login && hayCredenciales) {
+    final campos = find.byType(TextFormField);
+    expect(campos, findsNWidgets(3));
+    await tester.enterText(campos.at(0), _testTenant);
+    await tester.enterText(campos.at(1), _testEmail);
+    await tester.enterText(campos.at(2), _testPassword);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Entrar'));
+    await tester.pump(const Duration(seconds: 1));
+    state = await _waitForScreen(tester);
+  }
+
+  await tester.pumpAndSettle(const Duration(milliseconds: 500));
+
   expect(
-    avatar,
-    findsOneWidget,
-    reason: _testEmail.isEmpty
-        ? 'La app no llego a Inicio y no se pasaron credenciales '
-              '(--dart-define=TEST_EMAIL=... TEST_PASSWORD=... TEST_TENANT=...).'
-        : 'El login automatico no llego a Inicio: credenciales, backend o red.',
+    state,
+    _AppScreenState.home,
+    reason: hayCredenciales
+        ? 'El login automatico no llego a Inicio (estado: $state).'
+        : 'La app no llego a Inicio (estado: $state) y no se pasaron '
+              'credenciales (--dart-define=TEST_EMAIL=... TEST_PASSWORD=...).',
   );
 }
 
