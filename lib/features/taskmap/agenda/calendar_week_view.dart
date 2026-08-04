@@ -450,6 +450,9 @@ class _DayColumn extends StatelessWidget {
               children: layoutDayTasks(tasks).map((p) {
                 final anchoColumna = ancho / p.columns;
                 return Positioned(
+                  // Key por id: las pruebas de integracion localizan el bloque
+                  // y miden su rectangulo real, sin adivinar coordenadas.
+                  key: Key('task-chip-${p.task.id}'),
                   top: p.top + 1,
                   left: 2 + p.column * anchoColumna,
                   width: anchoColumna - (p.columns > 1 ? _kColumnGap : 0),
