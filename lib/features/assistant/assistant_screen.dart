@@ -5,6 +5,7 @@ import '../../core/models/chat.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import 'assistant_provider.dart';
+import 'confirmation_copy.dart';
 
 /// Mapea las pantallas semánticas que puede pedir el gateway
 /// (`app/tools/navigation.py::Screen`) a rutas reales de la app. Si el
@@ -415,7 +416,7 @@ class _MessageBubble extends StatelessWidget {
                           message.sources.isNotEmpty)
                         _SourcesRow(sources: message.sources),
                       if (!isUser && confirmation != null)
-                        _ConfirmationCard(
+                        ConfirmationCard(
                           confirmation: confirmation!,
                           onConfirm: onConfirm,
                           onCancel: onCancel,
@@ -483,47 +484,29 @@ class _SourcesRow extends StatelessWidget {
 /// Tarjeta de confirmación de una escritura. Diseñada para ser inequívoca a
 /// simple vista (letra grande, un solo total destacado, dos botones claros):
 /// el usuario debe entender QUÉ va a crear y decidir sin ambigüedad.
-class _ConfirmationCard extends StatelessWidget {
+///
+/// Pública a propósito, aunque solo se use aquí: recibe datos planos y ningún
+/// provider, así que se puede montar en un widget test. Eso es lo que faltaba
+/// cuando la tarjeta anunciaba cualquier operación como si fuera una factura.
+class ConfirmationCard extends StatelessWidget {
   final PendingConfirmationView confirmation;
   final void Function(String id) onConfirm;
   final void Function(String id) onCancel;
 
-  const _ConfirmationCard({
+  const ConfirmationCard({
+    super.key,
     required this.confirmation,
     required this.onConfirm,
     required this.onCancel,
   });
 
-  bool get _isExpense => confirmation.operation == 'create_expense_draft';
-
-  String get _thing => _isExpense ? 'gasto' : 'factura';
+  // Qué va a crear esto, según la operación que manda el gateway. Nunca se
+  // deduce del resumen ni se asume factura: ver confirmation_copy.dart.
+  ConfirmationCopy get _copy => confirmationCopyFor(confirmation.operation);
 
   // Nombre de la contraparte (cliente o proveedor), mostrado en grande arriba.
   String? get _partyName =>
       confirmation.summary['customer'] ?? confirmation.summary['supplier'];
-
-  // Filas de detalle: se omite el nombre (ya va en el encabezado), el total
-  // (se muestra destacado aparte) y campos de ruido para una persona mayor.
-  static const _hiddenKeys = {
-    'customer',
-    'supplier',
-    'total',
-    'currency',
-    'line_count',
-  };
-
-  String _label(String key) {
-    return switch (key) {
-      'tax' => 'Impuesto',
-      'tax_amount' => 'Importe del impuesto',
-      'subtotal' => 'Base',
-      'category' => 'Categoría',
-      'issue_date' => 'Fecha',
-      'expense_date' => 'Fecha',
-      'due_date' => 'Vencimiento',
-      _ => key,
-    };
-  }
 
   // El gateway ya envía el total formateado con símbolo (p. ej. "104,00 €").
   String _total() => confirmation.summary['total'] ?? '';
@@ -552,16 +535,15 @@ class _ConfirmationCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (resolved)
-            _ResolvedHeader(confirmation: confirmation, thing: _thing)
+            _ResolvedHeader(confirmation: confirmation, copy: _copy)
           else
             _PendingBody(
-              title: _isExpense ? '¿Registrar este gasto?' : '¿Crear esta factura?',
+              copy: _copy,
               partyName: _partyName,
-              partyLabel: _isExpense ? 'Proveedor' : 'Cliente',
               detailRows: [
                 for (final entry in confirmation.summary.entries)
-                  if (!_hiddenKeys.contains(entry.key))
-                    (_label(entry.key), entry.value),
+                  if (!hiddenSummaryKeys.contains(entry.key))
+                    (summaryLabel(entry.key), entry.value),
               ],
               total: _total(),
               working: status == ConfirmationUiStatus.working,
@@ -579,9 +561,8 @@ class _ConfirmationCard extends StatelessWidget {
 }
 
 class _PendingBody extends StatelessWidget {
-  final String title;
+  final ConfirmationCopy copy;
   final String? partyName;
-  final String partyLabel;
   final List<(String, String)> detailRows;
   final String total;
   final bool working;
@@ -589,9 +570,8 @@ class _PendingBody extends StatelessWidget {
   final VoidCallback onCancel;
 
   const _PendingBody({
-    required this.title,
+    required this.copy,
     required this.partyName,
-    required this.partyLabel,
     required this.detailRows,
     required this.total,
     required this.working,
@@ -608,7 +588,7 @@ class _PendingBody extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            title,
+            copy.question,
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w800,
@@ -618,7 +598,7 @@ class _PendingBody extends StatelessWidget {
           if (partyName != null) ...[
             const SizedBox(height: 12),
             Text(
-              partyLabel.toUpperCase(),
+              copy.partyLabel.toUpperCase(),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -644,7 +624,13 @@ class _PendingBody extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // El ancho se reparte. Sin repartirlo, el valor era un
+                    // Text sin restringir: uno largo ("Consultoría: 5 horas ×
+                    // 100,00 €") se quedaba con todo y a la etiqueta le
+                    // sobraban dos píxeles, asi que "Líneas" se pintaba en
+                    // vertical, una letra por renglón.
                     Expanded(
+                      flex: 2,
                       child: Text(
                         label,
                         style: TextStyle(
@@ -654,12 +640,18 @@ class _PendingBody extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: context.appText,
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        value,
+                        // Los valores cortos siguen pegados a la derecha, como
+                        // antes; los largos ahora parten de linea.
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: context.appText,
+                        ),
                       ),
                     ),
                   ],
@@ -699,7 +691,8 @@ class _PendingBody extends StatelessWidget {
           ],
           const SizedBox(height: 16),
           // Botón principal grande y explícito; el usuario mayor lee "crear
-          // factura", no un genérico "Confirmar".
+          // tarea" o "crear factura", no un genérico "Confirmar". El texto sale
+          // de la operación, nunca de adivinar por el resumen.
           SizedBox(
             height: 52,
             child: FilledButton.icon(
@@ -719,13 +712,7 @@ class _PendingBody extends StatelessWidget {
                       ),
                     )
                   : const Icon(Icons.check_rounded, size: 22),
-              label: Text(
-                working
-                    ? 'Creando…'
-                    : (partyLabel == 'Proveedor'
-                        ? 'Sí, registrar gasto'
-                        : 'Sí, crear factura'),
-              ),
+              label: Text(working ? copy.working : copy.confirm),
             ),
           ),
           const SizedBox(height: 8),
@@ -749,9 +736,9 @@ class _PendingBody extends StatelessWidget {
 
 class _ResolvedHeader extends StatelessWidget {
   final PendingConfirmationView confirmation;
-  final String thing;
+  final ConfirmationCopy copy;
 
-  const _ResolvedHeader({required this.confirmation, required this.thing});
+  const _ResolvedHeader({required this.confirmation, required this.copy});
 
   @override
   Widget build(BuildContext context) {
@@ -776,9 +763,7 @@ class _ResolvedHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  confirmed
-                      ? (thing == 'gasto' ? 'Gasto registrado' : 'Factura creada')
-                      : 'Cancelado',
+                  confirmed ? copy.done : 'Cancelado',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -787,10 +772,14 @@ class _ResolvedHeader extends StatelessWidget {
                 ),
                 if (confirmed) ...[
                   const SizedBox(height: 2),
+                  // Una tarea o un cobro NO acaban en la bandeja de borradores:
+                  // decirlo mandaría al usuario a buscar donde no hay nada.
                   Text(
-                    confirmation.resultLine != null
-                        ? '${confirmation.resultLine} · guardado en tus borradores'
-                        : 'Guardado en tus borradores',
+                    copy.savesToDrafts
+                        ? (confirmation.resultLine != null
+                              ? '${confirmation.resultLine} · guardado en tus borradores'
+                              : 'Guardado en tus borradores')
+                        : (confirmation.resultLine ?? 'Listo'),
                     style: TextStyle(fontSize: 13, color: context.appTextMuted),
                   ),
                 ],

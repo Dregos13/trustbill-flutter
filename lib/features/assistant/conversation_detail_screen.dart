@@ -9,6 +9,7 @@ import '../../core/theme/app_theme_tokens.dart';
 import '../../widgets/loading_indicator.dart';
 import 'assistant_provider.dart';
 import 'assistant_screen.dart' show MarkdownText;
+import 'confirmation_copy.dart';
 import 'conversation_history_provider.dart';
 
 /// Fase H.2: lectura de una conversación pasada, con opción de seguir
@@ -168,8 +169,7 @@ class _ExpiredConfirmationCard extends StatelessWidget {
   final ChatConfirmation confirmation;
   const _ExpiredConfirmationCard({required this.confirmation});
 
-  String get _thing =>
-      confirmation.operation == 'create_expense_draft' ? 'gasto' : 'factura';
+  String get _thing => confirmationCopyFor(confirmation.operation).thing;
 
   @override
   Widget build(BuildContext context) {
