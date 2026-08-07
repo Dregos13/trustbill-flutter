@@ -6,43 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import 'assistant_provider.dart';
 import 'confirmation_copy.dart';
-
-/// Mapea las pantallas semánticas que puede pedir el gateway
-/// (`app/tools/navigation.py::Screen`) a rutas reales de la app. Si el
-/// gateway añade una pantalla nueva a su enum y esta tabla no se actualiza,
-/// `_routeForGatewayScreen` devuelve null y simplemente no se navega — nunca
-/// un crash por una ruta desconocida.
-String? _routeForGatewayScreen(String screen, String? entityId) {
-  switch (screen) {
-    case 'trustinfacts.dashboard':
-    case 'trustinfacts.reports':
-      return '/';
-    case 'trustinfacts.customers.list':
-      return '/clients';
-    case 'trustinfacts.customers.detail':
-      return entityId != null ? '/clients/$entityId' : '/clients';
-    case 'trustinfacts.invoices.list':
-      return '/invoices';
-    case 'trustinfacts.invoices.create':
-      return '/invoices/new';
-    case 'trustinfacts.invoices.detail':
-      return entityId != null ? '/invoices/$entityId' : '/invoices';
-    // "expenses" en el gateway es el libro de gastos (ExpenseEntry); la
-    // pantalla más cercana en la app es "Compras" (facturas/tickets de
-    // proveedor), que es de donde salen esos gastos. Todavía no existe una
-    // pantalla "/expenses" dedicada.
-    case 'trustinfacts.expenses.list':
-      return '/purchases';
-    case 'trustinfacts.expenses.create':
-      return '/scan';
-    case 'trustinfacts.expenses.detail':
-      return entityId != null ? '/purchases/$entityId' : '/purchases';
-    case 'trustinfacts.settings.taxes':
-      return '/tax';
-    default:
-      return null;
-  }
-}
+import 'screen_routes.dart';
 
 class AssistantScreen extends ConsumerStatefulWidget {
   const AssistantScreen({super.key});
@@ -118,7 +82,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
 
       final navigate = next.pendingNavigation;
       if (navigate != null) {
-        final path = _routeForGatewayScreen(navigate.screen, navigate.entityId);
+        final path = routeForGatewayScreen(navigate.screen, navigate.entityId);
         ref.read(assistantProvider.notifier).consumePendingNavigation();
         if (path != null) context.push(path);
       }
