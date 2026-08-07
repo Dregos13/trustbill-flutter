@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/api/company_tax_kind.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
@@ -80,6 +81,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
   Client? _selectedClient;
   String _taxKind = 'IVA';
+  // En cuanto el usuario elige el regimen a mano, el de la empresa deja de
+  // aplicarse. Y solo se aplica una vez.
+  bool _taxKindTouched = false;
+  bool _companyTaxKindApplied = false;
   DateTime _issuedAt = DateTime.now();
   final _notesCtrl = TextEditingController();
   final List<_InvoiceLine> _lines = [_InvoiceLine()];
@@ -182,8 +187,36 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
   }
 
+  /// Cambia el regimen y reajusta las lineas que aun tienen el tipo por
+  /// defecto del anterior. Las que el usuario ya toco se quedan como estan.
+  void _applyTaxKind(String next) {
+    final previousRate = defaultTaxRateFor(_taxKind);
+    final nextRate = defaultTaxRateFor(next);
+    setState(() {
+      _taxKind = next;
+      for (final line in _lines) {
+        if (line.productId == null &&
+            line.serviceId == null &&
+            line.taxRate == previousRate) {
+          line.taxRate = nextRate;
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Arranca en el regimen de la empresa (IPSI en Ceuta y Melilla, IVA en el
+    // resto) en vez de IVA siempre. Se aplica despues del frame porque llega de
+    // una peticion y no se puede llamar a setState durante el build.
+    ref.watch(companyDefaultTaxKindProvider).whenData((kind) {
+      if (_companyTaxKindApplied || _taxKindTouched || kind == _taxKind) return;
+      _companyTaxKindApplied = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyTaxKind(kind);
+      });
+    });
+
     return Stack(
       children: [
         Scaffold(
@@ -339,12 +372,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                             ],
                             onChanged: (v) {
                               if (v != null) {
-                                setState(() {
-                                  _taxKind = v;
-                                  for (final line in _lines) {
-                                    line.taxRate = v == 'IVA' ? 21 : 10;
-                                  }
-                                });
+                                _taxKindTouched = true;
+                                _applyTaxKind(v);
                               }
                             },
                           ),
@@ -363,7 +392,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     TextButton.icon(
                       onPressed: () => setState(
                         () => _lines.add(
-                          _InvoiceLine(taxRate: _taxKind == 'IVA' ? 21 : 10),
+                          _InvoiceLine(taxRate: defaultTaxRateFor(_taxKind)),
                         ),
                       ),
                       icon: const Icon(Icons.add, size: 16),

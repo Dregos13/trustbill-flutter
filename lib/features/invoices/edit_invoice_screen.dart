@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/api/company_tax_kind.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
@@ -72,7 +73,7 @@ class _EditInvoiceScreenState extends ConsumerState<EditInvoiceScreen> {
                   discountRate: l.discountRate,
                 ))
             .toList();
-        if (_lines.isEmpty) _lines = [DocLine(taxRate: _taxKind == 'IVA' ? 21 : 10)];
+        if (_lines.isEmpty) _lines = [DocLine(taxRate: defaultTaxRateFor(_taxKind))];
         _products = products.items;
         _services = services.items;
         _loading = false;
@@ -243,7 +244,7 @@ class _EditInvoiceScreenState extends ConsumerState<EditInvoiceScreen> {
                           setState(() {
                             _taxKind = v;
                             for (final line in _lines) {
-                              line.taxRate = v == 'IVA' ? 21 : 10;
+                              line.taxRate = defaultTaxRateFor(v);
                             }
                           });
                         }
@@ -271,7 +272,7 @@ class _EditInvoiceScreenState extends ConsumerState<EditInvoiceScreen> {
               ),
               TextButton.icon(
                 onPressed: () => setState(() => _lines.add(
-                    DocLine(taxRate: _taxKind == 'IVA' ? 21 : 10))),
+                    DocLine(taxRate: defaultTaxRateFor(_taxKind)))),
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text('Añadir línea'),
                 style:

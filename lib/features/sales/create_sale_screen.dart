@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/api/company_tax_kind.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/cache/cache_keys.dart';
 import '../../core/cache/cache_providers.dart';
@@ -60,6 +61,10 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   Client? _selectedClient;
   int? _selectedBudgetId;
   late String _taxKind;
+  // En cuanto el usuario elige el regimen a mano, el de la empresa deja de
+  // aplicarse. Y solo se aplica una vez.
+  bool _taxKindTouched = false;
+  bool _companyTaxKindApplied = false;
   String _status = 'OPEN';
   final _internalNotesCtrl = TextEditingController();
   final List<DocLine> _lines = [];
@@ -172,11 +177,42 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
     }
   }
 
+  /// Cambia el regimen y reajusta las lineas que aun tienen el tipo por
+  /// defecto del anterior. Las que el usuario ya toco se quedan como estan.
+  void _applyTaxKind(String next) {
+    final previousRate = defaultTaxRateFor(_taxKind);
+    final nextRate = defaultTaxRateFor(next);
+    setState(() {
+      _taxKind = next;
+      for (final line in _lines) {
+        if (line.productId == null &&
+            line.serviceId == null &&
+            line.taxRate == previousRate) {
+          line.taxRate = nextRate;
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final clientsAsync = ref.watch(_clientsForSaleProvider);
     final productsAsync = ref.watch(_productsForSaleProvider);
     final servicesAsync = ref.watch(_servicesForSaleProvider);
+
+    // Arranca en el regimen de la empresa, salvo cuando la venta viene de un
+    // presupuesto: entonces manda el suyo, que ya llega en initialTaxKind.
+    if (widget.initialTaxKind == null) {
+      ref.watch(companyDefaultTaxKindProvider).whenData((kind) {
+        if (_companyTaxKindApplied || _taxKindTouched || kind == _taxKind) {
+          return;
+        }
+        _companyTaxKindApplied = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _applyTaxKind(kind);
+        });
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -244,7 +280,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
                   _sectionTitle(context, 'Líneas de venta'),
                   TextButton.icon(
                     onPressed: () => setState(() => _lines
-                        .add(DocLine(taxRate: _taxKind == 'IVA' ? 21 : 10))),
+                        .add(DocLine(taxRate: defaultTaxRateFor(_taxKind)))),
                     icon: const Icon(Icons.add, size: 16),
                     label: const Text('Añadir línea'),
                     style: TextButton.styleFrom(
@@ -481,12 +517,8 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
             ],
             onChanged: (v) {
               if (v != null) {
-                setState(() {
-                  _taxKind = v;
-                  for (final line in _lines) {
-                    line.taxRate = v == 'IVA' ? 21 : 10;
-                  }
-                });
+                _taxKindTouched = true;
+                _applyTaxKind(v);
               }
             },
           ),
