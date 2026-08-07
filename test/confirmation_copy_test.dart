@@ -25,6 +25,7 @@ import 'package:trustinfacts_mobile/features/assistant/confirmation_copy.dart';
 const _operacionesDelGateway = [
   'create_invoice_draft',
   'create_expense_draft',
+  'create_budget',
   'register_payment',
   'create_task',
   'reschedule_task',
@@ -87,7 +88,9 @@ void main() {
       'set_task_status': ['factura', 'gasto', 'cobro'],
       'register_payment': ['factura', 'gasto', 'tarea'],
       'create_expense_draft': ['factura', 'tarea', 'cobro'],
-      'create_invoice_draft': ['gasto', 'tarea', 'cobro'],
+      'create_invoice_draft': ['gasto', 'tarea', 'cobro', 'presupuesto'],
+      // El fallo que motivo FT-011: pedir un presupuesto y ver "crear factura".
+      'create_budget': ['factura', 'gasto', 'tarea', 'cobro'],
     };
 
     prohibido.forEach((operacion, palabras) {

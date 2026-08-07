@@ -55,6 +55,15 @@ const Map<String, ConfirmationCopy> confirmationCopyByOperation = {
     thing: 'factura',
     savesToDrafts: true,
   ),
+  'create_budget': ConfirmationCopy(
+    question: '¿Crear este presupuesto?',
+    confirm: 'Sí, crear presupuesto',
+    working: 'Creando…',
+    done: 'Presupuesto creado',
+    partyLabel: 'Cliente',
+    thing: 'presupuesto',
+    savesToDrafts: true,
+  ),
   'create_expense_draft': ConfirmationCopy(
     question: '¿Registrar este gasto?',
     confirm: 'Sí, registrar gasto',
