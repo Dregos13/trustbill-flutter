@@ -12,6 +12,7 @@ import '../../core/cache/swr.dart';
 import '../../core/models/sale.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../../core/utils/number_parsing.dart';
 import '../../core/utils/error_messages.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
@@ -81,7 +82,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
           .map((l) => {
                 'saleLineId': l.id,
                 'description': l.description,
-                'quantity': l.pendingQuantity.toInt(),
+                'quantity': l.pendingQuantity,
                 'unitPrice': l.unitPrice,
                 'taxRate': l.taxRate,
                 'discountRate': l.discountRate,
@@ -341,7 +342,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.w600, color: context.appText)),
                   Text(
-                    '${line.quantity.toInt()} × ${_fmt.format(line.unitPrice)} · ${line.taxRate.toInt()}%',
+                    '${formatQuantity(line.quantity)} × ${_fmt.format(line.unitPrice)} · ${line.taxRate.toInt()}%',
                     style:
                         TextStyle(fontSize: 12, color: context.appTextSubtle),
                   ),

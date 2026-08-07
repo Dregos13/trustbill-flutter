@@ -121,7 +121,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
         'lines': _lines
             .map((l) => {
                   'description': l.description.trim(),
-                  'quantity': l.quantity.toInt(),
+                  'quantity': l.quantity,
                   'unitPrice': l.unitPrice,
                   'taxRate': l.taxRate,
                   'discountRate': l.discountRate,

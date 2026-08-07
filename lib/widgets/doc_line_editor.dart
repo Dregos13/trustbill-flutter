@@ -5,6 +5,7 @@ import '../core/models/product.dart';
 import '../core/models/service.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_theme_tokens.dart';
+import '../core/utils/number_parsing.dart';
 
 /// Mutable draft line shared by the budget / sale create editors.
 /// Mirrors the line math used by the desktop and the API:
@@ -72,8 +73,7 @@ class _DocLineCardState extends State<DocLineCard> {
   void initState() {
     super.initState();
     _descCtrl = TextEditingController(text: widget.line.description);
-    _qtyCtrl =
-        TextEditingController(text: widget.line.quantity.toInt().toString());
+    _qtyCtrl = TextEditingController(text: formatQuantity(widget.line.quantity));
     _priceCtrl = TextEditingController(
         text: widget.line.unitPrice == 0 ? '' : widget.line.unitPrice.toString());
     _discCtrl = TextEditingController(
@@ -241,8 +241,18 @@ class _DocLineCardState extends State<DocLineCard> {
                   flex: 2,
                   child: TextFormField(
                     controller: _qtyCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    // Decimal: la columna es numeric(14,3) y el escritorio
+                    // admite "5,5 horas" o "12,75 metros" desde siempre. Aqui
+                    // el campo era digitsOnly y no dejaba ni teclear la coma.
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      // Coma y punto: el teclado del movil ofrece una u otro
+                      // segun la configuracion, y parseLocalizedDecimal
+                      // entiende los dos.
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    ],
                     decoration: InputDecoration(
                       labelText: 'Cant.',
                       border: OutlineInputBorder(
@@ -252,12 +262,15 @@ class _DocLineCardState extends State<DocLineCard> {
                       isDense: true,
                     ),
                     validator: (v) {
-                      final n = int.tryParse(v ?? '');
-                      if (n == null || n < 1) return 'Mín. 1';
+                      final n = parseLocalizedDecimal(v ?? '', fallback: 0);
+                      if (n <= 0) return 'Mín. 0,001';
+                      if (!hasValidQuantityPrecision(n)) {
+                        return 'Máx. $kMaxQuantityDecimals decimales';
+                      }
                       return null;
                     },
                     onChanged: (v) {
-                      widget.line.quantity = double.tryParse(v) ?? 1;
+                      widget.line.quantity = parseLocalizedDecimal(v, fallback: 1);
                       widget.onChanged();
                     },
                   ),

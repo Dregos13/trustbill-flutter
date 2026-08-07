@@ -93,7 +93,7 @@ class _CreateBudgetScreenState extends ConsumerState<CreateBudgetScreen> {
       'lines': _lines
           .map((l) => {
                 'description': l.description.trim(),
-                'quantity': l.quantity.toInt(),
+                'quantity': l.quantity,
                 'unitPrice': l.unitPrice,
                 'taxRate': l.taxRate,
                 'discountRate': l.discountRate,

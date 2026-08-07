@@ -112,7 +112,7 @@ class _EditInvoiceScreenState extends ConsumerState<EditInvoiceScreen> {
       'lines': _lines
           .map((l) => {
                 'description': l.description.trim(),
-                'quantity': l.quantity.toInt(),
+                'quantity': l.quantity,
                 'unitPrice': l.unitPrice,
                 'taxRate': l.taxRate,
                 'discountRate': l.discountRate,

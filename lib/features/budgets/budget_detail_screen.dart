@@ -12,6 +12,7 @@ import '../../core/cache/swr.dart';
 import '../../core/models/budget.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../../core/utils/number_parsing.dart';
 import '../../core/utils/error_messages.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/empty_state.dart';
@@ -398,7 +399,7 @@ class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.w600, color: context.appText)),
                   Text(
-                    '${line.quantity.toInt()} × ${fmt.format(line.unitPrice)}'
+                    '${formatQuantity(line.quantity)} × ${fmt.format(line.unitPrice)}'
                     '${line.discountRate > 0 ? '  ·  -${line.discountRate.toInt()}%' : ''}'
                     '  ·  ${line.taxRate.toInt()}%',
                     style:

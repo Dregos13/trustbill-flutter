@@ -13,6 +13,7 @@ import '../../core/models/service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme_tokens.dart';
 import '../../core/utils/error_messages.dart';
+import '../../core/utils/number_parsing.dart';
 
 // ── Providers ────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           .map(
             (l) => {
               'description': l.description.trim(),
-              'quantity': l.quantity.toInt(),
+              'quantity': l.quantity,
               'unitPrice': l.unitPrice,
               'taxRate': l.taxRate,
               'discountRate': l.discountRate,
@@ -671,7 +672,7 @@ class _LineCardState extends ConsumerState<_LineCard> {
     super.initState();
     _descCtrl = TextEditingController(text: widget.line.description);
     _qtyCtrl = TextEditingController(
-      text: widget.line.quantity.toInt().toString(),
+      text: formatQuantity(widget.line.quantity),
     );
     _priceCtrl = TextEditingController(
       text: widget.line.unitPrice == 0 ? '' : widget.line.unitPrice.toString(),
@@ -901,8 +902,14 @@ class _LineCardState extends ConsumerState<_LineCard> {
                   flex: 2,
                   child: TextFormField(
                     controller: _qtyCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    // Ver doc_line_editor.dart: misma razon, la columna es
+                    // numeric(14,3) y el escritorio factura decimales.
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    ],
                     decoration: InputDecoration(
                       labelText: 'Cant.',
                       border: OutlineInputBorder(
@@ -915,12 +922,18 @@ class _LineCardState extends ConsumerState<_LineCard> {
                       isDense: true,
                     ),
                     validator: (v) {
-                      final n = int.tryParse(v ?? '');
-                      if (n == null || n < 1) return 'Mín. 1';
+                      final n = parseLocalizedDecimal(v ?? '', fallback: 0);
+                      if (n <= 0) return 'Mín. 0,001';
+                      if (!hasValidQuantityPrecision(n)) {
+                        return 'Máx. $kMaxQuantityDecimals decimales';
+                      }
                       return null;
                     },
                     onChanged: (v) {
-                      widget.line.quantity = double.tryParse(v) ?? 1;
+                      widget.line.quantity = parseLocalizedDecimal(
+                        v,
+                        fallback: 1,
+                      );
                       widget.onChanged();
                     },
                   ),
