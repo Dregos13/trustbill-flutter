@@ -134,13 +134,17 @@ final assistantProvider =
     NotifierProvider<AssistantNotifier, AssistantState>(AssistantNotifier.new);
 
 class AssistantNotifier extends Notifier<AssistantState> {
-  late final AssistantRepository _repo;
-  late final SharedPreferences _prefs;
+  // `late` a secas, NO `late final`: al cambiar de empresa cambia el scope y
+  // Riverpod re-ejecuta `build()` sobre la MISMA instancia del notifier. Con
+  // `late final`, esa segunda asignacion lanza LateInitializationError y la
+  // pantalla del asistente se queda en blanco. Visto en el dispositivo.
+  late AssistantRepository _repo;
+  late SharedPreferences _prefs;
 
-  /// Clave del id persistido para la empresa activa. Se resuelve una vez en
-  /// `build()` y no despues de un `await`: el `Ref` puede estar ya desechado
-  /// para entonces, y ademas asi la clave no cambia a mitad de una operacion.
-  late final String _storageKey;
+  /// Clave del id persistido para la empresa activa. Se resuelve en `build()`
+  /// y no despues de un `await`: el `Ref` puede estar ya desechado para
+  /// entonces, y ademas asi la clave no cambia a mitad de una operacion.
+  late String _storageKey;
 
   @override
   AssistantState build() {
@@ -162,8 +166,18 @@ class AssistantNotifier extends Notifier<AssistantState> {
   }
 
   Future<void> _hydrateFromStorage(String conversationId) async {
+    // La clave de esta hidratacion, capturada antes del await: si mientras
+    // tanto se cambia de empresa, el notifier se reconstruye y `_storageKey`
+    // ya apunta a otra. Borrar entonces con la clave nueva tirararia el hilo
+    // de la empresa equivocada.
+    final key = _storageKey;
+    final prefs = _prefs;
     try {
       final detail = await _repo.getConversation(conversationId);
+      // El provider puede haberse reconstruido o desechado durante la espera
+      // (cambio de empresa, salir de la pantalla). Tocar `state` entonces
+      // lanza "Cannot use the Ref after it has been disposed".
+      if (!ref.mounted) return;
       state = state.copyWith(
         messages: [..._messagesFrom(detail), ...state.messages],
         conversationId: detail.conversationId,
@@ -174,7 +188,8 @@ class AssistantNotifier extends Notifier<AssistantState> {
         // activa. Conservarlo haria que el siguiente mensaje fallase, porque el
         // gateway rechaza continuar una conversacion fuera de ambito. Se tira y
         // se empieza una nueva.
-        await _prefs.remove(_storageKey);
+        await prefs.remove(key);
+        if (!ref.mounted) return;
         state = const AssistantState();
         return;
       }

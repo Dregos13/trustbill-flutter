@@ -198,6 +198,49 @@ void main() {
     expect(prefs.getString(_storageKey), isNull);
   });
 
+  test('cambiar de empresa en caliente reconstruye el notifier sin reventar', () async {
+    // Con `late final`, la segunda pasada por build() lanzaba
+    // LateInitializationError y la pantalla del asistente se quedaba en blanco.
+    // Los demas tests no lo cogian: cada uno crea su container y build() corre
+    // una sola vez. Aqui el scope cambia en vivo, que es lo que pasa al cambiar
+    // de empresa desde la pantalla de cuenta.
+    SharedPreferences.setMockInitialValues({
+      'assistant_conversation_id:$_scopeEmpresaB': 'conv-de-la-b',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final repo = _FakeAssistantRepository()
+      ..getConversationError = ApiError(
+        status: 404,
+        code: 'CONVERSATION_NOT_FOUND',
+        message: 'no existe',
+      );
+
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        assistantRepositoryProvider.overrideWithValue(repo),
+        cacheScopeProvider.overrideWithValue(_scopeEmpresaA),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    // Empresa A: sin hilo guardado.
+    expect(container.read(assistantProvider).conversationId, isNull);
+
+    // Cambio de empresa: build() se re-ejecuta sobre la misma instancia.
+    container.updateOverrides([
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      assistantRepositoryProvider.overrideWithValue(repo),
+      cacheScopeProvider.overrideWithValue(_scopeEmpresaB),
+    ]);
+
+    expect(
+      container.read(assistantProvider).conversationId,
+      'conv-de-la-b',
+      reason: 'al cambiar de empresa se toma el hilo de la nueva',
+    );
+  });
+
   test('continueConversation() replaces the state and persists the id', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
