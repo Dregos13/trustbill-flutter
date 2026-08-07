@@ -138,7 +138,10 @@ class _BudgetDetailScreenState extends ConsumerState<BudgetDetailScreen> {
         ),
         data: (b) {
           final qs = b.quoteStatus;
-          final isPending = qs == 'pending';
+          // Un borrador no se acepta: la API devuelve 409 y el escritorio exige
+          // lo mismo ("confirma antes de aceptar"). Sin mirar el estado, el
+          // boton salia y solo fallaba al pulsarlo.
+          final isPending = qs == 'pending' && b.status == 'confirmed';
           final isRejected = qs == 'rejected';
           final canConvert =
               b.saleId == null && b.client != null && !isRejected;
