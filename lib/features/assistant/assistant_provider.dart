@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api/api_error.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/cache/cache_providers.dart';
 import '../../core/models/chat.dart';
 import '../../core/models/confirmation.dart';
 import '../../core/models/conversation_history.dart';
@@ -14,7 +16,15 @@ enum ChatRole { user, assistant }
 /// Fase H.2: el id vive también en disco, no solo en memoria del provider,
 /// para que un reinicio en frío de la app pueda recuperar la conversación
 /// (releer su historial cuesta $0, no hay llamada al LLM de por medio).
-const _conversationIdStorageKey = 'assistant_conversation_id';
+const _conversationIdStorageKeyPrefix = 'assistant_conversation_id';
+
+/// Clave del id persistido, **por empresa**.
+///
+/// Antes era una sola clave global: al cambiar de empresa se seguia enviando
+/// el id de la conversacion de la anterior. El gateway acota el historial por
+/// (tenant, usuario, empresa), asi que ese id ya no es valido aqui — y guardar
+/// uno por empresa es ademas lo que espera el usuario: cada empresa, su chat.
+String _conversationIdKey(String scope) => '$_conversationIdStorageKeyPrefix:$scope';
 
 /// Estado de una confirmación de escritura pendiente en el chat (Fase 8 del
 /// gateway): el usuario ve el resumen y confirma o cancela desde la propia
@@ -125,13 +135,22 @@ final assistantProvider =
 
 class AssistantNotifier extends Notifier<AssistantState> {
   late final AssistantRepository _repo;
+  late final SharedPreferences _prefs;
+
+  /// Clave del id persistido para la empresa activa. Se resuelve una vez en
+  /// `build()` y no despues de un `await`: el `Ref` puede estar ya desechado
+  /// para entonces, y ademas asi la clave no cambia a mitad de una operacion.
+  late final String _storageKey;
 
   @override
   AssistantState build() {
     _repo = ref.read(assistantRepositoryProvider);
-    final storedId = ref
-        .read(sharedPreferencesProvider)
-        .getString(_conversationIdStorageKey);
+    _prefs = ref.read(sharedPreferencesProvider);
+    // `watch`, no `read`: al cambiar de empresa el scope cambia, el notifier se
+    // reconstruye y el chat arranca con el hilo de la empresa nueva.
+    _storageKey = _conversationIdKey(ref.watch(cacheScopeProvider));
+
+    final storedId = _prefs.getString(_storageKey);
     if (storedId == null) return const AssistantState();
 
     // build() no puede ser async: el id persistido se aplica ya (para que
@@ -149,9 +168,20 @@ class AssistantNotifier extends Notifier<AssistantState> {
         messages: [..._messagesFrom(detail), ...state.messages],
         conversationId: detail.conversationId,
       );
+    } on ApiError catch (e) {
+      if (e.code == 'CONVERSATION_NOT_FOUND') {
+        // El id guardado ya no vale: purgado, o de una empresa que ya no es la
+        // activa. Conservarlo haria que el siguiente mensaje fallase, porque el
+        // gateway rechaza continuar una conversacion fuera de ambito. Se tira y
+        // se empieza una nueva.
+        await _prefs.remove(_storageKey);
+        state = const AssistantState();
+        return;
+      }
+      // Otro error de API: se sigue con el id, puede ser algo pasajero.
     } catch (_) {
-      // Best-effort: si la conversacion ya no existe (purgada) o falla la
-      // red, se sigue con el id persistido pero sin burbujas antiguas.
+      // Best-effort: si falla la red, se sigue con el id persistido pero sin
+      // burbujas antiguas.
     }
   }
 
@@ -161,9 +191,7 @@ class AssistantNotifier extends Notifier<AssistantState> {
   /// usuario todavía necesita esa operación, se lo puede volver a pedir al
   /// asistente.
   Future<void> continueConversation(ConversationDetail detail) async {
-    await ref
-        .read(sharedPreferencesProvider)
-        .setString(_conversationIdStorageKey, detail.conversationId);
+    await _prefs.setString(_storageKey, detail.conversationId);
     state = AssistantState(
       conversationId: detail.conversationId,
       messages: _messagesFrom(detail),
@@ -232,9 +260,7 @@ class AssistantNotifier extends Notifier<AssistantState> {
 
       final resolvedConversationId = res.conversationId ?? state.conversationId;
       if (resolvedConversationId != null) {
-        await ref
-            .read(sharedPreferencesProvider)
-            .setString(_conversationIdStorageKey, resolvedConversationId);
+        await _prefs.setString(_storageKey, resolvedConversationId);
       }
 
       state = state.copyWith(
@@ -304,7 +330,7 @@ class AssistantNotifier extends Notifier<AssistantState> {
 
   /// Empieza una conversación nueva (limpia burbujas, historial y confirmaciones).
   void reset() {
-    ref.read(sharedPreferencesProvider).remove(_conversationIdStorageKey);
+    _prefs.remove(_storageKey);
     state = const AssistantState();
   }
 
